@@ -30,7 +30,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <main className="flex h-full flex-col gap-4 md:min-h-screen md:items-center md:justify-center md:py-4">
+        <main className="flex min-h-screen flex-col justify-between gap-4 md:min-h-screen md:items-center md:justify-center py-4">
           <Web3Provider>{children}</Web3Provider>
           <Toaster position="top-center" />
           <Footer />

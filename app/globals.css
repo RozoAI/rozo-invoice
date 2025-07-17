@@ -120,7 +120,8 @@
     @apply bg-background text-foreground;
   }
 
-  html, body {
-    @apply h-full;
+  html,
+  body {
+    @apply min-h-screen;
   }
 }
