@@ -49,7 +49,7 @@ async function getPayment(id: string): Promise<LoaderData> {
 export default async function Checkout({
 	searchParams,
 }: {
-	searchParams: { id?: string };
+	searchParams: Promise<{ id?: string }>;
 }): Promise<ReactElement> {
   const {id} = await searchParams;
 	const loaderData = await getPayment(id || "");
