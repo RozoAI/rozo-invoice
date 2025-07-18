@@ -38,7 +38,7 @@ async function getPayment(id: string): Promise<LoaderData> {
     return {
       success: true,
       payment: paymentData,
-      appId: process.env.NEXT_PUBLIC_DAIMO_API_KEY,
+      appId: process.env.DAIMO_API_KEY,
     };
   } catch (error) {
     return { success: false, error };
