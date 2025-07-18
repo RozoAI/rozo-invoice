@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rozo Invoice
+
+A modern, crypto payment processing application built with NextJS and Rozo AI's intent-pay SDK.
+
+## Features
+
+- 💸 Seamless crypto payment processing
+- 🔗 Web3 integration with Wagmi
+- ⚡️ Fast development with HMR
+- 🔄 Data fetching with TanStack Query
+- 🎨 Beautiful UI with Tailwind CSS and Shadcn UI
+- 🔒 Type-safe with TypeScript
+- 🧩 Modular architecture with React Context
+
+## Tech Stack
+
+- **Frontend**: React 19 with NextJS 15
+- **Styling**: Tailwind CSS with Shadcn UI components
+- **State Management**: React Context
+- **Data Fetching**: TanStack Query
+- **Web3**: Wagmi and Viem
+- **Payment Processing**: Rozo AI's intent-pay SDK
+- **Type Safety**: TypeScript
+- **Code Quality**: Biome for linting and formatting
 
 ## Getting Started
 
-First, run the development server:
+### Installation
+
+Install the dependencies using pnpm:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Start the development server with HMR:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm run dev
+```
 
-## Learn More
+Your application will be available at `http://localhost:3000`.
 
-To learn more about Next.js, take a look at the following resources:
+### Linting
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Lint and format your code with Biome:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm run lint
+```
 
-## Deploy on Vercel
+## Building for Production
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Build the application for production:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm run build
+```
+
+Start the production server:
+
+```bash
+pnpm run start
+```
+
+## Styling
+
+This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+
+## Deep Link
+
+---
+
+Built with ❤️ using NextJS.

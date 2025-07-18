@@ -4,6 +4,7 @@ import "./globals.css";
 import { Web3Provider } from "@/providers/web3-provider";
 import { Toaster } from "@/components/ui/sonner";
 import Footer from "@/components/footer";
+import { ThemeProvider } from "next-themes";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,11 +31,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <main className="flex min-h-screen flex-col justify-between gap-4 md:min-h-screen md:items-center md:justify-center py-4">
-          <Web3Provider>{children}</Web3Provider>
-          <Toaster position="top-center" />
-          <Footer />
-        </main>
+        <ThemeProvider forcedTheme="light">
+          <main className="flex min-h-screen flex-col justify-between gap-4 md:min-h-screen md:items-center md:justify-center py-4">
+            <Web3Provider>{children}</Web3Provider>
+            <Toaster position="top-center" />
+            <Footer />
+          </main>
+        </ThemeProvider>
       </body>
     </html>
   );
