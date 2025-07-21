@@ -9,20 +9,29 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { parseQRCode } from "@/lib/deeplink";
-import type { EIP681Transfer } from "@/lib/deeplink/types";
 import { RozoPayButton } from "@rozoai/intent-pay";
 import { type IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
 import { Loader2, ScanLine, Wallet } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { getAddress } from "viem";
 
 interface ScanQRButtonProps {
   appId: string;
 }
 
+type ParsedTransfer = {
+  isStellar: boolean;
+  toAddress: string;
+  toStellarAddress?: string;
+  toChain: number;
+  toUnits: string | null;
+  toToken: string | null;
+};
+
 export function ScanQRButton({ appId }: ScanQRButtonProps) {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [parsedTransfer, setParsedTransfer] = useState<EIP681Transfer | null>(
+  const [parsedTransfer, setParsedTransfer] = useState<ParsedTransfer | null>(
     null
   );
   const [isLoading, setIsLoading] = useState(false);
@@ -34,24 +43,36 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
     if (!result) return;
 
     const parsed = parseQRCode(result);
-    setIsScannerOpen(false); // always close after parsing
+    setIsScannerOpen(false);
 
     switch (parsed.type) {
       case "website": {
-        window.open(parsed.website, "_blank");
+        window.open(parsed.url, "_blank");
         break;
       }
 
-      case "eip681": {
-        if (parsed.transfer) {
-          setParsedTransfer(parsed.transfer);
+      case "ethereum": {
+        if (parsed.recipients?.length && parsed.asset?.contract) {
+          setParsedTransfer({
+            isStellar: false,
+            toAddress: getAddress(parsed.recipients[0].address),
+            toChain: parsed.chain_id ? Number(parsed.chain_id) : 0,
+            toUnits: parsed.amount || null,
+            toToken: getAddress(parsed.asset.contract),
+          });
         }
         break;
       }
 
       case "address": {
-        if (parsed.transfer) {
-          setParsedTransfer(parsed.transfer);
+        if (parsed.address && parsed.asset?.contract) {
+          setParsedTransfer({
+            isStellar: false,
+            toAddress: getAddress(parsed.address),
+            toChain: parsed.chain_id ? Number(parsed.chain_id) : 0,
+            toUnits: null,
+            toToken: getAddress(parsed.asset.contract),
+          });
 
           if (parsed.message) {
             toast.info(parsed.message);
@@ -60,9 +81,26 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
         break;
       }
 
-      case "solana":
-      case "stellar": {
+      case "solana": {
         toast.info(parsed.message || `${parsed.type} support coming soon.`);
+        break;
+      }
+      case "stellar": {
+        if (parsed.address) {
+          setParsedTransfer({
+            isStellar: true,
+            toAddress: parsed.address,
+            toStellarAddress: parsed.toStellarAddress,
+            toChain: parsed.chain_id ? Number(parsed.chain_id) : 0,
+            toUnits: null,
+            toToken: parsed.asset?.contract || null,
+          });
+        }
+
+        if (parsed.message) {
+          toast.info(parsed.message);
+        }
+
         break;
       }
       default: {
@@ -112,15 +150,17 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
 
       {parsedTransfer && (
         <RozoPayButton.Custom
-          key={`${parsedTransfer.chainId}-${parsedTransfer.recipient}-${parsedTransfer.contractAddress}`}
           defaultOpen
           appId={appId}
-          toAddress={parsedTransfer.recipient}
-          toChain={Number(parsedTransfer.chainId)}
-          {...(parsedTransfer.amount && {
-            toUnits: parsedTransfer.amount,
+          toAddress={parsedTransfer.toAddress as `0x${string}`}
+          toChain={parsedTransfer.toChain}
+          {...(parsedTransfer.isStellar && {
+            toStellarAddress: parsedTransfer.toStellarAddress,
           })}
-          toToken={parsedTransfer.contractAddress}
+          {...(parsedTransfer.toUnits && {
+            toUnits: parsedTransfer.toUnits,
+          })}
+          toToken={parsedTransfer.toToken as `0x${string}`}
           onPaymentStarted={() => {
             setIsLoading(true);
           }}

@@ -1,3 +1,5 @@
+import { baseUSDC } from "@rozoai/intent-common";
+import { StrKey } from "stellar-sdk";
 import { type StellarParseResult } from "./types";
 import { createTransactionMessage } from "./utils";
 
@@ -19,21 +21,20 @@ export function parseStellar(input: string): StellarParseResult | null {
   }
 
   // Handle plain Stellar address format
-  const stellarAddressRegex = /^G[A-Z2-7]{55}$/;
-  if (stellarAddressRegex.test(input)) {
-    return {
-      type: "stellar",
-      address: input,
-      message: "Stellar address",
-    };
+  if (!StrKey.isValidEd25519PublicKey(input)) {
+    return null;
   }
 
-  return null;
+  return {
+    type: "stellar",
+    address: input,
+    message: "Stellar address",
+  };
 }
 
 function parsePayOperation(params: URLSearchParams): StellarParseResult {
   // Extract destination (required for pay operation)
-  const destination = params.get("destination");
+  const destination = params.get("destination")?.trim();
   if (!destination) {
     return {
       type: "stellar",
@@ -42,9 +43,7 @@ function parsePayOperation(params: URLSearchParams): StellarParseResult {
     };
   }
 
-  // Validate destination format - Stellar addresses use base32 encoding (A-Z, 2-7)
-  const stellarAddressRegex = /^G[A-Z2-7]{55}$/;
-  if (!stellarAddressRegex.test(destination)) {
+  if (!StrKey.isValidEd25519PublicKey(destination)) {
     return {
       type: "stellar",
       operation: "pay",
@@ -57,19 +56,24 @@ function parsePayOperation(params: URLSearchParams): StellarParseResult {
   const result: StellarParseResult = {
     type: "stellar",
     operation: "pay",
-    address: destination,
+    address: "0x5772FBe7a7817ef7F586215CA8b23b8dD22C8897",
+    toStellarAddress: destination,
     message: "Stellar payment request",
+    chain_id: baseUSDC.chainId,
+    asset: {
+      contract: baseUSDC.token,
+    },
   };
 
   // Optional amount
-  const amount = params.get("amount");
+  const amount = params.get("amount")?.trim();
   if (amount) {
     result.amount = amount;
   }
 
   // Optional asset (asset_code and asset_issuer)
-  const assetCode = params.get("asset_code");
-  const assetIssuer = params.get("asset_issuer");
+  const assetCode = params.get("asset_code")?.trim();
+  const assetIssuer = params.get("asset_issuer")?.trim();
   if (assetCode && assetIssuer) {
     result.asset = {
       code: assetCode,
@@ -94,7 +98,7 @@ function parsePayOperation(params: URLSearchParams): StellarParseResult {
 
 function parseTxOperation(params: URLSearchParams): StellarParseResult {
   // Extract xdr (required for tx operation)
-  const xdr = params.get("xdr");
+  const xdr = params.get("xdr")?.trim();
   if (!xdr) {
     return {
       type: "stellar",
@@ -112,7 +116,7 @@ function parseTxOperation(params: URLSearchParams): StellarParseResult {
   };
 
   // Optional replace parameter (specific to tx operation)
-  const replace = params.get("replace");
+  const replace = params.get("replace")?.trim();
   if (replace) {
     result.replace = replace;
   }
@@ -137,43 +141,43 @@ function addCommonParameters(
   params: URLSearchParams
 ): void {
   // Optional memo
-  const memo = params.get("memo");
+  const memo = params.get("memo")?.trim();
   if (memo) {
     result.memo = memo;
   }
 
   // Optional memo_type
-  const memoType = params.get("memo_type");
+  const memoType = params.get("memo_type")?.trim();
   if (memoType) {
     result.memo_type = memoType;
   }
 
   // Optional callback URL
-  const callback = params.get("callback");
+  const callback = params.get("callback")?.trim();
   if (callback) {
     result.callback = callback;
   }
 
   // Optional message
-  const msg = params.get("msg");
+  const msg = params.get("msg")?.trim();
   if (msg) {
     result.msg = msg;
   }
 
   // Optional network passphrase
-  const networkPassphrase = params.get("network_passphrase");
+  const networkPassphrase = params.get("network_passphrase")?.trim();
   if (networkPassphrase) {
     result.network_passphrase = networkPassphrase;
   }
 
   // Optional origin domain
-  const originDomain = params.get("origin_domain");
+  const originDomain = params.get("origin_domain")?.trim();
   if (originDomain) {
     result.origin_domain = originDomain;
   }
 
   // Optional signature
-  const signature = params.get("signature");
+  const signature = params.get("signature")?.trim();
   if (signature) {
     result.signature = signature;
   }

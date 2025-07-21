@@ -17,8 +17,7 @@ export function formatAmount(
     return `${amount} ${asset.code}`;
   }
 
-  // Default native tokens
-  return `${amount} native`;
+  return `${amount}`;
 }
 
 // Helper function to create human-readable message

@@ -5,9 +5,10 @@ A universal QR code parser that supports multiple blockchain protocols and payme
 ## Overview
 
 The DeepLink parser automatically detects and parses QR codes for:
+
 - **Ethereum/EVM** addresses and EIP-681 payment requests
-- **Solana** addresses and payment requests
-- **Stellar** addresses and payment requests  
+- **Solana** addresses and Solana Pay requests
+- **Stellar** addresses and SEP-7 payment requests
 - **Website URLs**
 
 ## Quick Start
@@ -17,87 +18,145 @@ import { parseQRCode } from "@/lib/deeplink";
 
 // Parse any QR code string
 const result = parseQRCode(qrCodeString);
-console.log(result.type); // "eip681" | "address" | "solana" | "stellar" | "website" | "unknown"
+if (result) {
+  console.log(result.type); // "ethereum" | "address" | "solana" | "stellar" | "website"
+}
 ```
 
 ## Supported Formats
 
 ### Ethereum/EVM
-- **EIP-681 Payment Requests**: `ethereum:0x...@chainId/function?params`
-- **EVM Addresses**: `0x...` (automatically defaults to Base network USDC)
+
+- **EIP-681 Payment Requests**: `ethereum:<contract_address>@<chain_id>/<function_name>?<params>`
+- **EVM Addresses**: `0x...` (defaults to Base network for USDC payments)
 
 ### Solana
-- **Solana Pay**: `solana:address?params`
+
+- **Solana Pay**: `solana:<address>?<params>`
 - **Solana Addresses**: Base58 encoded addresses
 
 ### Stellar
-- **Stellar Pay**: `web+stellar:pay?params`
-- **Stellar Addresses**: G-prefixed addresses
+
+- **SEP-7 Payment URI**: `web+stellar:(pay|tx)?<params>`
+- **Stellar Addresses**: G-prefixed public keys
 
 ### Websites
+
 - **HTTP/HTTPS URLs**: Any valid web URL
 
 ## Return Types
 
+The `parseQRCode` function returns a `QRCodeData` object, which is a union of the following types:
+
 ```typescript
-interface QRCodeData {
-  type: "website" | "eip681" | "address" | "solana" | "stellar" | "unknown";
-  website?: string;           // For website URLs
-  transfer?: EIP681Transfer;  // For payment requests
-  address?: string;           // For blockchain addresses
-  chainId?: number;           // For EVM chains
-  message?: string;           // User-friendly messages
+// The main union type for all parsing results
+export type QRCodeData =
+  | StellarParseResult
+  | EthereumParseResult
+  | SolanaParseResult
+  | WebsiteParseResult
+  | AddressParseResult;
+
+// Base interface for all blockchain-related results
+export interface BlockchainParseResult {
+  type: "stellar" | "ethereum" | "solana" | "address";
+  operation?: string;
+  address?: string;
+  amount?: string;
+  message: string;
+  asset?: {
+    code?: string;
+    issuer?: string;
+    contract?: string;
+    decimals?: number;
+    name?: string;
+  };
+  // ... and many other optional fields for different protocols
+}
+
+export interface WebsiteParseResult {
+  type: "website";
+  url: string;
 }
 ```
+
+For the full details of all fields, please refer to `lib/deeplink/types.ts`.
 
 ## Examples
 
 ```typescript
-// EIP-681 Payment Request
-parseQRCode("ethereum:0xA0b86a33E6441b8c4C8C1C1B8c4C8C1C1B8c4C8C@8453/transfer?address=0x123...&uint256=1000000")
-// Returns: { type: "eip681", transfer: { protocol: "ethereum", ... } }
+// EIP-681 Payment Request for USDC on Base
+parseQRCode(
+  "ethereum:0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913@8453/transfer?address=0xRecipient&uint256=1000000"
+);
+// Returns:
+// {
+//   type: "ethereum",
+//   operation: "transfer",
+//   asset: { contract: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" },
+//   chain_id: 8453,
+//   recipients: [ { address: "0xRecipient", amount: "1000000" } ],
+//   message: "Ethereum transfer"
+// }
 
 // EVM Address
-parseQRCode("0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6")
-// Returns: { type: "address", transfer: { protocol: "ethereum", chainId: 8453, ... } }
+parseQRCode("0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6");
+// Returns:
+// {
+//   type: "address",
+//   address: "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
+//   operation: "transfer",
+//   chain_id: 8453,
+//   asset: { contract: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" },
+//   message: "Detected EVM address. Please make sure you are sending to Base."
+// }
 
 // Website
-parseQRCode("https://rozo.ai")
-// Returns: { type: "website", website: "https://rozo.ai" }
+parseQRCode("https://rozo.ai");
+// Returns: { type: "website", url: "https://rozo.ai" }
 
 // Solana Address
-parseQRCode("7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU")
+parseQRCode("7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU");
 // Returns: { type: "solana", address: "...", message: "Solana payment coming soon." }
+
+// Stellar Payment Request
+parseQRCode(
+  "web+stellar:pay?destination=GC...&amount=100&asset_code=USDC&asset_issuer=GA..."
+);
+// Returns: { type: "stellar", operation: "pay", ... }
 ```
 
 ## Architecture
 
-The parser uses a **chain of responsibility** pattern:
+The parser uses a **chain of responsibility** pattern, trying each parser in a specific order:
 
-1. **Website Parser**: Checks for HTTP/HTTPS URLs first
-2. **Ethereum Parser**: Handles EIP-681 and EVM addresses
-3. **Solana Parser**: Detects Solana Pay and addresses
-4. **Stellar Parser**: Handles Stellar Pay and addresses
-5. **Fallback**: Returns `{ type: "unknown" }` if no parser matches
+1.  **Website Parser**: Checks for `http://` or `https://` prefixes.
+2.  **Address Parser**: Checks for standalone EVM addresses (`0x...`).
+3.  **Ethereum Parser**: Handles EIP-681 URIs (`ethereum:...`).
+4.  **Solana Parser**: Detects Solana Pay URIs (`solana:...`) and standalone addresses.
+5.  **Stellar Parser**: Handles SEP-7 URIs (`web+stellar:...`) and standalone addresses.
+
+If no parser can handle the input, it returns `null`.
 
 ## Adding New Protocols
 
 To add support for a new blockchain:
 
-1. Create a new parser file (e.g., `bitcoin.ts`)
-2. Export a `parseBitcoin(input: string): QRCodeData | null` function
-3. Add it to the parsers array in `index.ts`
-4. Update the `QRCodeType` in `types.ts`
+1. Create a new parser file (e.g., `bitcoin.ts`).
+2. Implement and export a `parseBitcoin(input: string): QRCodeData | null` function.
+3. Add your new parser to the `parsers` array in `lib/deeplink/index.ts`.
+4. Add your new result type to the `QRCodeData` union in `lib/deeplink/types.ts`.
 
 ```typescript
 // Example: Adding Bitcoin support
 export function parseBitcoin(input: string): QRCodeData | null {
   const bitcoinRegex = /^bitcoin:([13][a-km-zA-HJ-NP-Z1-9]{25,34})/;
-  if (bitcoinRegex.test(input)) {
+  const match = input.match(bitcoinRegex);
+  if (match) {
     return {
       type: "bitcoin",
-      address: input,
-      message: "Bitcoin payment coming soon."
+      address: match[1],
+      message: "Bitcoin payment coming soon.",
     };
   }
   return null;
@@ -106,9 +165,9 @@ export function parseBitcoin(input: string): QRCodeData | null {
 
 ## Error Handling
 
-- Invalid formats return `null` from individual parsers
-- Unrecognized inputs return `{ type: "unknown" }`
-- All parsers are safe and won't throw exceptions
+- Invalid formats return `null` from individual parsers.
+- The top-level `parseQRCode` function will throw an error if no parser matches. This behavior might be updated to return `null` in the future for consistency.
+- All parsers are designed to be safe and avoid throwing exceptions themselves.
 
 ## Usage in Components
 
@@ -117,20 +176,23 @@ import { parseQRCode } from "@/lib/deeplink";
 
 function QRScanner() {
   const handleQRCode = (qrData: string) => {
-    const parsed = parseQRCode(qrData);
-    
-    switch (parsed.type) {
-      case "eip681":
-        // Handle Ethereum payment
-        break;
-      case "website":
-        // Open website
-        window.open(parsed.website);
-        break;
-      case "unknown":
-        // Show error message
-        break;
+    try {
+      const parsed = parseQRCode(qrData);
+
+      switch (parsed.type) {
+        case "ethereum":
+          // Handle Ethereum payment
+          break;
+        case "website":
+          // Open website
+          window.open(parsed.url);
+          break;
+        // ... handle other cases
+      }
+    } catch (error) {
+      console.error("Failed to parse QR code:", error);
+      // Show an error message to the user
     }
   };
 }
-``` 
+```

@@ -1,32 +1,6 @@
-export interface EIP681Transfer {
-  protocol: "ethereum" | "solana" | "stellar";
-  contractAddress: `0x${string}`;
-  recipient: `0x${string}`;
-  chainId?: number;
-  functionName?: string;
-  amount?: string;
-}
-
-export type QRCodeType =
-  | "website"
-  | "eip681"
-  | "address"
-  | "solana"
-  | "stellar"
-  | "unknown";
-
-// export interface QRCodeData {
-// 	type: QRCodeType;
-// 	website?: string;
-// 	transfer?: EIP681Transfer;
-// 	address?: string;
-// 	chainId?: number;
-// 	message?: string;
-// }
-
 // Base interface for all blockchain parsing results
 export interface BlockchainParseResult {
-  type: "stellar" | "ethereum" | "solana";
+  type: "stellar" | "ethereum" | "solana" | "address";
   operation?: string; // e.g., "pay", "tx", "transfer", "swap", etc.
   address?: string; // Primary address (destination, recipient, etc.)
   amount?: string; // Transaction amount
@@ -90,15 +64,24 @@ export interface BlockchainParseResult {
   extra_params?: Record<string, string>;
 }
 
-// Specific result types for each blockchain
+export interface WebsiteParseResult {
+  type: "website";
+  url: string;
+}
+
+export interface AddressParseResult extends BlockchainParseResult {
+  type: "address";
+}
+
 export interface StellarParseResult extends BlockchainParseResult {
   type: "stellar";
   operation?: "pay" | "tx";
+  toStellarAddress?: string;
 }
 
 export interface EthereumParseResult extends BlockchainParseResult {
   type: "ethereum";
-  operation?: "transfer" | "transaction" | "contract_call";
+  operation?: "transfer" | "transaction" | "contract_call" | string;
 }
 
 export interface SolanaParseResult extends BlockchainParseResult {
@@ -110,4 +93,6 @@ export interface SolanaParseResult extends BlockchainParseResult {
 export type QRCodeData =
   | StellarParseResult
   | EthereumParseResult
-  | SolanaParseResult;
+  | SolanaParseResult
+  | WebsiteParseResult
+  | AddressParseResult;
