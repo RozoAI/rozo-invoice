@@ -14,10 +14,10 @@ The DeepLink parser automatically detects and parses QR codes for:
 ## Quick Start
 
 ```typescript
-import { parseQRCode } from "@/lib/deeplink";
+import { parseDeeplink } from "@/lib/deeplink";
 
 // Parse any QR code string
-const result = parseQRCode(qrCodeString);
+const result = parseDeeplink(qrCodeString);
 if (result) {
   console.log(result.type); // "ethereum" | "address" | "solana" | "stellar" | "website"
 }
@@ -46,11 +46,11 @@ if (result) {
 
 ## Return Types
 
-The `parseQRCode` function returns a `QRCodeData` object, which is a union of the following types:
+The `parseDeeplink` function returns a `DeeplinkData` object, which is a union of the following types:
 
 ```typescript
 // The main union type for all parsing results
-export type QRCodeData =
+export type DeeplinkData =
   | StellarParseResult
   | EthereumParseResult
   | SolanaParseResult
@@ -86,7 +86,7 @@ For the full details of all fields, please refer to `lib/deeplink/types.ts`.
 
 ```typescript
 // EIP-681 Payment Request for USDC on Base
-parseQRCode(
+parseDeeplink(
   "ethereum:0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913@8453/transfer?address=0xRecipient&uint256=1000000"
 );
 // Returns:
@@ -100,7 +100,7 @@ parseQRCode(
 // }
 
 // EVM Address
-parseQRCode("0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6");
+parseDeeplink("0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6");
 // Returns:
 // {
 //   type: "address",
@@ -112,15 +112,15 @@ parseQRCode("0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6");
 // }
 
 // Website
-parseQRCode("https://rozo.ai");
+parseDeeplink("https://rozo.ai");
 // Returns: { type: "website", url: "https://rozo.ai" }
 
 // Solana Address
-parseQRCode("7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU");
+parseDeeplink("7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU");
 // Returns: { type: "solana", address: "...", message: "Solana payment coming soon." }
 
 // Stellar Payment Request
-parseQRCode(
+parseDeeplink(
   "web+stellar:pay?destination=GC...&amount=100&asset_code=USDC&asset_issuer=GA..."
 );
 // Returns: { type: "stellar", operation: "pay", ... }
@@ -143,13 +143,13 @@ If no parser can handle the input, it returns `null`.
 To add support for a new blockchain:
 
 1. Create a new parser file (e.g., `bitcoin.ts`).
-2. Implement and export a `parseBitcoin(input: string): QRCodeData | null` function.
+2. Implement and export a `parseBitcoin(input: string): DeeplinkData | null` function.
 3. Add your new parser to the `parsers` array in `lib/deeplink/index.ts`.
-4. Add your new result type to the `QRCodeData` union in `lib/deeplink/types.ts`.
+4. Add your new result type to the `DeeplinkData` union in `lib/deeplink/types.ts`.
 
 ```typescript
 // Example: Adding Bitcoin support
-export function parseBitcoin(input: string): QRCodeData | null {
+export function parseBitcoin(input: string): DeeplinkData | null {
   const bitcoinRegex = /^bitcoin:([13][a-km-zA-HJ-NP-Z1-9]{25,34})/;
   const match = input.match(bitcoinRegex);
   if (match) {
@@ -166,18 +166,18 @@ export function parseBitcoin(input: string): QRCodeData | null {
 ## Error Handling
 
 - Invalid formats return `null` from individual parsers.
-- The top-level `parseQRCode` function will throw an error if no parser matches. This behavior might be updated to return `null` in the future for consistency.
+- The top-level `parseDeeplink` function will throw an error if no parser matches. This behavior might be updated to return `null` in the future for consistency.
 - All parsers are designed to be safe and avoid throwing exceptions themselves.
 
 ## Usage in Components
 
 ```typescript
-import { parseQRCode } from "@/lib/deeplink";
+import { parseDeeplink } from "@/lib/deeplink";
 
 function QRScanner() {
   const handleQRCode = (qrData: string) => {
     try {
-      const parsed = parseQRCode(qrData);
+      const parsed = parseDeeplink(qrData);
 
       switch (parsed.type) {
         case "ethereum":

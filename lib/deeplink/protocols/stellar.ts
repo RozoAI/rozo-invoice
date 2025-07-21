@@ -1,7 +1,7 @@
 import { baseUSDC } from "@rozoai/intent-common";
 import { StrKey } from "stellar-sdk";
-import { type StellarParseResult } from "./types";
-import { createTransactionMessage } from "./utils";
+import { type StellarParseResult } from "../types";
+import { createTransactionMessage } from "../utils";
 
 export function parseStellar(input: string): StellarParseResult | null {
   // Handle SEP-0007 payment URI format - both pay and tx operations

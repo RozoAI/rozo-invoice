@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "prepare": "lefthook install",
-    "test:deeplink": "vitest run lib/deeplink/*.test.ts"
+    "test:deeplink": "vitest run lib/deeplink/*/**.test.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

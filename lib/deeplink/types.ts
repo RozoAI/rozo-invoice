@@ -90,7 +90,7 @@ export interface SolanaParseResult extends BlockchainParseResult {
 }
 
 // Union type for all possible results
-export type QRCodeData =
+export type DeeplinkData =
   | StellarParseResult
   | EthereumParseResult
   | SolanaParseResult

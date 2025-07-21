@@ -8,7 +8,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { parseQRCode } from "@/lib/deeplink";
+import { parseDeeplink } from "@/lib/deeplink";
 import { RozoPayButton } from "@rozoai/intent-pay";
 import { type IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
 import { Loader2, ScanLine, Wallet } from "lucide-react";
@@ -42,7 +42,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
     const result = detectedCodes[0].rawValue;
     if (!result) return;
 
-    const parsed = parseQRCode(result);
+    const parsed = parseDeeplink(result);
     setIsScannerOpen(false);
 
     switch (parsed.type) {

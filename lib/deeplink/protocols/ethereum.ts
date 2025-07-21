@@ -1,8 +1,8 @@
 import { baseUSDC } from "@rozoai/intent-common";
 import { getAddress } from "viem";
-import type { QRCodeData } from "./types";
+import type { DeeplinkData } from "../types";
 
-export function parseEthereum(input: string): QRCodeData | null {
+export function parseEthereum(input: string): DeeplinkData | null {
   const transferRegex =
     /^ethereum:(0x[a-fA-F0-9]{40})(?:@(\d+))?\/(\w+)\?(.+)$/;
   const match = input.match(transferRegex);

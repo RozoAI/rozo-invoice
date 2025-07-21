@@ -1,16 +1,16 @@
-import { parseAddress } from "./address";
-import { parseEthereum } from "./ethereum";
-import { parseSolana } from "./solana";
-import { parseStellar } from "./stellar";
-import type { QRCodeData } from "./types";
-import { parseWebsite } from "./website";
+import { parseAddress } from "./handlers/address";
+import { parseWebsite } from "./handlers/website";
+import { parseEthereum } from "./protocols/ethereum";
+import { parseSolana } from "./protocols/solana";
+import { parseStellar } from "./protocols/stellar";
+import type { DeeplinkData } from "./types";
 
-interface QRCodeParser {
+interface DeeplinkParser {
   name: string;
-  parse: (input: string) => QRCodeData | null;
+  parse: (input: string) => DeeplinkData | null;
 }
 
-const parsers: QRCodeParser[] = [
+const parsers: DeeplinkParser[] = [
   { name: "website", parse: parseWebsite },
   { name: "address", parse: parseAddress },
   { name: "ethereum", parse: parseEthereum },
@@ -18,11 +18,11 @@ const parsers: QRCodeParser[] = [
   { name: "stellar", parse: parseStellar },
 ];
 
-export function parseQRCode(input: string): QRCodeData {
+export function parseDeeplink(input: string): DeeplinkData {
   for (const parser of parsers) {
     const result = parser.parse(input);
     if (result) return result;
   }
 
-  throw new Error("Unknown QR code type");
+  throw new Error("Unknown deeplink format");
 }

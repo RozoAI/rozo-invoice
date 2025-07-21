@@ -1,6 +1,6 @@
-import type { QRCodeData } from "./types";
+import type { DeeplinkData } from "../types";
 
-export function parseWebsite(input: string): QRCodeData | null {
+export function parseWebsite(input: string): DeeplinkData | null {
   if (input.startsWith("http://") || input.startsWith("https://")) {
     return {
       type: "website",

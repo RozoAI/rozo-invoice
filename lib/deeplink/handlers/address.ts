@@ -1,8 +1,8 @@
 import { baseUSDC } from "@rozoai/intent-common";
 import { getAddress } from "viem";
-import type { QRCodeData } from "./types";
+import type { DeeplinkData } from "../types";
 
-export function parseAddress(input: string): QRCodeData | null {
+export function parseAddress(input: string): DeeplinkData | null {
   if (getAddress(input)) {
     return {
       type: "address",
