@@ -82,9 +82,10 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
       }
 
       case "solana": {
-        toast.info(parsed.message || `${parsed.type} support coming soon.`);
+        toast.info(`${parsed.type} support coming soon.`);
         break;
       }
+
       case "stellar": {
         if (parsed.address) {
           setParsedTransfer({

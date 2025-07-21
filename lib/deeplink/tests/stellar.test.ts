@@ -3,19 +3,20 @@ import { parseStellar } from "../protocols/stellar";
 import type { StellarParseResult } from "../types";
 
 describe("Stellar Parser", () => {
+  const stellarAddress =
+    "GC65CUPW2IMTJJY6CII7F3OBPVG4YGASEPBBLM4V3LBKX62P6LA24OFV";
+
   describe("Pay Operation", () => {
     const baseExpect = {
       type: "stellar",
       operation: "pay",
       address: "0x5772FBe7a7817ef7F586215CA8b23b8dD22C8897",
-      toStellarAddress:
-        "GC65CUPW2IMTJJY6CII7F3OBPVG4YGASEPBBLM4V3LBKX62P6LA24OFV",
+      toStellarAddress: stellarAddress,
       chain_id: 8453,
     };
 
     it("should parse simple XLM payment", () => {
-      const input =
-        "web+stellar:pay?destination=GC65CUPW2IMTJJY6CII7F3OBPVG4YGASEPBBLM4V3LBKX62P6LA24OFV&amount=120.5";
+      const input = `web+stellar:pay?destination=${stellarAddress}&amount=120.5`;
       const result = parseStellar(input) as StellarParseResult;
 
       expect(result).toEqual({
@@ -27,8 +28,7 @@ describe("Stellar Parser", () => {
     });
 
     it("should parse USD payment with asset issuer", () => {
-      const input =
-        "web+stellar:pay?destination=GC65CUPW2IMTJJY6CII7F3OBPVG4YGASEPBBLM4V3LBKX62P6LA24OFV&amount=100&asset_code=USD&asset_issuer=GDGU5OAPHNPU5UCLE5RDJHG7PXZFQYWKCFOEXSXNMR6KRQRI5T6XXCD7";
+      const input = `web+stellar:pay?destination=${stellarAddress}&amount=100&asset_code=USD&asset_issuer=GDGU5OAPHNPU5UCLE5RDJHG7PXZFQYWKCFOEXSXNMR6KRQRI5T6XXCD7`;
       const result = parseStellar(input) as StellarParseResult;
 
       expect(result).toEqual(
@@ -45,8 +45,7 @@ describe("Stellar Parser", () => {
     });
 
     it("should parse payment with memo and message", () => {
-      const input =
-        "web+stellar:pay?destination=GC65CUPW2IMTJJY6CII7F3OBPVG4YGASEPBBLM4V3LBKX62P6LA24OFV&amount=50&memo=Invoice%20%23123&memo_type=text&msg=Payment%20for%20services";
+      const input = `web+stellar:pay?destination=${stellarAddress}&amount=50&memo=Invoice%20%23123&memo_type=text&msg=Payment%20for%20services`;
       const result = parseStellar(input) as StellarParseResult;
 
       expect(result).toEqual(
@@ -60,8 +59,7 @@ describe("Stellar Parser", () => {
     });
 
     it("should parse payment with callback and network", () => {
-      const input =
-        "web+stellar:pay?destination=GC65CUPW2IMTJJY6CII7F3OBPVG4YGASEPBBLM4V3LBKX62P6LA24OFV&amount=25.75&callback=https%3A%2F%2Fexample.com%2Fcallback&network_passphrase=Test%20SDF%20Network%20%3B%20September%202015";
+      const input = `web+stellar:pay?destination=${stellarAddress}&amount=25.75&callback=https%3A%2F%2Fexample.com%2Fcallback&network_passphrase=Test%20SDF%20Network%20%3B%20September%202015`;
       const result = parseStellar(input) as StellarParseResult;
 
       expect(result).toEqual(
@@ -74,8 +72,7 @@ describe("Stellar Parser", () => {
     });
 
     it("should parse payment with all parameters", () => {
-      const input =
-        "web+stellar:pay?destination=GC65CUPW2IMTJJY6CII7F3OBPVG4YGASEPBBLM4V3LBKX62P6LA24OFV&amount=200&asset_code=USDC&asset_issuer=GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN&memo=12345&memo_type=id&callback=https%3A%2F%2Fwallet.example.com%2Fcallback&msg=Monthly%20subscription&network_passphrase=Public%20Global%20Stellar%20Network%20%3B%20September%202015&origin_domain=example.com&signature=abcd1234";
+      const input = `web+stellar:pay?destination=${stellarAddress}&amount=200&asset_code=USDC&asset_issuer=GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN&memo=12345&memo_type=id&callback=https%3A%2F%2Fwallet.example.com%2Fcallback&msg=Monthly%20subscription&network_passphrase=Public%20Global%20Stellar%20Network%20%3B%20September%202015&origin_domain=example.com&signature=abcd1234`;
       const result = parseStellar(input) as StellarParseResult;
 
       expect(result).toEqual(
@@ -120,8 +117,7 @@ describe("Stellar Parser", () => {
     });
 
     it("should handle extra parameters", () => {
-      const input =
-        "web+stellar:pay?destination=GC65CUPW2IMTJJY6CII7F3OBPVG4YGASEPBBLM4V3LBKX62P6LA24OFV&amount=100&custom_param=value&another_param=test";
+      const input = `web+stellar:pay?destination=${stellarAddress}&amount=100&custom_param=value&another_param=test`;
       const result = parseStellar(input) as StellarParseResult;
 
       expect(result.extra_params).toEqual({
@@ -133,8 +129,7 @@ describe("Stellar Parser", () => {
 
   describe("TX Operation", () => {
     it("should parse simple transaction", () => {
-      const input =
-        "web+stellar:tx?xdr=AAAAAB%2BLPp%2BwygWy7psQmHHxstTn4BaSJWFjCU%2BEuL9IbqCgAAAAZAAV%2FHwAAAABAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAA4fQXL%2BHr5%2BLq74jUGqFLjQjuZyRrQGtWgbRPKq1H6%2FsAAAABVVNEAAAAAACNlYd30HdCuLI54eyYjyX%2FpMCZdmkOjlvZmjFUJJKF7%2FZPzYAAAAAAAAAAAhqNgAAABAMUgfvpWY0v6qQGK6RqEVTRGc4vJHBzaYsRZcHLQYfTIqGEVWQKTOIm%2BVlMg%2FpSwcVGUqvCgK5nKTMzNs%2FVaF%2FPxAY%3D";
+      const input = `web+stellar:tx?xdr=AAAAAB%2BLPp%2BwygWy7psQmHHxstTn4BaSJWFjCU%2BEuL9IbqCgAAAAZAAV%2FHwAAAABAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAA4fQXL%2BHr5%2BLq74jUGqFLjQjuZyRrQGtWgbRPKq1H6%2FsAAAABVVNEAAAAAACNlYd30HdCuLI54eyYjyX%2FpMCZdmkOjlvZmjFUJJKF7%2FZPzYAAAAAAAAAAAhqNgAAABAMUgfvpWY0v6qQGK6RqEVTRGc4vJHBzaYsRZcHLQYfTIqGEVWQKTOIm%2BVlMg%2FpSwcVGUqvCgK5nKTMzNs%2FVaF%2FPxAY%3D`;
       const result = parseStellar(input) as StellarParseResult;
 
       expect(result).toEqual({
@@ -206,12 +201,12 @@ describe("Stellar Parser", () => {
 
   describe("Plain Address", () => {
     it("should parse plain Stellar address", () => {
-      const input = "GC65CUPW2IMTJJY6CII7F3OBPVG4YGASEPBBLM4V3LBKX62P6LA24OFV";
+      const input = stellarAddress;
       const result = parseStellar(input) as StellarParseResult;
 
       expect(result).toEqual({
         type: "stellar",
-        address: "GC65CUPW2IMTJJY6CII7F3OBPVG4YGASEPBBLM4V3LBKX62P6LA24OFV",
+        address: stellarAddress,
         message: "Stellar address",
       });
     });
