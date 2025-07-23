@@ -89,7 +89,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
       }
 
       case "stellar": {
-        if (parsed.address) {
+        if (parsed.address && parsed.toStellarAddress) {
           parsedData = {
             isStellar: true,
             toAddress: parsed.address,

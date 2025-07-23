@@ -4,14 +4,6 @@ import type { EthereumParseResult } from "../types";
 import { createTransactionMessage } from "../utils";
 
 export function parseEthereum(input: string): EthereumParseResult | null {
-  if (isAddress(input)) {
-    return {
-      type: "ethereum",
-      address: getAddress(input),
-      message: "Ethereum address",
-    };
-  }
-
   if (!input.startsWith("ethereum:")) {
     return null;
   }
@@ -35,6 +27,9 @@ export function parseEthereum(input: string): EthereumParseResult | null {
     address: getAddress(targetAddress),
     chain_id: chainIdStr ? Number.parseInt(chainIdStr, 10) : baseUSDC.chainId,
     message: "Ethereum request",
+    asset: {
+      contract: getAddress(baseUSDC.token),
+    },
   };
 
   if (functionName) {
