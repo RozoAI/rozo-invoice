@@ -45,6 +45,8 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
     const parsed = parseDeeplink(result);
     setIsScannerOpen(false);
 
+    let parsedData: ParsedTransfer | null = null;
+
     switch (parsed.type) {
       case "website": {
         window.open(parsed.url, "_blank");
@@ -53,26 +55,26 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
 
       case "ethereum": {
         if (parsed.recipients?.length && parsed.asset?.contract) {
-          setParsedTransfer({
+          parsedData = {
             isStellar: false,
             toAddress: getAddress(parsed.recipients[0].address),
             toChain: parsed.chain_id ? Number(parsed.chain_id) : 0,
             toUnits: parsed.amount || null,
             toToken: getAddress(parsed.asset.contract),
-          });
+          };
         }
         break;
       }
 
       case "address": {
         if (parsed.address && parsed.asset?.contract) {
-          setParsedTransfer({
+          parsedData = {
             isStellar: false,
             toAddress: getAddress(parsed.address),
             toChain: parsed.chain_id ? Number(parsed.chain_id) : 0,
             toUnits: null,
             toToken: getAddress(parsed.asset.contract),
-          });
+          };
 
           if (parsed.message) {
             toast.info(parsed.message);
@@ -88,14 +90,14 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
 
       case "stellar": {
         if (parsed.address) {
-          setParsedTransfer({
+          parsedData = {
             isStellar: true,
             toAddress: parsed.address,
             toStellarAddress: parsed.toStellarAddress,
             toChain: parsed.chain_id ? Number(parsed.chain_id) : 0,
             toUnits: null,
             toToken: parsed.asset?.contract || null,
-          });
+          };
         }
 
         if (parsed.message) {
@@ -109,6 +111,17 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
         break;
       }
     }
+
+    if (
+      !parsedData?.toToken ||
+      !parsedData?.toAddress ||
+      !parsedData?.toChain
+    ) {
+      toast.error("Invalid QR code");
+      return;
+    }
+
+    setParsedTransfer(parsedData);
   };
 
   const handleCancelPayment = () => {
