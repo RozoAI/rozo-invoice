@@ -1,3 +1,4 @@
+import { ROZO_MIDDLE_BASE_ADDRESS } from "@/lib/constants";
 import { baseUSDC } from "@rozoai/intent-common";
 import { StrKey } from "stellar-sdk";
 import { type StellarParseResult } from "../types";
@@ -60,7 +61,7 @@ function parsePayOperation(params: URLSearchParams): StellarParseResult {
   const result: StellarParseResult = {
     type: "stellar",
     operation: "pay",
-    address: "0x5772FBe7a7817ef7F586215CA8b23b8dD22C8897",
+    address: ROZO_MIDDLE_BASE_ADDRESS,
     toStellarAddress: destination,
     message: "Stellar payment request",
     chain_id: baseUSDC.chainId,

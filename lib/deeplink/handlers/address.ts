@@ -1,3 +1,4 @@
+import { ROZO_MIDDLE_BASE_ADDRESS } from "@/lib/constants";
 import { baseUSDC } from "@rozoai/intent-common";
 import { getAddress } from "viem";
 import { isValidSolanaAddress } from "../protocols/solana";
@@ -17,7 +18,7 @@ export function parseAddress(input: string): DeeplinkData | null {
     return {
       type: "stellar",
       toStellarAddress: input,
-      address: "0x5772FBe7a7817ef7F586215CA8b23b8dD22C8897",
+      address: ROZO_MIDDLE_BASE_ADDRESS,
       operation: "pay",
       chain_id: baseUSDC.chainId,
       asset: {

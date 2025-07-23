@@ -18,11 +18,11 @@ importers:
         specifier: ^1.2.3
         version: 1.2.3(@types/react@19.1.8)(react@19.1.0)
       '@rozoai/intent-common':
-        specifier: 0.0.16-beta.7
-        version: 0.0.16-beta.7(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+        specifier: 0.0.16-beta.8
+        version: 0.0.16-beta.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@rozoai/intent-pay':
-        specifier: 0.0.16-beta.7
-        version: 0.0.16-beta.7(4b9484aec5254e869d30b14e6e86e4af)
+        specifier: 0.0.16-beta.8
+        version: 0.0.16-beta.8(4b9484aec5254e869d30b14e6e86e4af)
       '@solana/web3.js':
         specifier: ^1.98.2
         version: 1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)
@@ -1508,11 +1508,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@rozoai/intent-common@0.0.16-beta.7':
-    resolution: {integrity: sha512-dYRzFf2zbwaovojoyNXTniILndLif48avWOHb+ekkGbRlDqJrXMlkL6AvPUeuN29iDN7RtqOULC9UQCVO7NH5A==}
+  '@rozoai/intent-common@0.0.16-beta.8':
+    resolution: {integrity: sha512-Q3GHOUOdIckNaaYPihaKOqEPB8BWUJMFL0PIy8VKqY/Ae3vt1ALY3bfSrMdaakQsZXZThjNS+tyAq8L9aIw0aA==}
 
-  '@rozoai/intent-pay@0.0.16-beta.7':
-    resolution: {integrity: sha512-d4zPTODRCzWNc2hHVuiFQdUS96fe5Kn2X4CbVuTuBCFNAznQ68EUWwU5N2tG5H34qe1RO5875F1UKmH2Fc9Asg==}
+  '@rozoai/intent-pay@0.0.16-beta.8':
+    resolution: {integrity: sha512-zofGlOVId4c9ZoVeDoZkqPAHURAsuhiGdnvcmaF0qLs/ch83uko9DRmMvXZadDoDuZLkl7cTttFhCnMzXZAgrQ==}
     engines: {node: '>=12.4'}
     peerDependencies:
       '@tanstack/react-query': '>=5.0.0'
@@ -8099,7 +8099,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.45.1':
     optional: true
 
-  '@rozoai/intent-common@0.0.16-beta.7(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+  '@rozoai/intent-common@0.0.16-beta.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@scure/base': 1.2.6
       viem: 2.32.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
@@ -8109,11 +8109,11 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@rozoai/intent-pay@0.0.16-beta.7(4b9484aec5254e869d30b14e6e86e4af)':
+  '@rozoai/intent-pay@0.0.16-beta.8(4b9484aec5254e869d30b14e6e86e4af)':
     dependencies:
       '@creit.tech/stellar-wallets-kit': 1.7.6(@react-native-async-storage/async-storage@1.24.0(react-native@0.80.1(@babel/core@7.28.0)(@types/react@19.1.8)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10)))(@stellar/stellar-base@13.1.0)(@stellar/stellar-sdk@13.3.0)(@trezor/connect@9.5.1(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-native@0.80.1(@babel/core@7.28.0)(@types/react@19.1.8)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(@types/react@19.1.8)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(near-api-js@5.1.1(encoding@0.1.13))(react-native@0.80.1(@babel/core@7.28.0)(@types/react@19.1.8)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       '@rollup/plugin-typescript': 12.1.4(rollup@4.45.1)(tslib@2.8.1)(typescript@5.8.3)
-      '@rozoai/intent-common': 0.0.16-beta.7(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@rozoai/intent-common': 0.0.16-beta.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@solana/wallet-adapter-base': 0.9.27(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10))
       '@solana/wallet-adapter-react': 0.15.39(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10))(bs58@5.0.0)(react-native@0.80.1(@babel/core@7.28.0)(@types/react@19.1.8)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)
       '@solana/web3.js': 1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)
