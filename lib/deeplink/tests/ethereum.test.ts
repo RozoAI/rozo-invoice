@@ -63,9 +63,9 @@ describe("Ethereum Parser", () => {
       expect(result).toEqual({
         type: "ethereum",
         operation: "transfer",
-        address: usdcContract,
+        address: anotherAddress,
         asset: { contract: usdcContract },
-        recipients: [{ address: anotherAddress, amount: "100.0e6" }],
+        amount: "100.0e6",
         chain_id: 8453,
         message: "Ethereum transfer for 100.0e6 TOKEN",
       });

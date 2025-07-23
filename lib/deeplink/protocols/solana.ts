@@ -31,7 +31,7 @@ export function parseSolana(input: string): SolanaParseResult | null {
   return null;
 }
 
-function isValidSolanaAddress(address: string): boolean {
+export function isValidSolanaAddress(address: string): boolean {
   try {
     const publicKey = new PublicKey(address);
     // While isOnCurve is a good check, some valid accounts are not on the curve.

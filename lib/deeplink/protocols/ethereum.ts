@@ -60,7 +60,8 @@ function parseContractCall(
 
     if (recipient && isAddress(recipient)) {
       result.asset = { contract: result.address };
-      result.recipients = [{ address: getAddress(recipient), amount }];
+      result.address = getAddress(recipient);
+      result.amount = amount;
       result.message = createTransactionMessage(
         "ethereum",
         "transfer",

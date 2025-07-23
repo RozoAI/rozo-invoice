@@ -53,19 +53,6 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
         break;
       }
 
-      case "ethereum": {
-        if (parsed.recipients?.length && parsed.asset?.contract) {
-          parsedData = {
-            isStellar: false,
-            toAddress: getAddress(parsed.recipients[0].address),
-            toChain: parsed.chain_id ? Number(parsed.chain_id) : 0,
-            toUnits: parsed.amount || null,
-            toToken: getAddress(parsed.asset.contract),
-          };
-        }
-        break;
-      }
-
       case "address": {
         if (parsed.address && parsed.asset?.contract) {
           parsedData = {
@@ -83,9 +70,22 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
         break;
       }
 
+      case "ethereum": {
+        if (parsed.address && parsed.asset?.contract) {
+          parsedData = {
+            isStellar: false,
+            toAddress: getAddress(parsed.address),
+            toChain: parsed.chain_id ? Number(parsed.chain_id) : 0,
+            toUnits: parsed.amount || null,
+            toToken: getAddress(parsed.asset.contract),
+          };
+        }
+        break;
+      }
+
       case "solana": {
         toast.info(`${parsed.type} support coming soon.`);
-        break;
+        return;
       }
 
       case "stellar": {

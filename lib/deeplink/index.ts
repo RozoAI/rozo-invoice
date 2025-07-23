@@ -24,5 +24,9 @@ export function parseDeeplink(input: string): DeeplinkData {
     if (result) return result;
   }
 
+  // Fallback to address parsing if no other protocol matches
+  const addressResult = parseAddress(input);
+  if (addressResult) return addressResult;
+
   throw new Error("Unknown deeplink format");
 }

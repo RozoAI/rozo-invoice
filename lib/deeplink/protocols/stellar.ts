@@ -32,6 +32,10 @@ export function parseStellar(input: string): StellarParseResult | null {
   };
 }
 
+export function isValidStellarAddress(address: string): boolean {
+  return StrKey.isValidEd25519PublicKey(address);
+}
+
 function parsePayOperation(params: URLSearchParams): StellarParseResult {
   // Extract destination (required for pay operation)
   const destination = params.get("destination")?.trim();
