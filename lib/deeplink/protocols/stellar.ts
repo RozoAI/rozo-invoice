@@ -81,6 +81,7 @@ function parsePayOperation(params: URLSearchParams): StellarParseResult {
   const assetIssuer = params.get("asset_issuer")?.trim();
   if (assetCode && assetIssuer) {
     result.asset = {
+      ...result.asset,
       code: assetCode,
       issuer: assetIssuer,
     };

@@ -95,7 +95,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
             toAddress: parsed.address,
             toStellarAddress: parsed.toStellarAddress,
             toChain: parsed.chain_id ? Number(parsed.chain_id) : 0,
-            toUnits: null,
+            toUnits: parsed.amount || null,
             toToken: parsed.asset?.contract || null,
           };
         }
