@@ -18,14 +18,17 @@ importers:
         specifier: ^1.2.3
         version: 1.2.3(@types/react@19.1.8)(react@19.1.0)
       '@rozoai/intent-common':
-        specifier: 0.0.16-beta.8
-        version: 0.0.16-beta.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+        specifier: 0.0.16-beta.10
+        version: 0.0.16-beta.10(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@rozoai/intent-pay':
-        specifier: 0.0.16-beta.8
-        version: 0.0.16-beta.8(4b9484aec5254e869d30b14e6e86e4af)
+        specifier: 0.0.16-beta.10
+        version: 0.0.16-beta.10(4b9484aec5254e869d30b14e6e86e4af)
       '@solana/web3.js':
         specifier: ^1.98.2
         version: 1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@stellar/stellar-sdk':
+        specifier: ^13.3.0
+        version: 13.3.0
       '@tanstack/react-query':
         specifier: ^5.83.0
         version: 5.83.0(react@19.1.0)
@@ -56,9 +59,6 @@ importers:
       sonner:
         specifier: ^2.0.6
         version: 2.0.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      stellar-sdk:
-        specifier: ^13.3.0
-        version: 13.3.0
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.3.1
@@ -1508,11 +1508,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@rozoai/intent-common@0.0.16-beta.8':
-    resolution: {integrity: sha512-Q3GHOUOdIckNaaYPihaKOqEPB8BWUJMFL0PIy8VKqY/Ae3vt1ALY3bfSrMdaakQsZXZThjNS+tyAq8L9aIw0aA==}
+  '@rozoai/intent-common@0.0.16-beta.10':
+    resolution: {integrity: sha512-Mlp0c9ZWdredeH5kBHYtgCOkTj2p2njfJmAZ/Ckps3IfB4RDokc+zfzGrsGX1sXWlNMhc88JzfMtMrI4Vk2rSw==}
 
-  '@rozoai/intent-pay@0.0.16-beta.8':
-    resolution: {integrity: sha512-zofGlOVId4c9ZoVeDoZkqPAHURAsuhiGdnvcmaF0qLs/ch83uko9DRmMvXZadDoDuZLkl7cTttFhCnMzXZAgrQ==}
+  '@rozoai/intent-pay@0.0.16-beta.10':
+    resolution: {integrity: sha512-uGFoP12F7F4uv/Bu/MxYYHTmp3zJumWrn0j3FvAKJM8z1yT+qqPPMkcXyvUWZWlgkYSrKinM3EI0fUWYMhuOBQ==}
     engines: {node: '>=12.4'}
     peerDependencies:
       '@tanstack/react-query': '>=5.0.0'
@@ -5546,11 +5546,6 @@ packages:
   std-env@3.9.0:
     resolution: {integrity: sha512-UGvjygr6F6tpH7o2qyqR6QYpwraIjKSdtzyBdyytFOHmPZY917kwdwLG0RbOjWOnKmnm3PeHjaoLLMie7kPLQw==}
 
-  stellar-sdk@13.3.0:
-    resolution: {integrity: sha512-jAA3+U7oAUueldoS4kuEhcym+DigElWq9isPxt7tjMrE7kTJ2vvY29waavUb2FSfQIWwGbuwAJTYddy2BeyJsw==}
-    engines: {node: '>=18.0.0'}
-    deprecated: ⚠️ This package has moved to @stellar/stellar-sdk! 🚚
-
   stop-iteration-iterator@1.1.0:
     resolution: {integrity: sha512-eLoXW/DHyl62zxY4SCaIgnRhuMr6ri4juEYARS8E6sCEqzKpOiE521Ucofdx+KnDZl5xmvGYaaKCk5FEOxJCoQ==}
     engines: {node: '>= 0.4'}
@@ -8099,7 +8094,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.45.1':
     optional: true
 
-  '@rozoai/intent-common@0.0.16-beta.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+  '@rozoai/intent-common@0.0.16-beta.10(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@scure/base': 1.2.6
       viem: 2.32.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
@@ -8109,11 +8104,11 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@rozoai/intent-pay@0.0.16-beta.8(4b9484aec5254e869d30b14e6e86e4af)':
+  '@rozoai/intent-pay@0.0.16-beta.10(4b9484aec5254e869d30b14e6e86e4af)':
     dependencies:
       '@creit.tech/stellar-wallets-kit': 1.7.6(@react-native-async-storage/async-storage@1.24.0(react-native@0.80.1(@babel/core@7.28.0)(@types/react@19.1.8)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10)))(@stellar/stellar-base@13.1.0)(@stellar/stellar-sdk@13.3.0)(@trezor/connect@9.5.1(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-native@0.80.1(@babel/core@7.28.0)(@types/react@19.1.8)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(@types/react@19.1.8)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(near-api-js@5.1.1(encoding@0.1.13))(react-native@0.80.1(@babel/core@7.28.0)(@types/react@19.1.8)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       '@rollup/plugin-typescript': 12.1.4(rollup@4.45.1)(tslib@2.8.1)(typescript@5.8.3)
-      '@rozoai/intent-common': 0.0.16-beta.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@rozoai/intent-common': 0.0.16-beta.10(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@solana/wallet-adapter-base': 0.9.27(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10))
       '@solana/wallet-adapter-react': 0.15.39(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10))(bs58@5.0.0)(react-native@0.80.1(@babel/core@7.28.0)(@types/react@19.1.8)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)
       '@solana/web3.js': 1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)
@@ -13778,19 +13773,6 @@ snapshots:
   statuses@2.0.1: {}
 
   std-env@3.9.0: {}
-
-  stellar-sdk@13.3.0:
-    dependencies:
-      '@stellar/stellar-base': 13.1.0
-      axios: 1.10.0
-      bignumber.js: 9.3.1
-      eventsource: 2.0.2
-      feaxios: 0.0.23
-      randombytes: 2.1.0
-      toml: 3.0.0
-      urijs: 1.19.11
-    transitivePeerDependencies:
-      - debug
 
   stop-iteration-iterator@1.1.0:
     dependencies:
