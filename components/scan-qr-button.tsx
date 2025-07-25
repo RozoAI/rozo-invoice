@@ -151,6 +151,16 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
                       console.error("Scanner error:", error);
                     }}
                     sound={false}
+                    components={{
+                      finder: false,
+                    }}
+                    styles={{
+                      container: {
+                        width: "300px",
+                        height: "300px",
+                        borderRadius: "10px",
+                      },
+                    }}
                   />
                 </div>
                 <p className="mt-4 text-center text-muted-foreground text-sm">
