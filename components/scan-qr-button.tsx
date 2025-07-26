@@ -15,12 +15,13 @@ import { Loader2, ScanLine, Wallet } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { getAddress } from "viem";
+import { TransactionDetails } from "./transaction-details";
 
 interface ScanQRButtonProps {
   appId: string;
 }
 
-type ParsedTransfer = {
+export type ParsedTransfer = {
   isStellar: boolean;
   toAddress: string;
   toStellarAddress?: string;
@@ -198,6 +199,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
         >
           {({ show }) => (
             <div className="m-auto flex w-full flex-col gap-2">
+              <TransactionDetails transfer={parsedTransfer} className="mb-4" />
               <Button
                 className="w-full py-8 text-lg"
                 size={"lg"}
