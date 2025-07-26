@@ -41,7 +41,11 @@ export function parseAddress(input: string): DeeplinkData | null {
           type: "ethereum",
           address: getAddress(address),
           operation: "transfer",
-          chain_id: chainSpec ? parseInt(chainSpec, 16) : baseUSDC.chainId,
+          chain_id: chainSpec
+            ? chainSpec.startsWith("0x")
+              ? parseInt(chainSpec, 16)
+              : parseInt(chainSpec, 10)
+            : baseUSDC.chainId,
           asset: {
             contract: getAddress(baseUSDC.token),
           },

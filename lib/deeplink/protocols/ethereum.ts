@@ -25,7 +25,11 @@ export function parseEthereum(input: string): EthereumParseResult | null {
   const result: EthereumParseResult = {
     type: "ethereum",
     address: getAddress(targetAddress),
-    chain_id: chainIdStr ? Number.parseInt(chainIdStr, 10) : baseUSDC.chainId,
+    chain_id: chainIdStr
+      ? chainIdStr.startsWith("0x")
+        ? parseInt(chainIdStr, 16)
+        : parseInt(chainIdStr, 10)
+      : baseUSDC.chainId,
     message: "Ethereum request",
     asset: {
       contract: getAddress(baseUSDC.token),

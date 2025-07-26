@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/drawer";
 import { parseDeeplink } from "@/lib/deeplink";
 import { RozoPayButton } from "@rozoai/intent-pay";
-import { type IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
+import { Scanner, type IDetectedBarcode } from "@yudiel/react-qr-scanner";
 import { Loader2, ScanLine, Wallet } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
