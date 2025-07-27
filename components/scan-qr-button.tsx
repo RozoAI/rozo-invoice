@@ -145,7 +145,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
             </DrawerHeader>
             <div className="p-4">
               <div className="mx-auto w-full max-w-sm">
-                <div className="h-80 w-full overflow-hidden rounded-lg border border-border">
+                <div className="w-full overflow-hidden rounded-lg">
                   <Scanner
                     onScan={handleScan}
                     onError={(error) => {
@@ -160,6 +160,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
                         width: "300px",
                         height: "300px",
                         borderRadius: "10px",
+                        margin: "auto",
                       },
                     }}
                   />
