@@ -28,6 +28,7 @@ export type ParsedTransfer = {
   toChain: number;
   toUnits: string | null;
   toToken: string | null;
+  message?: string;
 };
 
 export function ScanQRButton({ appId }: ScanQRButtonProps) {
@@ -62,6 +63,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
             toChain: parsed.chain_id ? Number(parsed.chain_id) : 0,
             toUnits: null,
             toToken: getAddress(parsed.asset.contract),
+            message: parsed.message,
           };
 
           if (parsed.message) {
@@ -79,6 +81,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
             toChain: parsed.chain_id ? Number(parsed.chain_id) : 0,
             toUnits: parsed.amount || null,
             toToken: getAddress(parsed.asset.contract),
+            message: parsed.message,
           };
         }
         break;
@@ -98,6 +101,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
             toChain: parsed.chain_id ? Number(parsed.chain_id) : 0,
             toUnits: parsed.amount || null,
             toToken: parsed.asset?.contract || null,
+            message: parsed.message,
           };
         }
 
@@ -200,7 +204,10 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
         >
           {({ show }) => (
             <div className="m-auto flex w-full flex-col gap-2">
-              <TransactionDetails transfer={parsedTransfer} className="mb-4" />
+              <TransactionDetails
+                transfer={parsedTransfer}
+                className="mb-4 border-0 p-0 shadow-none"
+              />
               <Button
                 className="w-full py-8 text-lg"
                 size={"lg"}
