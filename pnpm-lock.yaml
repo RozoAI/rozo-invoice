@@ -20,6 +20,12 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.2.3
         version: 1.2.3(@types/react@19.1.8)(react@19.1.0)
+      '@rozoai/deeplink-core':
+        specifier: ^1.0.2
+        version: 1.0.2(@types/debug@4.1.12)(@types/node@20.19.8)(bufferutil@4.0.9)(encoding@0.1.13)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@rozoai/deeplink-react':
+        specifier: ^1.0.0
+        version: 1.0.0(@types/emscripten@1.40.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@rozoai/intent-common':
         specifier: 0.0.16-beta.15
         version: 0.0.16-beta.15(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
@@ -111,9 +117,6 @@ importers:
       typescript:
         specifier: ^5
         version: 5.8.3
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@20.19.8)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)
 
 packages:
 
@@ -1527,6 +1530,18 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@rozoai/deeplink-core@1.0.0':
+    resolution: {integrity: sha512-ni3/qxs7Uyt1X7qKcXXmtzekkng/lIGCuivBeQM4CAMyM6yVfV3q2es4eZb80an4uI/YJWmzbI2FRZsnUqOdXw==}
+
+  '@rozoai/deeplink-core@1.0.2':
+    resolution: {integrity: sha512-Zwxuwj3DfZaAqxt+iuTAuwC83Rt9ZS+f33EZDwdVgd3E0Mmw9ySBF1UCZpGYH8Eb5NUP650kEf+2WR95ULe1AQ==}
+
+  '@rozoai/deeplink-react@1.0.0':
+    resolution: {integrity: sha512-yn0vcLE7IMt1g3PqH6HxW4xv0YCD2mIXxJ7wQsf/otbnsJjjcnak+jL/Pc0SE9Zw1Q/uM3DQMy0dyKe4eLuC3w==}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
+
   '@rozoai/intent-common@0.0.16-beta.15':
     resolution: {integrity: sha512-A2FBRLd4UUEy2YgTSLdldIl3v6323LXFbSvwLcFwBrAQaG6abLVfzcBqGu3hppG2c3i/mJ5b0PPFj3U8me6bSg==}
 
@@ -1989,9 +2004,15 @@ packages:
   '@stellar/js-xdr@3.1.2':
     resolution: {integrity: sha512-VVolPL5goVEIsvuGqDc5uiKxV03lzfWdvYg1KikvwheDmTBO68CKDji3bAZ/kppZrx5iTA8z3Ld5yuytcvhvOQ==}
 
+  '@stellar/stellar-base@12.1.1':
+    resolution: {integrity: sha512-gOBSOFDepihslcInlqnxKZdIW9dMUO1tpOm3AtJR33K2OvpXG6SaVHCzAmCFArcCqI9zXTEiSoh70T48TmiHJA==}
+
   '@stellar/stellar-base@13.1.0':
     resolution: {integrity: sha512-90EArG+eCCEzDGj3OJNoCtwpWDwxjv+rs/RNPhvg4bulpjN/CSRj+Ys/SalRcfM4/WRC5/qAfjzmJBAuquWhkA==}
     engines: {node: '>=18.0.0'}
+
+  '@stellar/stellar-sdk@12.3.0':
+    resolution: {integrity: sha512-F2DYFop/M5ffXF0lvV5Ezjk+VWNKg0QDX8gNhwehVU3y5LYA3WAY6VcCarMGPaG9Wdgoeh1IXXzOautpqpsltw==}
 
   '@stellar/stellar-sdk@13.3.0':
     resolution: {integrity: sha512-8+GHcZLp+mdin8gSjcgfb/Lb6sSMYRX6Nf/0LcSJxvjLQR0XHpjGzOiRbYb2jSXo51EnA6kAV5j+4Pzh5OUKUg==}
@@ -8138,6 +8159,53 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.45.1':
     optional: true
 
+  '@rozoai/deeplink-core@1.0.0':
+    dependencies:
+      query-string: 9.2.2
+
+  '@rozoai/deeplink-core@1.0.2(@types/debug@4.1.12)(@types/node@20.19.8)(bufferutil@4.0.9)(encoding@0.1.13)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
+    dependencies:
+      '@solana/web3.js': 1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@stellar/stellar-sdk': 12.3.0
+      query-string: 9.2.2
+      viem: 2.32.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@20.19.8)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)
+    transitivePeerDependencies:
+      - '@edge-runtime/vm'
+      - '@types/debug'
+      - '@types/node'
+      - '@vitest/browser'
+      - '@vitest/ui'
+      - bufferutil
+      - debug
+      - encoding
+      - happy-dom
+      - jiti
+      - jsdom
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - typescript
+      - utf-8-validate
+      - yaml
+      - zod
+
+  '@rozoai/deeplink-react@1.0.0(@types/emscripten@1.40.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@rozoai/deeplink-core': 1.0.0
+      '@yudiel/react-qr-scanner': 2.3.1(@types/emscripten@1.40.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+    transitivePeerDependencies:
+      - '@types/emscripten'
+
   '@rozoai/intent-common@0.0.16-beta.15(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@scure/base': 1.2.6
@@ -8908,6 +8976,17 @@ snapshots:
 
   '@stellar/js-xdr@3.1.2': {}
 
+  '@stellar/stellar-base@12.1.1':
+    dependencies:
+      '@stellar/js-xdr': 3.1.2
+      base32.js: 0.1.0
+      bignumber.js: 9.3.1
+      buffer: 6.0.3
+      sha.js: 2.4.12
+      tweetnacl: 1.0.3
+    optionalDependencies:
+      sodium-native: 4.3.3
+
   '@stellar/stellar-base@13.1.0':
     dependencies:
       '@stellar/js-xdr': 3.1.2
@@ -8918,6 +8997,18 @@ snapshots:
       tweetnacl: 1.0.3
     optionalDependencies:
       sodium-native: 4.3.3
+
+  '@stellar/stellar-sdk@12.3.0':
+    dependencies:
+      '@stellar/stellar-base': 12.1.1
+      axios: 1.10.0
+      bignumber.js: 9.3.1
+      eventsource: 2.0.2
+      randombytes: 2.1.0
+      toml: 3.0.0
+      urijs: 1.19.11
+    transitivePeerDependencies:
+      - debug
 
   '@stellar/stellar-sdk@13.3.0':
     dependencies:

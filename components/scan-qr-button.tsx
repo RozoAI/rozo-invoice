@@ -8,9 +8,9 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { parseDeeplink } from "@/lib/deeplink";
+import { type DeeplinkData } from "@rozoai/deeplink-core";
+import { ScanQr } from "@rozoai/deeplink-react";
 import { RozoPayButton } from "@rozoai/intent-pay";
-import { Scanner, type IDetectedBarcode } from "@yudiel/react-qr-scanner";
 import { Loader2, ScanLine, Wallet } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -38,15 +38,10 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
   );
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleScan = (detectedCodes: IDetectedBarcode[]) => {
-    if (detectedCodes.length === 0) return;
+  const handleScan = (parsed: DeeplinkData) => {
+    if (!parsed) return;
 
-    const result = detectedCodes[0].rawValue;
-    if (!result) return;
-
-    const parsed = parseDeeplink(result);
     setIsScannerOpen(false);
-
     let parsedData: ParsedTransfer | null = null;
 
     switch (parsed.type) {
@@ -133,6 +128,11 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
     window.location.reload();
   };
 
+  const handleScanError = (error: Error) => {
+    console.error("Scanner error:", error);
+    toast.error("Error scanning QR code");
+  };
+
   return (
     <>
       {!parsedTransfer && (
@@ -150,23 +150,10 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
             <div className="p-4">
               <div className="mx-auto w-full max-w-sm">
                 <div className="w-full overflow-hidden rounded-lg">
-                  <Scanner
+                  <ScanQr
                     onScan={handleScan}
-                    onError={(error) => {
-                      console.error("Scanner error:", error);
-                    }}
+                    onError={handleScanError}
                     sound={false}
-                    components={{
-                      finder: false,
-                    }}
-                    styles={{
-                      container: {
-                        width: "300px",
-                        height: "300px",
-                        borderRadius: "10px",
-                        margin: "auto",
-                      },
-                    }}
                   />
                 </div>
                 <p className="mt-4 text-center text-muted-foreground text-sm">
