@@ -117,7 +117,6 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
       !parsedData?.toAddress ||
       !parsedData?.toChain
     ) {
-      toast.error("Invalid QR code");
       return;
     }
 
@@ -154,6 +153,10 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
                     onScan={handleScan}
                     onError={handleScanError}
                     sound={false}
+                    components={{
+                      finder: false,
+                      torch: false,
+                    }}
                   />
                 </div>
                 <p className="mt-4 text-center text-muted-foreground text-sm">
