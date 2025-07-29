@@ -1,165 +1,129 @@
-"use client";
+import ReceiptContent from "@/components/payment/receipt-content";
+import { RozoPayOrderView } from "@rozoai/intent-common";
+import { redirect } from "next/navigation";
 
-import BoxedCard from "@/components/boxed-card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { ArrowDown, BadgeCheckIcon, ExternalLink, ShareIcon } from "lucide-react";
-import { useState } from "react";
+type LoaderData = {
+  success: boolean;
+  payment?: RozoPayOrderView;
+  source?: string;
+  error?: unknown;
+  theme?: string;
+};
 
-export default function Receipt() {
-  const [viewType, setViewType] = useState<'user' | 'merchant'>('user');
+// Helper function to fetch payment data from a specific API
+async function fetchPaymentFromAPI(
+  url: string,
+  headers: Record<string, string>
+): Promise<{ success: boolean; data?: RozoPayOrderView; error?: string }> {
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+    });
 
-  return (
-    <BoxedCard className="flex-1">
-      <CardContent className="flex flex-1 flex-col items-center gap-8 px-4 py-0 text-center">
-        <div className="p-1 bg-muted rounded-lg flex w-full max-w-[350px]">
-          <button
-            onClick={() => setViewType('user')}
-            className={cn(
-              "w-full rounded-md p-2 text-sm font-medium",
-              viewType === 'user' && 'bg-background shadow-sm'
-            )}
-          >
-            User
-          </button>
-          <button
-            onClick={() => setViewType('merchant')}
-            className={cn(
-              "w-full rounded-md p-2 text-sm font-medium",
-              viewType === 'merchant' && 'bg-background shadow-sm'
-            )}
-          >
-            Merchant
-          </button>
-        </div>
-        <div className="flex flex-col items-center border-b border-dashed pb-6 w-full">
-          <BadgeCheckIcon className="size-[90px] fill-[#0052FF] text-white" />
-          <div className="space-y-1 mt-2 ">
-            <h3 className="font-semibold  text-xl">
-              {viewType === 'user' ? 'Payment Completed' : 'Payment Received'}
-            </h3>
-            <span className="text-muted-foreground text-sm">
-              {viewType === 'user'
-                ? 'Your payment has been successfully done'
-                : 'A payment has been successfully received'}
-            </span>
-          </div>
+    if (!response.ok) {
+      return {
+        success: false,
+        error: `API request failed: ${response.status} ${response.statusText}`,
+      };
+    }
 
-          <div className="mt-6">
-            <span className="text-muted-foreground text-sm">
-              Total Payment
-            </span>
-            <h2 className="font-bold text-4xl">
-              20 USD
-            </h2>
-            <span className="text-muted-foreground text-xs">on Base &bull; Sent 20 minutes ago</span>
-          </div>
-        </div>
+    const data = (await response.json()) as RozoPayOrderView;
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
+}
 
-        <div className="flex flex-col w-full gap-4 max-w-[350px]">
-          {viewType === 'user' ? (
-            <>
-              {/* User View: Sender -> Recipient */}
-              <div className="flex flex-col gap-2">
-                <span className="text-muted-foreground text-sm font-medium text-left">Sender</span>
-                <div className="py-2 px-4 border rounded-lg bg-muted/30 flex items-center gap-4 w-full">
-                  <Avatar className="size-10 shadow bg-white p-2">
-                    <AvatarImage src="/" alt="Sender" />
-                    <AvatarFallback className="bg-transparent">S</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col text-left">
-                    <span className="font-semibold text-foreground">
-                      Molla <span className="text-muted-foreground font-normal">(You)</span>
-                    </span>
-                    <span className="text-muted-foreground text-sm">0x0Ac37f...4966</span>
-                  </div>
-                  <div className="ml-auto text-xs text-muted-foreground bg-muted border rounded-full px-2 py-0.5">
-                    Base
-                  </div>
-                </div>
-              </div>
+async function getPayment(id: string): Promise<LoaderData> {
+  if (!id) {
+    return { success: false, error: "Payment ID is required" };
+  }
 
-              <div className="flex size-8 items-center justify-center self-center">
-                <ArrowDown className="text-muted-foreground size-5" />
-              </div>
+  // Validate required environment variables
+  if (!process.env.ROZO_API_URL || !process.env.ROZO_API_KEY) {
+    return {
+      success: false,
+      error: "Rozo API configuration is missing",
+    };
+  }
 
-              <div className="flex flex-col gap-2 -mt-6">
-                <span className="text-muted-foreground text-sm font-medium text-left">Recipient</span>
-                <div className="py-2 px-4 border-2 rounded-lg bg-background flex items-center gap-4 w-full">
-                  <Avatar className="size-10 shadow bg-white p-2">
-                    <AvatarImage src="/" alt="Rozo Pay" />
-                    <AvatarFallback className="bg-transparent">RP</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col text-left">
-                    <span className="font-semibold text-foreground">Rozo Pay</span>
-                    <span className="text-muted-foreground text-sm">0x0Ac37f...4966</span>
-                  </div>
-                  <div className="ml-auto text-xs text-muted-foreground bg-muted border rounded-full px-2 py-0.5">
-                    Stellar
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Merchant View: Recipient -> Sender */}
-              <div className="flex flex-col gap-2">
-                <span className="text-muted-foreground text-sm font-medium text-left">Recipient</span>
-                <div className="py-2 px-4 border-2 rounded-lg bg-background flex items-center gap-4 w-full">
-                  <Avatar className="size-10 shadow bg-white p-2">
-                    <AvatarImage src="/" alt="Rozo Pay" />
-                    <AvatarFallback className="bg-transparent">RP</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col text-left">
-                    <span className="font-semibold text-foreground">
-                      Rozo Pay <span className="text-muted-foreground font-normal">(You)</span>
-                    </span>
-                    <span className="text-muted-foreground text-sm">0x0Ac37f...4966</span>
-                  </div>
-                  <div className="ml-auto text-xs text-muted-foreground bg-muted border rounded-full px-2 py-0.5">
-                    Stellar
-                  </div>
-                </div>
-              </div>
+  if (!process.env.DAIMO_API_URL || !process.env.DAIMO_API_KEY) {
+    return {
+      success: false,
+      error: "Daimo API configuration is missing",
+    };
+  }
 
-              <div className="flex size-8 items-center justify-center self-center">
-                <ArrowDown className="text-muted-foreground size-5" />
-              </div>
+  try {
+    // Try Rozo API first
+    const rozoResult = await fetchPaymentFromAPI(
+      `${process.env.ROZO_API_URL}/payment-api/external-id/${id}`,
+      { Authorization: `Bearer ${process.env.ROZO_API_KEY}` }
+    );
 
-              <div className="flex flex-col gap-2 -mt-6">
-                <span className="text-muted-foreground text-sm font-medium text-left">Sender</span>
-                <div className="py-2 px-4 border rounded-lg bg-muted/30 flex items-center gap-4 w-full">
-                  <Avatar className="size-10 shadow bg-white p-2">
-                    <AvatarImage src="/" alt="Sender" />
-                    <AvatarFallback className="bg-transparent">S</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col text-left">
-                    <span className="font-semibold text-foreground">Molla</span>
-                    <span className="text-muted-foreground text-sm">0x0Ac37f...4966</span>
-                  </div>
-                  <div className="ml-auto text-xs text-muted-foreground bg-muted border rounded-full px-2 py-0.5">
-                    Base
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+    console.log("rozoResult", rozoResult);
 
-        <div className="flex flex-col w-full gap-2 max-w-[350px]">
-          <Button className="w-full rounded-lg h-10 text-base" size="lg">
-            <ShareIcon className="size-4 mr-2" />
-            Share Receipt
-          </Button>
+    if (rozoResult.success && rozoResult.data) {
+      return {
+        success: true,
+        payment: rozoResult.data,
+        source: "rozo",
+      };
+    }
 
-          <Button variant="ghost" className="w-full rounded-lg" size="sm">
-            <ExternalLink size={14} className="mr-2" />
-            View on Explorer
-          </Button>
-        </div>
-      </CardContent>
-    </BoxedCard>
-  );
+    // Fallback to Daimo API if Rozo API fails
+    console.warn(
+      "Rozo API failed, falling back to Daimo API:",
+      rozoResult.error
+    );
+
+    const daimoResult = await fetchPaymentFromAPI(
+      `${process.env.DAIMO_API_URL}/payment/${id}`,
+      { "Api-Key": process.env.DAIMO_API_KEY }
+    );
+
+    console.log("daimoResult", daimoResult);
+
+    if (daimoResult.success && daimoResult.data) {
+      return {
+        success: true,
+        payment: daimoResult.data,
+        source: "daimo",
+      };
+    }
+
+    // Both APIs failed
+    return {
+      success: false,
+      error: `Payment not found. Rozo API: ${rozoResult.error}, Daimo API: ${daimoResult.error}`,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Unexpected error occurred",
+    };
+  }
+}
+
+export default async function Receipt({
+  searchParams,
+}: {
+  searchParams: Promise<{ id?: string }>;
+}) {
+  const { id } = await searchParams;
+  const loaderData = await getPayment(id || "");
+
+  if (!loaderData.success) {
+    return redirect("/error");
+  }
+
+  return <ReceiptContent payment={loaderData.payment!} />;
 }
