@@ -65,6 +65,7 @@ export function PaymentContent({
           toChain={Number(payment.destination.chainId)}
           toUnits={payment.destination.amountUnits}
           toToken={payment.destination.tokenAddress as `0x${string}`}
+          externalId={payment.externalId ?? undefined}
           onPaymentStarted={() => {
             setIsLoading(true);
           }}

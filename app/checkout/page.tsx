@@ -1,5 +1,6 @@
 import CheckoutContent from "@/components/payment/checkout-content";
 import type { RozoPayOrderView } from "@rozoai/intent-common";
+import { redirect } from "next/navigation";
 import type { ReactElement } from "react";
 
 type LoaderData = {
@@ -52,6 +53,10 @@ export default async function Checkout({
 }): Promise<ReactElement> {
   const { id } = await searchParams;
   const loaderData = await getPayment(id || "");
+
+  if (!loaderData.success) {
+    return redirect("/error");
+  }
 
   return <CheckoutContent loaderData={loaderData} />;
 }
