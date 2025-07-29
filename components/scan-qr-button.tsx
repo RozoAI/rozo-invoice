@@ -10,8 +10,10 @@ import {
 } from "@/components/ui/drawer";
 import { type DeeplinkData } from "@rozoai/deeplink-core";
 import { ScanQr } from "@rozoai/deeplink-react";
+import { PaymentCompletedEvent } from "@rozoai/intent-common";
 import { RozoPayButton } from "@rozoai/intent-pay";
 import { Loader2, ScanLine, Wallet } from "lucide-react";
+import { redirect } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { getAddress } from "viem";
@@ -171,6 +173,8 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
       {parsedTransfer && (
         <RozoPayButton.Custom
           defaultOpen
+          closeOnSuccess
+          resetOnSuccess
           appId={appId}
           toAddress={parsedTransfer.toAddress as `0x${string}`}
           toChain={parsedTransfer.toChain}
@@ -187,9 +191,12 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
           onPaymentBounced={() => {
             setIsLoading(false);
           }}
-          onPaymentCompleted={() => {
+          onPaymentCompleted={(args: PaymentCompletedEvent) => {
             setIsLoading(false);
             setParsedTransfer(null);
+            redirect(
+              `/receipt?id=${args.payment.externalId ?? args.paymentId}`
+            );
           }}
         >
           {({ show }) => (
