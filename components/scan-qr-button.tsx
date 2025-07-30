@@ -48,7 +48,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
 
     switch (parsed.type) {
       case "website": {
-        window.open(parsed.url, "_blank");
+        window.location.href = parsed.url;
         break;
       }
 
