@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/drawer";
 import { type DeeplinkData } from "@rozoai/deeplink-core";
 import { ScanQr } from "@rozoai/deeplink-react";
-import { PaymentCompletedEvent } from "@rozoai/intent-common";
+import { PaymentCompletedEvent, baseUSDC } from "@rozoai/intent-common";
 import { RozoPayButton } from "@rozoai/intent-pay";
 import { Loader2, ScanLine, Wallet } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -40,6 +40,15 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
   );
   const [isLoading, setIsLoading] = useState(false);
 
+  const formatAmount = (rawAmount: string, decimals: number): string => {
+    if (!rawAmount) return "0";
+
+    const amount = parseFloat(rawAmount) / Math.pow(10, decimals);
+
+    // Format with up to 6 decimal places, removing trailing zeros
+    return amount.toFixed(decimals).replace(/\.?0+$/, "");
+  };
+
   const handleScan = (parsed: DeeplinkData) => {
     if (!parsed) return;
 
@@ -53,13 +62,16 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
       }
 
       case "address": {
-        if (parsed.address && parsed.asset?.contract) {
+        if (parsed.address) {
           parsedData = {
             isStellar: false,
             toAddress: getAddress(parsed.address),
-            toChain: parsed.chain_id ? Number(parsed.chain_id) : 0,
+            toChain:
+              parsed.chain_id && parsed.chain_id !== baseUSDC.chainId
+                ? Number(parsed.chain_id)
+                : baseUSDC.chainId,
             toUnits: null,
-            toToken: getAddress(parsed.asset.contract),
+            toToken: getAddress(parsed.asset?.contract || baseUSDC.token),
             message: parsed.message,
           };
 
@@ -71,13 +83,20 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
       }
 
       case "ethereum": {
-        if (parsed.address && parsed.asset?.contract) {
+        if (parsed.address) {
           parsedData = {
             isStellar: false,
             toAddress: getAddress(parsed.address),
-            toChain: parsed.chain_id ? Number(parsed.chain_id) : 0,
-            toUnits: parsed.amount || null,
-            toToken: getAddress(parsed.asset.contract),
+            toChain:
+              parsed.chain_id && parsed.chain_id !== baseUSDC.chainId
+                ? Number(parsed.chain_id)
+                : baseUSDC.chainId,
+            toUnits:
+              formatAmount(
+                parsed.amount || "0",
+                parsed.asset?.decimals || baseUSDC.decimals
+              ) || null,
+            toToken: getAddress(parsed.asset?.contract || baseUSDC.token),
             message: parsed.message,
           };
         }

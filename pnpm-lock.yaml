@@ -21,17 +21,17 @@ importers:
         specifier: ^1.2.3
         version: 1.2.3(@types/react@19.1.9)(react@19.1.0)
       '@rozoai/deeplink-core':
-        specifier: 1.0.6
-        version: 1.0.6(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+        specifier: 1.0.8
+        version: 1.0.8(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@rozoai/deeplink-react':
-        specifier: 1.0.4
-        version: 1.0.4(@types/emscripten@1.40.1)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+        specifier: 1.0.8
+        version: 1.0.8(@yudiel/react-qr-scanner@2.3.1(@types/emscripten@1.40.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@rozoai/intent-common':
-        specifier: 0.0.16-beta.19
-        version: 0.0.16-beta.19(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+        specifier: 0.0.16-beta.21
+        version: 0.0.16-beta.21(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@rozoai/intent-pay':
-        specifier: 0.0.16-beta.19
-        version: 0.0.16-beta.19(316496ea74e99d83da0e85bb1c6eef41)
+        specifier: 0.0.16-beta.21
+        version: 0.0.16-beta.21(316496ea74e99d83da0e85bb1c6eef41)
       '@solana/web3.js':
         specifier: ^1.98.2
         version: 1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)
@@ -41,9 +41,6 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.83.0
         version: 5.83.0(react@19.1.0)
-      '@yudiel/react-qr-scanner':
-        specifier: ^2.3.1
-        version: 2.3.1(@types/emscripten@1.40.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -62,9 +59,6 @@ importers:
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      query-string:
-        specifier: ^9.2.2
-        version: 9.2.2
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -1285,20 +1279,21 @@ packages:
       rollup:
         optional: true
 
-  '@rozoai/deeplink-core@1.0.6':
-    resolution: {integrity: sha512-YeJ9odGydwkTAxsQlA7Wgh0t6aU8/Jyc6iinzCxVjAafWkKpL8QGXBbhmKAtSd4PrJqwmuBE6oJxstyJwPwnww==}
+  '@rozoai/deeplink-core@1.0.8':
+    resolution: {integrity: sha512-fi7c5lfDeRMaQYle2KK+/izfTqolUPwOXHuSDkJMi6b1Z1pjOHjH62USme9qBcTE8XUxrr8WCv9HNdrdIMXcoA==}
 
-  '@rozoai/deeplink-react@1.0.4':
-    resolution: {integrity: sha512-CLsLHvx/lJe7GaGrpQIUmeLyXxdZu650eb5fD3Un9Z9xZFsfx81PTnfah1bKo7XtIwZ1K7jaaH6PUJilKRScVA==}
+  '@rozoai/deeplink-react@1.0.8':
+    resolution: {integrity: sha512-b6nOvwVsAXqbrwE10IVf+YMrs7u7sE8gZZuqMfSU6jOO4QrsGYuqBUn9z1uXLMFzNaXWOxpsRQTMQ5Rui7hjpg==}
     peerDependencies:
+      '@yudiel/react-qr-scanner': ^2.3.1
       react: '>=18'
       react-dom: '>=18'
 
-  '@rozoai/intent-common@0.0.16-beta.19':
-    resolution: {integrity: sha512-wJY0zdbc3XBOE9bESkTE9Eqt7eMdJ0q8hQgqkoHSUHhvRm5UMgDxQNM2VOdvEQ9pah9AHkkg8wl/ALkWvkN0Ig==}
+  '@rozoai/intent-common@0.0.16-beta.21':
+    resolution: {integrity: sha512-e4RK3BhjTJw6mTzh9IzukOBOk/jvBWpWkAdXj6SkvIXvvlv968GsGpZH9Q8GsC7KrHMp31JnaXjG5KM1K1OKrQ==}
 
-  '@rozoai/intent-pay@0.0.16-beta.19':
-    resolution: {integrity: sha512-UjeWSAnUF40vIsoN+PQwDhTU7lwIRY/sP0vXIeQxDzpXqNtlBw939yJWNnDQ5fcsElzmKQ6G+tkVM8hK49mQ+w==}
+  '@rozoai/intent-pay@0.0.16-beta.21':
+    resolution: {integrity: sha512-E9jqNSaqY7j6ShsThS46WApL7fTzPBcYuOYcaU3q0W1/zMeh7IJLdjkaOiTZqZgn9BnbV29EUMAPramiMzt75g==}
     engines: {node: '>=12.4'}
     peerDependencies:
       '@tanstack/react-query': '>=5.0.0'
@@ -7602,7 +7597,7 @@ snapshots:
       estree-walker: 2.0.2
       picomatch: 4.0.3
 
-  '@rozoai/deeplink-core@1.0.6(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@rozoai/deeplink-core@1.0.8(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
       '@solana/web3.js': 1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@stellar/stellar-sdk': 12.3.0
@@ -7616,14 +7611,13 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@rozoai/deeplink-react@1.0.4(@types/emscripten@1.40.1)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@rozoai/deeplink-react@1.0.8(@yudiel/react-qr-scanner@2.3.1(@types/emscripten@1.40.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
-      '@rozoai/deeplink-core': 1.0.6(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@rozoai/deeplink-core': 1.0.8(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@yudiel/react-qr-scanner': 2.3.1(@types/emscripten@1.40.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
     transitivePeerDependencies:
-      - '@types/emscripten'
       - bufferutil
       - debug
       - encoding
@@ -7631,7 +7625,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@rozoai/intent-common@0.0.16-beta.19(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+  '@rozoai/intent-common@0.0.16-beta.21(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@scure/base': 1.2.6
       viem: 2.33.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
@@ -7641,11 +7635,11 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@rozoai/intent-pay@0.0.16-beta.19(316496ea74e99d83da0e85bb1c6eef41)':
+  '@rozoai/intent-pay@0.0.16-beta.21(316496ea74e99d83da0e85bb1c6eef41)':
     dependencies:
       '@creit.tech/stellar-wallets-kit': 1.7.7(@react-native-async-storage/async-storage@1.24.0(react-native@0.80.2(@babel/core@7.28.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10)))(@stellar/stellar-base@13.1.0)(@stellar/stellar-sdk@13.3.0)(@trezor/connect@9.5.1(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-native@0.80.2(@babel/core@7.28.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(@types/react@19.1.9)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(near-api-js@5.1.1(encoding@0.1.13))(react-native@0.80.2(@babel/core@7.28.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       '@rollup/plugin-typescript': 12.1.4(tslib@2.8.1)(typescript@5.8.3)
-      '@rozoai/intent-common': 0.0.16-beta.19(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@rozoai/intent-common': 0.0.16-beta.21(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@solana/wallet-adapter-base': 0.9.27(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10))
       '@solana/wallet-adapter-react': 0.15.39(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10))(bs58@5.0.0)(react-native@0.80.2(@babel/core@7.28.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)
       '@solana/web3.js': 1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)

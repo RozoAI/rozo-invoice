@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <BoxedCard className="flex-1">
       <CardContent className="m-auto w-full">
-        <ScanQRButton appId={"rozoInvoiceStellar"} />
+        <ScanQRButton appId={"rozoInvoice"} />
       </CardContent>
     </BoxedCard>
   );

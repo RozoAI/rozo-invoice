@@ -58,7 +58,6 @@ export default async function Checkout({
   const { id } = await searchParams;
   const loaderData = await getPayment(id || "");
 
-  console.log(loaderData)
   if (!loaderData.success) {
     return redirect("/error");
   }
