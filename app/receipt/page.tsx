@@ -1,17 +1,24 @@
 import ReceiptContent from "@/components/payment/receipt-content";
-import { redirect } from "next/navigation";
-import { Metadata } from "next";
+import {
+  generateErrorMetadata,
+  generatePaymentMetadata,
+} from "@/lib/metadata-utils";
 import { getPaymentData } from "@/lib/payment-api";
-import { generatePaymentMetadata, generateErrorMetadata } from "@/lib/metadata-utils";
+import { Metadata } from "next";
+import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 interface ReceiptPageProps {
   searchParams: Promise<{ id?: string }>;
 }
 
-export async function generateMetadata({ searchParams }: ReceiptPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  searchParams,
+}: ReceiptPageProps): Promise<Metadata> {
   try {
     const { id } = await searchParams;
-    
+
     if (!id) {
       return generateErrorMetadata();
     }
@@ -32,7 +39,7 @@ export async function generateMetadata({ searchParams }: ReceiptPageProps): Prom
 export default async function Receipt({ searchParams }: ReceiptPageProps) {
   try {
     const { id } = await searchParams;
-    
+
     if (!id) {
       return redirect("/error");
     }
