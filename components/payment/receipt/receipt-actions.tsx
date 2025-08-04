@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, ShareIcon } from "lucide-react";
+import Link from "next/link";
 
 interface ReceiptActionsProps {
   showMoreActions: boolean;
@@ -44,6 +45,15 @@ export function ReceiptActions({
             View More
           </>
         )}
+      </Button>
+
+      <Button
+        variant="outline"
+        className="w-full rounded-lg text-muted-foreground max-w-[350px]"
+        size="sm"
+        asChild
+      >
+        <Link href="/">Back to Home</Link>
       </Button>
     </>
   );

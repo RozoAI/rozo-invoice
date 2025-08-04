@@ -2,12 +2,19 @@
 
 import { HelpCircleIcon, MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 /**
  * Floating Action Button with theme switcher and support actions
  */
 export function FabActions() {
   const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Only show theme-dependent content after mounting to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Action button styles
   const actionButtonStyle = {
@@ -23,13 +30,8 @@ export function FabActions() {
           type="button"
           className={`${actionButtonStyle.base} ${actionButtonStyle.hover}`}
           onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-          aria-label={
-            resolvedTheme === "dark"
-              ? "Switch to light mode"
-              : "Switch to dark mode"
-          }
         >
-          {resolvedTheme === "dark" ? (
+          {mounted && resolvedTheme === "dark" ? (
             <MoonIcon className="size-4" />
           ) : (
             <SunIcon className="size-4" />
@@ -49,7 +51,6 @@ export function FabActions() {
               "Hi, I need help with my payment."
             )
           }
-          aria-label="Get support"
         >
           <HelpCircleIcon className="size-4" />
         </button>

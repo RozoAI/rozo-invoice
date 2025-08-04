@@ -8,13 +8,20 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { type DeeplinkData } from "@rozoai/deeplink-core";
+import { formatAmount } from "@/lib/amount";
+import {
+  parseDeeplink,
+  type AddressParseResult,
+  type DeeplinkData,
+  type EthereumParseResult,
+  type StellarParseResult,
+} from "@rozoai/deeplink-core";
 import { ScanQr } from "@rozoai/deeplink-react";
 import { PaymentCompletedEvent, baseUSDC } from "@rozoai/intent-common";
 import { RozoPayButton } from "@rozoai/intent-pay";
 import { Loader2, ScanLine, Wallet } from "lucide-react";
-import { redirect } from "next/navigation";
-import { useState } from "react";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getAddress } from "viem";
 import { TransactionDetails } from "./transaction-details";
@@ -39,22 +46,42 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
     null
   );
   const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-  const formatAmount = (rawAmount: string, decimals: number): string => {
-    if (!rawAmount) return "0";
+  // Check for qr query parameter and parse it
+  useEffect(() => {
+    const qrParam = searchParams.get("qr");
+    if (qrParam && !parsedTransfer) {
+      const clearQrParam = () => {
+        const newSearchParams = new URLSearchParams(searchParams.toString());
+        newSearchParams.delete("qr");
+        const newUrl = `${window.location.pathname}${
+          newSearchParams.toString() ? `?${newSearchParams.toString()}` : ""
+        }`;
+        router.replace(newUrl);
+      };
 
-    const amount = parseFloat(rawAmount) / Math.pow(10, decimals);
-
-    // Format with up to 6 decimal places, removing trailing zeros
-    return amount.toFixed(decimals).replace(/\.?0+$/, "");
-  };
+      try {
+        const parsed = parseDeeplink(qrParam);
+        if (parsed) {
+          handleScan(parsed);
+          clearQrParam();
+        }
+      } catch (error) {
+        console.error("Error parsing QR from query parameter:", error);
+        toast.error("Invalid QR code in URL");
+        clearQrParam();
+      }
+    }
+  }, [searchParams, parsedTransfer, router]);
 
   const handleScan = (parsed: DeeplinkData) => {
     if (!parsed) return;
 
     setIsScannerOpen(false);
     let parsedData: ParsedTransfer | null = null;
-
+    console.log("parsed", parsed);
     switch (parsed.type) {
       case "website": {
         window.location.href = parsed.url;
@@ -62,43 +89,70 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
       }
 
       case "address": {
-        if (parsed.address) {
+        const data = parsed as AddressParseResult;
+        if (data.address) {
           parsedData = {
             isStellar: false,
-            toAddress: getAddress(parsed.address),
+            toAddress: getAddress(data.address),
             toChain:
-              parsed.chain_id && parsed.chain_id !== baseUSDC.chainId
-                ? Number(parsed.chain_id)
+              data.chain_id && data.chain_id !== baseUSDC.chainId
+                ? Number(data.chain_id)
                 : baseUSDC.chainId,
             toUnits: null,
-            toToken: getAddress(parsed.asset?.contract || baseUSDC.token),
-            message: parsed.message,
+            toToken: getAddress(data.asset?.contract || baseUSDC.token),
+            message: data.message,
           };
 
-          if (parsed.message) {
-            toast.info(parsed.message);
+          if (data.message) {
+            toast.info(data.message);
           }
         }
         break;
       }
 
       case "ethereum": {
-        if (parsed.address) {
+        const data = parsed as EthereumParseResult;
+        console.log("ethereum parsed data:", data);
+
+        // Handle ERC-20 transfer function calls
+        if (
+          (data as any).function_name === "transfer" &&
+          (data as any).parameters
+        ) {
+          const parameters = (data as any).parameters;
+          const addressParam = parameters.find(
+            (p: any) => p.type === "address"
+          );
+          const amountParam = parameters.find((p: any) => p.type === "uint256");
+
+          if (addressParam?.value && data.address) {
+            parsedData = {
+              isStellar: false,
+              toAddress: getAddress(addressParam.value),
+              toChain:
+                data.chain_id && data.chain_id !== baseUSDC.chainId
+                  ? Number(data.chain_id)
+                  : baseUSDC.chainId,
+              toUnits: amountParam?.value
+                ? formatAmount(amountParam.value)
+                : null,
+              toToken: getAddress(data.address), // Contract address is the token
+              message: data.message,
+            };
+          }
+        }
+        // Handle regular ethereum addresses
+        else if (data.address) {
           parsedData = {
             isStellar: false,
-            toAddress: getAddress(parsed.address),
+            toAddress: getAddress(data.address),
             toChain:
-              parsed.chain_id && parsed.chain_id !== baseUSDC.chainId
-                ? Number(parsed.chain_id)
+              data.chain_id && data.chain_id !== baseUSDC.chainId
+                ? Number(data.chain_id)
                 : baseUSDC.chainId,
-            toUnits: parsed.amount
-              ? formatAmount(
-                  parsed.amount,
-                  parsed.asset?.decimals || baseUSDC.decimals
-                )
-              : null,
-            toToken: getAddress(parsed.asset?.contract || baseUSDC.token),
-            message: parsed.message,
+            toUnits: data.amount ? formatAmount(data.amount) : null,
+            toToken: getAddress(data.asset?.contract || baseUSDC.token),
+            message: data.message,
           };
         }
         break;
@@ -110,20 +164,23 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
       }
 
       case "stellar": {
-        if (parsed.address && parsed.toStellarAddress) {
+        const data = parsed as StellarParseResult;
+        if (data.address && data.toStellarAddress) {
           parsedData = {
             isStellar: true,
-            toAddress: parsed.address,
-            toStellarAddress: parsed.toStellarAddress,
-            toChain: parsed.chain_id ? Number(parsed.chain_id) : 0,
-            toUnits: parsed.amount || null,
-            toToken: parsed.asset?.contract || null,
-            message: parsed.message,
+            toAddress: data.address,
+            toStellarAddress: data.toStellarAddress,
+            toChain: data.chain_id ? Number(data.chain_id) : 0,
+            toUnits: data.amount
+              ? String(parseFloat(String(data.amount || 0)))
+              : null,
+            toToken: data.asset?.contract || null,
+            message: data.message,
           };
         }
 
-        if (parsed.message) {
-          toast.info(parsed.message);
+        if (data.message) {
+          toast.info(data.message);
         }
 
         break;
