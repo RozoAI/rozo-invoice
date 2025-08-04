@@ -91,11 +91,12 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
               parsed.chain_id && parsed.chain_id !== baseUSDC.chainId
                 ? Number(parsed.chain_id)
                 : baseUSDC.chainId,
-            toUnits:
-              formatAmount(
-                parsed.amount || "0",
-                parsed.asset?.decimals || baseUSDC.decimals
-              ) || null,
+            toUnits: parsed.amount
+              ? formatAmount(
+                  parsed.amount,
+                  parsed.asset?.decimals || baseUSDC.decimals
+                )
+              : null,
             toToken: getAddress(parsed.asset?.contract || baseUSDC.token),
             message: parsed.message,
           };
