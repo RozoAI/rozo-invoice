@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/drawer";
 import { formatAmount } from "@/lib/amount";
 import {
+  BlockchainParseResult,
   parseDeeplink,
   type AddressParseResult,
   type DeeplinkData,
@@ -81,7 +82,13 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
 
     setIsScannerOpen(false);
     let parsedData: ParsedTransfer | null = null;
-    console.log("parsed", parsed);
+
+    const chainId = (parsed as BlockchainParseResult).chain_id;
+    const toChain =
+      chainId && chainId !== baseUSDC.chainId
+        ? Number(chainId)
+        : baseUSDC.chainId;
+
     switch (parsed.type) {
       case "website": {
         window.location.href = parsed.url;
@@ -94,10 +101,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
           parsedData = {
             isStellar: false,
             toAddress: getAddress(data.address),
-            toChain:
-              data.chain_id && data.chain_id !== baseUSDC.chainId
-                ? Number(data.chain_id)
-                : baseUSDC.chainId,
+            toChain,
             toUnits: null,
             toToken: getAddress(data.asset?.contract || baseUSDC.token),
             message: data.message,
@@ -112,7 +116,6 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
 
       case "ethereum": {
         const data = parsed as EthereumParseResult;
-        console.log("ethereum parsed data:", data);
 
         // Handle ERC-20 transfer function calls
         if (
@@ -129,10 +132,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
             parsedData = {
               isStellar: false,
               toAddress: getAddress(addressParam.value),
-              toChain:
-                data.chain_id && data.chain_id !== baseUSDC.chainId
-                  ? Number(data.chain_id)
-                  : baseUSDC.chainId,
+              toChain,
               toUnits: amountParam?.value
                 ? formatAmount(amountParam.value)
                 : null,
@@ -146,10 +146,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
           parsedData = {
             isStellar: false,
             toAddress: getAddress(data.address),
-            toChain:
-              data.chain_id && data.chain_id !== baseUSDC.chainId
-                ? Number(data.chain_id)
-                : baseUSDC.chainId,
+            toChain,
             toUnits: data.amount ? formatAmount(data.amount) : null,
             toToken: getAddress(data.asset?.contract || baseUSDC.token),
             message: data.message,
@@ -170,11 +167,11 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
             isStellar: true,
             toAddress: data.address,
             toStellarAddress: data.toStellarAddress,
-            toChain: data.chain_id ? Number(data.chain_id) : 0,
+            toChain,
             toUnits: data.amount
               ? String(parseFloat(String(data.amount || 0)))
               : null,
-            toToken: data.asset?.contract || null,
+            toToken: data.asset?.contract || baseUSDC.token,
             message: data.message,
           };
         }
@@ -196,6 +193,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
       !parsedData?.toAddress ||
       !parsedData?.toChain
     ) {
+      toast.error("Invalid QR code");
       return;
     }
 
