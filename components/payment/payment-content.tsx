@@ -9,7 +9,7 @@ import {
 import { RozoPayButton } from "@rozoai/intent-pay";
 import { CircleCheckIcon, ExternalLink, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useMemo, useState, type ReactElement } from "react";
 
 export interface PaymentContentProps {
@@ -26,6 +26,7 @@ export function PaymentContent({
 }: PaymentContentProps): ReactElement {
   const [payment, setPayment] = useState(data);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const txUrl = useMemo(() => {
     if (!payment.destination.txHash) return undefined;
@@ -74,7 +75,8 @@ export function PaymentContent({
           }}
           onPaymentCompleted={(args: PaymentCompletedEvent) => {
             setIsLoading(false);
-            redirect(
+            alert(args.payment.externalId ?? args.paymentId);
+            router.push(
               `/receipt?id=${args.payment.externalId ?? args.paymentId}`
             );
           }}
