@@ -1,4 +1,5 @@
 import CheckoutContent from "@/components/payment/checkout-content";
+import { getPaymentData } from "@/lib/payment-api";
 import type { RozoPayOrderView } from "@rozoai/intent-common";
 import { redirect } from "next/navigation";
 import type { ReactElement } from "react";
@@ -21,24 +22,16 @@ async function getPayment(id: string): Promise<LoaderData> {
   // registered in our database. Some orders created via Rozo SDK still follow the Daimo flow.
   // Future work: Unify API endpoints and migrate all payment processing to internal systems or make our internal API support all IDs.
   try {
-    const headers = {
-      "Api-Key": process.env.DAIMO_API_KEY || "",
-      "Content-Type": "application/json",
-    };
+    const response = await getPaymentData(id);
 
-    const response = await fetch(`${process.env.DAIMO_API_URL}/payment/${id}`, {
-      method: "GET",
-      headers,
-    });
-
-    if (!response.ok) {
+    if (!response.success) {
       return {
         success: false,
-        error: `Failed to fetch payment data: ${response.statusText}`,
+        error: `Failed to fetch payment data: ${response.error}`,
       };
     }
 
-    const paymentData = (await response.json()) as RozoPayOrderView;
+    const paymentData = response.payment;
 
     return {
       success: true,
