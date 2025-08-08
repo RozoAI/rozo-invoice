@@ -32,17 +32,23 @@ function validateEnvironment(): { rozo: ApiConfig; daimo: ApiConfig } | null {
   return {
     rozo: {
       url: rozoUrl,
-      headers: { Authorization: `Bearer ${rozoKey}` },
+      headers: {
+        Authorization: `Bearer ${rozoKey}`,
+        "Content-Type": "application/json",
+      },
     },
     daimo: {
       url: daimoUrl,
-      headers: { "Api-Key": daimoKey },
+      headers: { "Api-Key": daimoKey, "Content-Type": "application/json" },
     },
   };
 }
 
 // Generic API fetcher
-async function fetchFromAPI(url: string, headers: Record<string, string>): Promise<ApiResponse> {
+async function fetchFromAPI(
+  url: string,
+  headers: Record<string, string>
+): Promise<ApiResponse> {
   try {
     const response = await fetch(url, {
       method: "GET",
@@ -79,50 +85,47 @@ export async function getPaymentData(id: string): Promise<PaymentResult> {
   if (!config) {
     return {
       success: false,
-      error: "API configuration is missing. Please check environment variables.",
+      error:
+        "API configuration is missing. Please check environment variables.",
     };
   }
 
-  try {
-    // Try Rozo API first
-    const rozoResult = await fetchFromAPI(
-      `${config.rozo.url}/payment-api/external-id/${id}`,
-      config.rozo.headers
-    );
+  // Try Rozo API first
+  const rozoResponse = await fetchFromAPI(
+    `${config.rozo.url}/payment-api/external-id/${id}`,
+    config.rozo.headers
+  );
 
-    if (rozoResult.success && rozoResult.data) {
-      return {
-        success: true,
-        payment: rozoResult.data,
-        source: "rozo",
-      };
-    }
-
-    // Fallback to Daimo API
-    console.warn("Rozo API failed, falling back to Daimo API:", rozoResult.error);
-
-    const daimoResult = await fetchFromAPI(
-      `${config.daimo.url}/payment/${id}`,
-      config.daimo.headers
-    );
-
-    if (daimoResult.success && daimoResult.data) {
-      return {
-        success: true,
-        payment: daimoResult.data,
-        source: "daimo",
-      };
-    }
-
-    // Both APIs failed
+  if (rozoResponse.success && rozoResponse.data) {
     return {
-      success: false,
-      error: `Payment not found. Rozo API: ${rozoResult.error}, Daimo API: ${daimoResult.error}`,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unexpected error occurred",
+      success: true,
+      payment: rozoResponse.data,
+      source: "rozo",
     };
   }
+
+  // Rozo API failed, try Daimo API as fallback
+  console.warn(
+    "Rozo API failed, falling back to Daimo API:",
+    rozoResponse.error
+  );
+
+  const daimoResponse = await fetchFromAPI(
+    `${config.daimo.url}/payment/${id}`,
+    config.daimo.headers
+  );
+
+  if (daimoResponse.success && daimoResponse.data) {
+    return {
+      success: true,
+      payment: daimoResponse.data,
+      source: "daimo",
+    };
+  }
+
+  // Both APIs failed
+  return {
+    success: false,
+    error: `Payment failed to fetch from both APIs. Rozo: ${rozoResponse.error}, Daimo: ${daimoResponse.error}`,
+  };
 }
