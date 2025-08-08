@@ -75,10 +75,11 @@ export function PaymentContent({
           }}
           onPaymentCompleted={(args: PaymentCompletedEvent) => {
             setIsLoading(false);
-            alert(args.payment.externalId ?? args.paymentId);
-            router.push(
-              `/receipt?id=${args.payment.externalId ?? args.paymentId}`
-            );
+            // router.push(
+            //   `/receipt?id=${args.payment.externalId ?? args.paymentId}`
+            // );
+            // @NOTE: If it's none stellar, let's use `paymentId` from Daimo API
+            router.push(`/receipt?id=${args.paymentId}`);
           }}
         >
           {({ show }) => (

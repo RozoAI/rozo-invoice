@@ -21,7 +21,7 @@ import { ScanQr } from "@rozoai/deeplink-react";
 import { PaymentCompletedEvent, baseUSDC } from "@rozoai/intent-common";
 import { RozoPayButton } from "@rozoai/intent-pay";
 import { Loader2, ScanLine, Wallet } from "lucide-react";
-import { redirect, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getAddress } from "viem";
@@ -269,7 +269,10 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
           onPaymentCompleted={(args: PaymentCompletedEvent) => {
             setIsLoading(false);
             setParsedTransfer(null);
-            redirect(
+
+            // @NOTE: If it's none stellar, let's use `paymentId` from Daimo API
+            // If it's stellar, let's use `externalId` from Rozo API
+            router.push(
               `/receipt?id=${args.payment.externalId ?? args.paymentId}`
             );
           }}
