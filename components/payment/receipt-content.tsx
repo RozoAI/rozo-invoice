@@ -13,8 +13,10 @@ import { ViewTypeToggle } from "./receipt/view-type-toggle";
 
 export default function ReceiptContent({
   payment,
+  backUrl,
 }: {
   payment: RozoPayOrderView;
+  backUrl?: string;
 }) {
   const [viewType, setViewType] = useState<"user" | "merchant">("user");
   const [showMoreActions, setShowMoreActions] = useState(false);
@@ -41,6 +43,7 @@ export default function ReceiptContent({
           showMoreActions={showMoreActions}
           onToggleActions={() => setShowMoreActions(!showMoreActions)}
           onShare={shareReceipt}
+          backUrl={backUrl}
         />
       </CardContent>
     </BoxedCard>

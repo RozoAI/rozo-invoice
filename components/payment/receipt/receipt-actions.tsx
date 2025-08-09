@@ -6,12 +6,14 @@ interface ReceiptActionsProps {
   showMoreActions: boolean;
   onToggleActions: () => void;
   onShare: () => void;
+  backUrl?: string;
 }
 
 export function ReceiptActions({
   showMoreActions,
   onToggleActions,
   onShare,
+  backUrl,
 }: ReceiptActionsProps) {
   return (
     <>
@@ -53,7 +55,7 @@ export function ReceiptActions({
         size="sm"
         asChild
       >
-        <Link href="/">Back to Home</Link>
+        <Link href={backUrl || "/"}>Back to Home</Link>
       </Button>
     </>
   );

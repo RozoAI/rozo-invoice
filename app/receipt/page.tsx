@@ -10,7 +10,7 @@ import { redirect } from "next/navigation";
 export const dynamic = "force-dynamic";
 
 interface ReceiptPageProps {
-  searchParams: Promise<{ id?: string }>;
+  searchParams: Promise<{ id?: string; back_url?: string }>;
 }
 
 export async function generateMetadata({
@@ -38,7 +38,7 @@ export async function generateMetadata({
 
 export default async function Receipt({ searchParams }: ReceiptPageProps) {
   try {
-    const { id } = await searchParams;
+    const { id, back_url } = await searchParams;
 
     if (!id) {
       return redirect("/error");
@@ -50,7 +50,7 @@ export default async function Receipt({ searchParams }: ReceiptPageProps) {
       return redirect("/error");
     }
 
-    return <ReceiptContent payment={result.payment} />;
+    return <ReceiptContent payment={result.payment} backUrl={back_url} />;
   } catch (error) {
     console.error("Error loading receipt:", error);
     return redirect("/error");
