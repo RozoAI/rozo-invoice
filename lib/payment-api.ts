@@ -104,6 +104,10 @@ export async function getPaymentData(id: string): Promise<PaymentResult> {
     };
   }
 
+  console.log(
+    "Rozo API failed, falling back to Daimo API:",
+    rozoResponse.error
+  );
   // Rozo API failed, try Daimo API as fallback
   console.warn(
     "Rozo API failed, falling back to Daimo API:",
@@ -122,6 +126,11 @@ export async function getPaymentData(id: string): Promise<PaymentResult> {
       source: "daimo",
     };
   }
+
+  console.log(
+    "Daimo API failed, falling back to Rozo API:",
+    daimoResponse.error
+  );
 
   // Both APIs failed
   return {

@@ -8,7 +8,7 @@ export default function Home() {
     <BoxedCard className="flex-1">
       <CardContent className="m-auto w-full">
         <Suspense fallback={<div>Loading...</div>}>
-          <ScanQRButton appId={"rozoInvoice"} />
+          <ScanQRButton appId={process.env.NEXT_PUBLIC_DAIMO_API_KEY ?? "rozoInvoice"} />
         </Suspense>
       </CardContent>
     </BoxedCard>
