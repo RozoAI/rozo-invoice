@@ -5,26 +5,9 @@ import { PaymentResponse } from "./payment-api";
 export function generatePaymentMetadata(
   payment: RozoPayOrderView | PaymentResponse
 ): Metadata {
-  let title: string;
-  let description: string;
-
-  if (
-    "display" in payment &&
-    "paymentValue" in payment.display &&
-    "currency" in payment.display
-  ) {
-    // RozoPayOrderView
-    title = `Payment Receipt - ${payment.display.paymentValue} ${payment.display.currency}`;
-    description = `Check out this payment receipt for ${payment.display.paymentValue} ${payment.display.currency}`;
-  } else if ("display" in payment && "name" in payment.display) {
-    // PaymentResponse
-    title = `Payment Receipt - ${payment.display.name}`;
-    description = `Check out this payment receipt for ${payment.display.description}`;
-  } else {
-    // Fallback
-    title = "Payment Receipt";
-    description = "Check out this payment receipt";
-  }
+  const amount = getPaymentAmount(payment);
+  const title = `Payment Receipt - ${amount}`;
+  const description = `Payment confirmation for ${amount}`;
 
   return {
     title,
@@ -46,6 +29,30 @@ export function generateErrorMetadata(): Metadata {
   return {
     title: "Payment Receipt - Error",
     description:
-      "Unable to load payment receipt. Please check the payment ID and try again.",
+      "Unable to load payment receipt. Please verify the payment ID.",
   };
+}
+
+function getPaymentAmount(payment: RozoPayOrderView | PaymentResponse): string {
+  if (
+    "display" in payment &&
+    "paymentValue" in payment.display &&
+    "currency" in payment.display
+  ) {
+    const amount = parseFloat(payment.display.paymentValue);
+    return `$${amount.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+
+  if ("destination" in payment && "amountUnits" in payment.destination) {
+    const amount = parseFloat(payment.destination.amountUnits);
+    return `$${amount.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+
+  return "Payment";
 }
