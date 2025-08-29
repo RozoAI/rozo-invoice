@@ -1,20 +1,35 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { PaymentResponse } from "@/lib/payment-api";
 import {
+  baseUSDC,
   getChainExplorerTxUrl,
+  rozoSolana,
+  rozoStellar,
+  solana,
+  stellar,
   type PaymentCompletedEvent,
   type RozoPayOrderView,
 } from "@rozoai/intent-common";
-import { RozoPayButton } from "@rozoai/intent-pay";
+import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
 import { CircleCheckIcon, ExternalLink, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type ReactElement } from "react";
+import { useEffect, useMemo, useState, type ReactElement } from "react";
 
 export interface PaymentContentProps {
   appId: string;
-  data: RozoPayOrderView;
+  data: RozoPayOrderView | PaymentResponse;
+}
+
+interface PayParams {
+  toAddress: `0x${string}`;
+  toChain: number;
+  toUnits: string;
+  toToken: `0x${string}`;
+  toStellarAddress?: string;
+  toSolanaAddress?: string;
 }
 
 /**
@@ -24,24 +39,106 @@ export function PaymentContent({
   appId,
   data,
 }: PaymentContentProps): ReactElement {
-  const [payment, setPayment] = useState(data);
+  const [payment, _] = useState(data);
+  const [payParams, setPayParams] = useState<PayParams | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { resetPayment } = useRozoPayUI();
+
+  const isToStellar = useMemo(() => {
+    return (
+      payment.destination.chainId === String(stellar.chainId) ||
+      payment.destination.chainId === String(rozoStellar.chainId)
+    );
+  }, [payment.destination]);
+
+  const isToSolana = useMemo(() => {
+    return (
+      payment.destination.chainId === String(solana.chainId) ||
+      payment.destination.chainId === String(rozoSolana.chainId)
+    );
+  }, [payment.destination]);
+
+  const paymentAmount = useMemo(() => {
+    if (
+      "display" in payment &&
+      "paymentValue" in payment.display &&
+      "currency" in payment.display
+    ) {
+      // RozoPayOrderView
+      const amount = parseFloat(payment.display.paymentValue);
+      return `$${amount.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`;
+    } else if (
+      "destination" in payment &&
+      "amountUnits" in payment.destination
+    ) {
+      // PaymentResponse
+      const amount = parseFloat(payment.destination.amountUnits);
+      return `$${amount.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`;
+    }
+    return "Amount unavailable";
+  }, [payment]);
 
   const txUrl = useMemo(() => {
-    if (!payment.destination.txHash) return undefined;
+    if (!("txHash" in payment.destination) || !payment.destination.txHash)
+      return undefined;
+
     return getChainExplorerTxUrl(
       Number(payment.destination.chainId),
       payment.destination.txHash
     );
-  }, [payment.destination.chainId, payment.destination.txHash]);
+  }, [payment.destination]);
+
+  useEffect(() => {
+    const validAddress = "0x0000000000000000000000000000000000000000";
+
+    let params = {};
+
+    if (isToStellar) {
+      params = {
+        toAddress: validAddress,
+        toChain: baseUSDC.chainId,
+        toToken: baseUSDC.token,
+        toUnits: payment.destination.amountUnits,
+        toStellarAddress: payment.destination.destinationAddress,
+      };
+    } else if (isToSolana) {
+      params = {
+        toAddress: validAddress,
+        toChain: baseUSDC.chainId,
+        toToken: baseUSDC.token,
+        toUnits: payment.destination.amountUnits,
+        toSolanaAddress: payment.destination.destinationAddress,
+      };
+    } else {
+      params = {
+        toAddress: payment.destination.destinationAddress,
+        toChain: Number(payment.destination.chainId),
+        toToken: payment.destination.tokenAddress as `0x${string}`,
+        toUnits: payment.destination.amountUnits,
+      };
+    }
+
+    console.log("params", params);
+
+    setPayParams(params as PayParams);
+    resetPayment(params);
+  }, [isToStellar, isToSolana, payment]);
+
+  console.log({ isToStellar, isToSolana, payment });
 
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center gap-8 md:justify-start">
       {/* Price Display */}
       <div className="py-4">
         <div className="font-bold text-5xl text-foreground">
-          {payment.display.paymentValue} {payment.display.currency}
+          {paymentAmount}
         </div>
       </div>
 
@@ -56,16 +153,16 @@ export function PaymentContent({
       )}
 
       {/* Pay Button */}
-      {payment.status === "payment_unpaid" && (
+      {payParams && payment.status === "payment_unpaid" && (
         <RozoPayButton.Custom
           defaultOpen
           closeOnSuccess
           resetOnSuccess
           appId={appId}
-          toAddress={payment.destination.destinationAddress as `0x${string}`}
-          toChain={Number(payment.destination.chainId)}
-          toUnits={payment.destination.amountUnits}
-          toToken={payment.destination.tokenAddress as `0x${string}`}
+          toAddress={payParams.toAddress as `0x${string}`}
+          toChain={payParams.toChain as number}
+          toUnits={payParams.toUnits as string}
+          toToken={payParams.toToken as `0x${string}`}
           externalId={payment.externalId ?? undefined}
           onPaymentStarted={() => {
             setIsLoading(true);
@@ -75,11 +172,9 @@ export function PaymentContent({
           }}
           onPaymentCompleted={(args: PaymentCompletedEvent) => {
             setIsLoading(false);
-            // router.push(
-            //   `/receipt?id=${args.payment.externalId ?? args.paymentId}`
-            // );
-            // @NOTE: If it's none stellar, let's use `paymentId` from Daimo API
-            router.push(`/receipt?id=${args.paymentId}`);
+            router.push(
+              `/receipt?id=${args.payment.externalId ?? args.paymentId}`
+            );
           }}
         >
           {({ show }) => (

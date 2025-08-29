@@ -1,5 +1,6 @@
 "use client";
 
+import { PaymentResponse } from "@/lib/payment-api";
 import { RozoPayOrderView } from "@rozoai/intent-common";
 import { useTheme } from "next-themes";
 import BoxedCard from "../boxed-card";
@@ -11,7 +12,7 @@ import { PaymentContent } from "./payment-content";
 
 type LoaderData = {
   success: boolean;
-  payment?: RozoPayOrderView;
+  payment?: RozoPayOrderView | PaymentResponse;
   appId?: string;
   error?: unknown;
   theme?: string;

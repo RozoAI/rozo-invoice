@@ -1,12 +1,14 @@
 import CheckoutContent from "@/components/payment/checkout-content";
-import { getPaymentData } from "@/lib/payment-api";
+import { getPaymentData, PaymentResponse } from "@/lib/payment-api";
 import type { RozoPayOrderView } from "@rozoai/intent-common";
 import { redirect } from "next/navigation";
 import type { ReactElement } from "react";
 
+type PaymentData = RozoPayOrderView | PaymentResponse;
+
 type LoaderData = {
   success: boolean;
-  payment?: RozoPayOrderView;
+  payment?: PaymentData;
   appId?: string;
   error?: unknown;
   theme?: string;
@@ -23,7 +25,7 @@ async function getPayment(id: string): Promise<LoaderData> {
   // Future work: Unify API endpoints and migrate all payment processing to internal systems or make our internal API support all IDs.
   try {
     const response = await getPaymentData(id);
-
+    console.log("response", response);
     if (!response.success) {
       return {
         success: false,
@@ -33,9 +35,19 @@ async function getPayment(id: string): Promise<LoaderData> {
 
     const paymentData = response.payment;
 
+    // Check if the response is from Daimo API (RozoPayOrderView)
+    // Checkout page only supports Daimo payments
+    if (response.source !== "daimo") {
+      return {
+        success: false,
+        error:
+          "Checkout is only available for Daimo payments. Please use the receipt page instead.",
+      };
+    }
+
     return {
       success: true,
-      payment: paymentData,
+      payment: paymentData as PaymentData,
       appId: process.env.DAIMO_API_KEY,
     };
   } catch (error) {
@@ -50,7 +62,7 @@ export default async function Checkout({
 }): Promise<ReactElement> {
   const { id } = await searchParams;
   const loaderData = await getPayment(id || "");
-
+  console.log("loaderData", loaderData);
   if (!loaderData.success) {
     return redirect("/error");
   }
