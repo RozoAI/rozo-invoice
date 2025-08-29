@@ -1,12 +1,31 @@
+import { PaymentResponse } from "@/lib/payment-api";
 import { RozoPayOrderView } from "@rozoai/intent-common";
 import { useCallback } from "react";
 
-export function useShareReceipt(payment: RozoPayOrderView) {
+export function useShareReceipt(payment: RozoPayOrderView | PaymentResponse) {
   const shareReceipt = useCallback(async () => {
     if (!payment) return;
     const url = window.location.href;
-    const title = `Payment Receipt - ${payment.display.paymentValue} ${payment.display.currency}`;
-    const text = `Check out this payment receipt for ${payment.display.paymentValue} ${payment.display.currency}`;
+    let title: string;
+    let text: string;
+
+    if (
+      "display" in payment &&
+      "paymentValue" in payment.display &&
+      "currency" in payment.display
+    ) {
+      // RozoPayOrderView
+      title = `Payment Receipt - ${payment.display.paymentValue} ${payment.display.currency}`;
+      text = `Check out this payment receipt for ${payment.display.paymentValue} ${payment.display.currency}`;
+    } else if ("display" in payment && "name" in payment.display) {
+      // PaymentResponse
+      title = `Payment Receipt - ${payment.display.name}`;
+      text = `Check out this payment receipt for ${payment.display.description}`;
+    } else {
+      // Fallback
+      title = "Payment Receipt";
+      text = "Check out this payment receipt";
+    }
 
     // Check if Web Share API is supported
     if (navigator.share) {

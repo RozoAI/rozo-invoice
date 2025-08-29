@@ -19,7 +19,7 @@ import {
 } from "@rozoai/deeplink-core";
 import { ScanQr } from "@rozoai/deeplink-react";
 import { PaymentCompletedEvent, baseUSDC } from "@rozoai/intent-common";
-import { RozoPayButton } from "@rozoai/intent-pay";
+import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
 import { Loader2, ScanLine, Wallet } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -47,6 +47,8 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
     null
   );
   const [isLoading, setIsLoading] = useState(false);
+  const { resetPayment } = useRozoPayUI();
+
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -198,10 +200,21 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
     }
 
     setParsedTransfer(parsedData);
+    resetPayment({
+      toChain: parsedData.toChain,
+      toAddress: getAddress(parsedData.toAddress),
+      toStellarAddress: parsedData.toStellarAddress,
+      toToken: getAddress(parsedData.toToken),
+      toUnits: parsedData.toUnits ?? undefined,
+    });
   };
 
   const handleCancelPayment = () => {
-    window.location.reload();
+    // window.location.reload();
+    resetPayment();
+    setParsedTransfer(null);
+    setIsScannerOpen(false);
+    setIsLoading(false);
   };
 
   const handleScanError = (error: Error) => {
@@ -245,7 +258,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
         </Drawer>
       )}
 
-      {parsedTransfer && (
+      {parsedTransfer !== null && (
         <RozoPayButton.Custom
           defaultOpen
           closeOnSuccess

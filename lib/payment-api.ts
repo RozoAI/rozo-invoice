@@ -1,15 +1,50 @@
 import { RozoPayOrderView } from "@rozoai/intent-common";
 
+export interface PaymentResponse {
+  id: string;
+  status: string;
+  createdAt: string;
+  receivingAddress: string;
+  display: {
+    name: string;
+    logoUrl: string;
+    description: string;
+  };
+  source: null;
+  payinchainid: string;
+  payintokenaddress: string;
+  destination: {
+    chainId: string;
+    tokenAddress: string;
+    destinationAddress: string;
+    amountUnits: string;
+  };
+  externalId: string | null;
+  metadata: {
+    items: any[];
+    payer: Record<string, any>;
+    intent: string;
+    flush_tx: string;
+    webhookUrl: string;
+    daimoOrderId: string;
+    processing_method: string;
+    forwarder_processed: boolean;
+    forwarder_processed_at: string;
+  };
+  payinTransactionHash: string;
+  payoutTransactionHash: string;
+}
+
 export interface PaymentResult {
   success: boolean;
-  payment?: RozoPayOrderView;
+  payment?: PaymentResponse | RozoPayOrderView;
   source?: "rozo" | "daimo";
   error?: string;
 }
 
 interface ApiResponse {
   success: boolean;
-  data?: RozoPayOrderView;
+  data?: PaymentResponse | RozoPayOrderView;
   error?: string;
 }
 
@@ -65,7 +100,7 @@ async function fetchFromAPI(
       };
     }
 
-    const data = (await response.json()) as RozoPayOrderView;
+    const data = (await response.json()) as PaymentResponse | RozoPayOrderView;
     return { success: true, data };
   } catch (error) {
     return {
@@ -76,9 +111,12 @@ async function fetchFromAPI(
 }
 
 // Main payment fetcher with fallback strategy
-export async function getPaymentData(id: string): Promise<PaymentResult> {
-  if (!id) {
-    return { success: false, error: "Payment ID is required" };
+export async function getPaymentData(
+  idOrHash: string,
+  isHash: boolean = false
+): Promise<PaymentResult> {
+  if (!idOrHash) {
+    return { success: false, error: "Payment ID or hash is required" };
   }
 
   const config = validateEnvironment();
@@ -90,16 +128,19 @@ export async function getPaymentData(id: string): Promise<PaymentResult> {
     };
   }
 
+  // Determine the endpoint based on whether it's an ID or hash
+  const endpoint = isHash ? `payment/tx/${idOrHash}` : `payment/id/${idOrHash}`;
+
   // Try Rozo API first
   const rozoResponse = await fetchFromAPI(
-    `${config.rozo.url}/payment-api/external-id/${id}`,
+    `${config.rozo.url}/${endpoint}`,
     config.rozo.headers
   );
 
   if (rozoResponse.success && rozoResponse.data) {
     return {
       success: true,
-      payment: rozoResponse.data,
+      payment: rozoResponse.data as PaymentResponse,
       source: "rozo",
     };
   }
@@ -108,33 +149,39 @@ export async function getPaymentData(id: string): Promise<PaymentResult> {
     "Rozo API failed, falling back to Daimo API:",
     rozoResponse.error
   );
-  // Rozo API failed, try Daimo API as fallback
+  // Rozo API failed, try Daimo API as fallback (only for ID-based requests)
   console.warn(
     "Rozo API failed, falling back to Daimo API:",
     rozoResponse.error
   );
 
-  const daimoResponse = await fetchFromAPI(
-    `${config.daimo.url}/payment/${id}`,
-    config.daimo.headers
-  );
+  // Only try Daimo API for ID-based requests, not hash-based
+  if (!isHash) {
+    const daimoResponse = await fetchFromAPI(
+      `${config.daimo.url}/payment/${idOrHash}`,
+      config.daimo.headers
+    );
 
-  if (daimoResponse.success && daimoResponse.data) {
+    if (daimoResponse.success && daimoResponse.data) {
+      return {
+        success: true,
+        payment: daimoResponse.data as RozoPayOrderView,
+        source: "daimo",
+      };
+    }
+
+    console.log("Daimo API failed:", daimoResponse.error);
+
+    // Both APIs failed
     return {
-      success: true,
-      payment: daimoResponse.data,
-      source: "daimo",
+      success: false,
+      error: `Payment failed to fetch from both APIs. Rozo: ${rozoResponse.error}, Daimo: ${daimoResponse.error}`,
     };
   }
 
-  console.log(
-    "Daimo API failed, falling back to Rozo API:",
-    daimoResponse.error
-  );
-
-  // Both APIs failed
+  // Hash-based request failed from Rozo API only
   return {
     success: false,
-    error: `Payment failed to fetch from both APIs. Rozo: ${rozoResponse.error}, Daimo: ${daimoResponse.error}`,
+    error: `Payment failed to fetch from Rozo API: ${rozoResponse.error}`,
   };
 }

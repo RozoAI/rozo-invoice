@@ -10,20 +10,24 @@ import { redirect } from "next/navigation";
 export const dynamic = "force-dynamic";
 
 interface ReceiptPageProps {
-  searchParams: Promise<{ id?: string; back_url?: string }>;
+  searchParams: Promise<{ id?: string; payInHash?: string; back_url?: string }>;
 }
 
 export async function generateMetadata({
   searchParams,
 }: ReceiptPageProps): Promise<Metadata> {
   try {
-    const { id } = await searchParams;
+    const { id, payInHash } = await searchParams;
 
-    if (!id) {
+    if (!id && !payInHash) {
       return generateErrorMetadata();
     }
 
-    const result = await getPaymentData(id);
+    // Use id if available, otherwise use payInHash
+    const identifier = id || payInHash!;
+    const isHash = !id && !!payInHash;
+
+    const result = await getPaymentData(identifier, isHash);
 
     if (!result.success || !result.payment) {
       return generateErrorMetadata();
@@ -38,13 +42,17 @@ export async function generateMetadata({
 
 export default async function Receipt({ searchParams }: ReceiptPageProps) {
   try {
-    const { id, back_url } = await searchParams;
+    const { id, payInHash, back_url } = await searchParams;
 
-    if (!id) {
+    if (!id && !payInHash) {
       return redirect("/error");
     }
 
-    const result = await getPaymentData(id);
+    // Use id if available, otherwise use payInHash
+    const identifier = id || payInHash!;
+    const isHash = !id && !!payInHash;
+
+    const result = await getPaymentData(identifier, isHash);
     console.log("Payment data:", result);
     if (!result.success || !result.payment) {
       return redirect("/error");

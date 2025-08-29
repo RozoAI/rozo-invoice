@@ -4,6 +4,7 @@ import BoxedCard from "@/components/boxed-card";
 import { CardContent } from "@/components/ui/card";
 import { useExplorer } from "@/hooks/use-explorer";
 import { useShareReceipt } from "@/hooks/use-share-receipt";
+import { PaymentResponse } from "@/lib/payment-api";
 import { RozoPayOrderView } from "@rozoai/intent-common";
 import { useState } from "react";
 import { PaymentStatus } from "./receipt/payment-status";
@@ -15,7 +16,7 @@ export default function ReceiptContent({
   payment,
   backUrl,
 }: {
-  payment: RozoPayOrderView;
+  payment: RozoPayOrderView | PaymentResponse;
   backUrl?: string;
 }) {
   const [viewType, setViewType] = useState<"user" | "merchant">("user");
@@ -31,7 +32,12 @@ export default function ReceiptContent({
 
         <PaymentStatus payment={payment} viewType={viewType} />
 
-        {payment?.source && payment?.destination && showMoreActions ? (
+        {showMoreActions &&
+        ((payment?.source && payment?.destination) ||
+          ("payinTransactionHash" in payment &&
+            "destination" in payment &&
+            payment.payinTransactionHash &&
+            payment.destination)) ? (
           <TransactionFlow
             payment={payment}
             viewType={viewType}
