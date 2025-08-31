@@ -55,7 +55,9 @@ export function TransactionFlow({
           name="Sender"
           address={
             payment?.source?.payerAddress ??
-            // ("receivingAddress" in payment ? payment.receivingAddress : "") ??
+            ("payerAddress" in payment
+              ? (payment.payerAddress as string)
+              : "") ??
             ""
           }
           chainId={
@@ -109,7 +111,9 @@ export function TransactionFlow({
           name="Sender"
           address={
             payment?.source?.payerAddress ??
-            // ("receivingAddress" in payment ? payment.receivingAddress : "") ??
+            ("payerAddress" in payment
+              ? (payment.payerAddress as string)
+              : "") ??
             ""
           }
           chainId={

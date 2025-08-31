@@ -130,7 +130,7 @@ export async function getPaymentData(
 
   // Determine the endpoint based on whether it's an ID or hash
   const endpoint = isHash ? `payment/tx/${idOrHash}` : `payment/id/${idOrHash}`;
-
+  console.log("Endpoint:", endpoint);
   // Try Rozo API first
   const rozoResponse = await fetchFromAPI(
     `${config.rozo.url}/${endpoint}`,
