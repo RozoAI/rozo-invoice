@@ -27,11 +27,11 @@ importers:
         specifier: 1.0.9
         version: 1.0.9(@types/emscripten@1.40.1)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@rozoai/intent-common':
-        specifier: 0.0.19-beta.1
-        version: 0.0.19-beta.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+        specifier: 0.0.19
+        version: 0.0.19(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@rozoai/intent-pay':
-        specifier: 0.0.22-beta.2
-        version: 0.0.22-beta.2(7402cc8243f0f55079bf8504bfef50f3)
+        specifier: 0.0.22
+        version: 0.0.22(7402cc8243f0f55079bf8504bfef50f3)
       '@solana/web3.js':
         specifier: ^1.98.2
         version: 1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)
@@ -1291,11 +1291,11 @@ packages:
       react: '>=18'
       react-dom: '>=18'
 
-  '@rozoai/intent-common@0.0.19-beta.1':
-    resolution: {integrity: sha512-sWkWzURQA3PRg8PUKz7k/LlJ8bOSiuuuBEhZGBbw1yHrO5g6EcovPbOBAGcmtHLpo0DvrOJeXP/lUpyglG9+VA==}
+  '@rozoai/intent-common@0.0.19':
+    resolution: {integrity: sha512-pYGzdJFI95aH7GC2al2v9IH/lOVPPTGoaTOjIQY3zG5voBaoiXxunnfMHOdM7mJWHz6FARv1U1wYZe7gmvo96g==}
 
-  '@rozoai/intent-pay@0.0.22-beta.2':
-    resolution: {integrity: sha512-by0AoAlu2zlNJKgMnAeQlWgZdsasKfZ6s0AXOXi7sxlYNTHhzCkKu4vPmfhtnF3xCDKgB0BVd2t0c/6DpyOa+A==}
+  '@rozoai/intent-pay@0.0.22':
+    resolution: {integrity: sha512-E98T8SF/i3MyKl4I9WR3mv7r3n25Atpth7FUE23akDm/B3On5+eGQswGTbyTftzLT46fYB1Ll7f+DihOwb2o6w==}
     engines: {node: '>=12.4'}
     peerDependencies:
       '@tanstack/react-query': '>=5.0.0'
@@ -7693,7 +7693,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@rozoai/intent-common@0.0.19-beta.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+  '@rozoai/intent-common@0.0.19(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@scure/base': 1.2.6
       viem: 2.33.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
@@ -7703,12 +7703,12 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@rozoai/intent-pay@0.0.22-beta.2(7402cc8243f0f55079bf8504bfef50f3)':
+  '@rozoai/intent-pay@0.0.22(7402cc8243f0f55079bf8504bfef50f3)':
     dependencies:
       '@albedo-link/intent': 0.13.0
       '@creit.tech/stellar-wallets-kit': 1.7.7(@react-native-async-storage/async-storage@1.24.0(react-native@0.80.2(@babel/core@7.28.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10)))(@stellar/stellar-base@13.1.0)(@stellar/stellar-sdk@13.3.0)(@trezor/connect@9.5.1(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-native@0.80.2(@babel/core@7.28.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(@types/react@19.1.9)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(near-api-js@5.1.1(encoding@0.1.13))(react-native@0.80.2(@babel/core@7.28.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       '@rollup/plugin-typescript': 12.1.4(tslib@2.8.1)(typescript@5.8.3)
-      '@rozoai/intent-common': 0.0.19-beta.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@rozoai/intent-common': 0.0.19(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@solana/spl-token': 0.4.13(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@solana/wallet-adapter-base': 0.9.27(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10))
       '@solana/wallet-adapter-react': 0.15.39(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10))(bs58@6.0.0)(react-native@0.80.2(@babel/core@7.28.0)(@types/react@19.1.9)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)

@@ -19,7 +19,7 @@ export function useShareReceipt(payment: RozoPayOrderView | PaymentResponse) {
       text = `Check out this payment receipt for ${payment.display.paymentValue} ${payment.display.currency}`;
     } else if ("display" in payment && "name" in payment.display) {
       // PaymentResponse
-      title = `Payment Receipt - ${payment.display.name}`;
+      title = `Payment Receipt - $${payment.destination.amountUnits}`;
       text = `Check out this payment receipt for ${payment.display.description}`;
     } else {
       // Fallback

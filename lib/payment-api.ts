@@ -185,3 +185,72 @@ export async function getPaymentData(
     error: `Payment failed to fetch from Rozo API: ${rozoResponse.error}`,
   };
 }
+
+// Polling function to fetch payment data until destination hash exists (payoutTransactionHash or destination.txHash)
+export async function pollPaymentUntilPayout(
+  id: string,
+  maxAttempts: number = 60, // 5 minutes max (60 * 5s)
+  intervalMs: number = 5000 // 5 seconds
+): Promise<PaymentResult> {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+
+    const poll = async () => {
+      attempts++;
+
+      try {
+        const result = await getPaymentData(id);
+
+        if (!result.success) {
+          if (attempts >= maxAttempts) {
+            reject(
+              new Error(
+                `Polling failed after ${maxAttempts} attempts: ${result.error}`
+              )
+            );
+            return;
+          }
+          // Continue polling on API errors
+          setTimeout(poll, intervalMs);
+          return;
+        }
+
+        // Check if any destination hash exists (payoutTransactionHash or destination.txHash)
+        const payment = result.payment as PaymentResponse;
+        const hasPayoutHash = payment?.payoutTransactionHash;
+        const hasDestinationTxHash =
+          payment?.destination &&
+          "txHash" in payment.destination &&
+          payment.destination.txHash;
+
+        if (hasPayoutHash || hasDestinationTxHash) {
+          resolve(result);
+          return;
+        }
+
+        // Check if we've reached max attempts
+        if (attempts >= maxAttempts) {
+          reject(
+            new Error(
+              `Polling timeout: destination hash (payoutTransactionHash or destination.txHash) not found after ${maxAttempts} attempts`
+            )
+          );
+          return;
+        }
+
+        // Continue polling
+        setTimeout(poll, intervalMs);
+      } catch (error) {
+        if (attempts >= maxAttempts) {
+          reject(error);
+          return;
+        }
+        // Continue polling on unexpected errors
+        setTimeout(poll, intervalMs);
+      }
+    };
+
+    // Start polling immediately
+    poll();
+  });
+}

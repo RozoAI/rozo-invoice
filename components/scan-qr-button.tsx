@@ -261,8 +261,6 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
       {parsedTransfer !== null && (
         <RozoPayButton.Custom
           defaultOpen
-          closeOnSuccess
-          resetOnSuccess
           appId={appId}
           toAddress={parsedTransfer.toAddress as `0x${string}`}
           toChain={parsedTransfer.toChain}
@@ -281,13 +279,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
           }}
           onPaymentCompleted={(args: PaymentCompletedEvent) => {
             setIsLoading(false);
-            setParsedTransfer(null);
-
-            // @NOTE: If it's none stellar, let's use `paymentId` from Daimo API
-            // If it's stellar, let's use `externalId` from Rozo API
-            router.push(
-              `/receipt?id=${args.payment.externalId ?? args.paymentId}`
-            );
+            toast.success(`Payment completed for $${parsedTransfer.toUnits}`);
           }}
         >
           {({ show }) => (
