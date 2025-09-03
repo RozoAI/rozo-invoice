@@ -6,8 +6,9 @@ import { CardContent } from "@/components/ui/card";
 import { AlertCircle, ArrowLeft, Home } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function ErrorPage() {
+function ErrorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -103,5 +104,43 @@ export default function ErrorPage() {
         </div>
       </CardContent>
     </BoxedCard>
+  );
+}
+
+function ErrorFallback() {
+  return (
+    <BoxedCard className="flex-1">
+      <CardContent className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-8 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="rounded-full bg-destructive/10 p-6">
+            <AlertCircle className="size-16 text-destructive" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-foreground">
+              Something went wrong
+            </h1>
+            <p className="text-muted-foreground max-w-md">
+              We encountered an error while processing your request.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-3 w-full max-w-sm">
+          <Button variant="outline" asChild className="w-full" size="lg">
+            <Link href="/">
+              <Home className="size-4 mr-2" />
+              Go Home
+            </Link>
+          </Button>
+        </div>
+      </CardContent>
+    </BoxedCard>
+  );
+}
+
+export default function ErrorPage() {
+  return (
+    <Suspense fallback={<ErrorFallback />}>
+      <ErrorContent />
+    </Suspense>
   );
 }
