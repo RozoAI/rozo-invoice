@@ -1,11 +1,15 @@
 import ReceiptContent from "@/components/payment/receipt-content";
 import {
+  getMissingParamsMessage,
+  getUnknownErrorMessage,
+  redirectToError,
+} from "@/lib/error-utils";
+import {
   generateErrorMetadata,
   generatePaymentMetadata,
 } from "@/lib/metadata-utils";
 import { getPaymentData } from "@/lib/payment-api";
 import { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +49,11 @@ export default async function Receipt({ searchParams }: ReceiptPageProps) {
     const { id, payInHash, back_url } = await searchParams;
 
     if (!id && !payInHash) {
-      return redirect("/error");
+      return redirectToError({
+        type: "INVALID_REQUEST",
+        source: "receipt",
+        message: getMissingParamsMessage("receipt"),
+      });
     }
 
     // Use id if available, otherwise use payInHash
@@ -55,12 +63,28 @@ export default async function Receipt({ searchParams }: ReceiptPageProps) {
     const result = await getPaymentData(identifier, isHash);
     console.log("Payment data:", result);
     if (!result.success || !result.payment) {
-      return redirect("/error");
+      return redirectToError({
+        type: "PAYMENT_NOT_FOUND",
+        id: identifier,
+      });
     }
 
     return <ReceiptContent payment={result.payment} backUrl={back_url} />;
   } catch (error) {
+    // Re-throw Next.js redirect errors to avoid double redirect
+    if (
+      error instanceof Error &&
+      (error.message === "NEXT_REDIRECT" ||
+        (error as any).digest?.startsWith("NEXT_REDIRECT"))
+    ) {
+      throw error;
+    }
+
     console.error("Error loading receipt:", error);
-    return redirect("/error");
+    return redirectToError({
+      type: "API_ERROR",
+      source: "receipt",
+      message: getUnknownErrorMessage(error, "receipt"),
+    });
   }
 }

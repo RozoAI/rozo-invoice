@@ -1,7 +1,7 @@
 import CheckoutContent from "@/components/payment/checkout-content";
+import { redirectToError } from "@/lib/error-utils";
 import { getPaymentData, PaymentResponse } from "@/lib/payment-api";
 import type { RozoPayOrderView } from "@rozoai/intent-common";
-import { redirect } from "next/navigation";
 import type { ReactElement } from "react";
 
 type PaymentData = RozoPayOrderView | PaymentResponse;
@@ -64,7 +64,10 @@ export default async function Checkout({
   const loaderData = await getPayment(id || "");
   console.log("loaderData", loaderData);
   if (!loaderData.success) {
-    return redirect("/error");
+    return redirectToError({
+      type: id ? "PAYMENT_NOT_FOUND" : "INVALID_REQUEST",
+      ...(id && { id }),
+    });
   }
 
   return <CheckoutContent loaderData={loaderData} />;
