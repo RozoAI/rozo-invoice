@@ -17,6 +17,7 @@ import { CircleCheckIcon, ExternalLink, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
+import { toast } from "sonner";
 
 export interface PaymentContentProps {
   appId: string;
@@ -154,8 +155,6 @@ export function PaymentContent({
       {payParams && payment.status === "payment_unpaid" && (
         <RozoPayButton.Custom
           defaultOpen
-          closeOnSuccess
-          resetOnSuccess
           appId={appId}
           toAddress={payParams.toAddress as `0x${string}`}
           toChain={payParams.toChain as number}
@@ -170,9 +169,7 @@ export function PaymentContent({
           }}
           onPaymentCompleted={(args: PaymentCompletedEvent) => {
             setIsLoading(false);
-            router.push(
-              `/receipt?id=${args.payment.externalId ?? args.paymentId}`
-            );
+            toast.success(`Payment completed for $${payParams.toUnits}`);
           }}
         >
           {({ show }) => (
