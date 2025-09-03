@@ -69,6 +69,17 @@ export default async function Receipt({ searchParams }: ReceiptPageProps) {
       });
     }
 
+    if (
+      result.success &&
+      result.payment &&
+      result.payment.status === "payment_unpaid"
+    ) {
+      return redirectToError({
+        type: "PAYMENT_UNPAID",
+        id: identifier,
+      });
+    }
+
     return <ReceiptContent payment={result.payment} backUrl={back_url} />;
   } catch (error) {
     // Re-throw Next.js redirect errors to avoid double redirect

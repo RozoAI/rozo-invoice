@@ -37,13 +37,13 @@ async function getPayment(id: string): Promise<LoaderData> {
 
     // Check if the response is from Daimo API (RozoPayOrderView)
     // Checkout page only supports Daimo payments
-    if (response.source !== "daimo") {
-      return {
-        success: false,
-        error:
-          "Checkout is only available for Daimo payments. Please use the receipt page instead.",
-      };
-    }
+    // if (response.source !== "daimo") {
+    //   return {
+    //     success: false,
+    //     error:
+    //       "Checkout is only available for Daimo payments. Please use the receipt page instead.",
+    //   };
+    // }
 
     return {
       success: true,

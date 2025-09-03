@@ -29,6 +29,8 @@ function ErrorContent() {
         return "Connection Error";
       case "INVALID_REQUEST":
         return "Invalid Request";
+      case "PAYMENT_UNPAID":
+        return "Payment Unpaid";
       default:
         return "Payment Not Found";
     }
