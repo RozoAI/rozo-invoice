@@ -17,7 +17,7 @@
     "@rozoai/deeplink-core": "1.0.9",
     "@rozoai/deeplink-react": "1.0.9",
     "@rozoai/intent-common": "0.0.19",
-    "@rozoai/intent-pay": "0.0.24-beta.5",
+    "@rozoai/intent-pay": "0.0.24-beta.6",
     "@solana/web3.js": "^1.98.2",
     "@stellar/stellar-sdk": "^13.3.0",
     "@tanstack/react-query": "^5.83.0",
