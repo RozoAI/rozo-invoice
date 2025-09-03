@@ -46,9 +46,9 @@ export async function generateMetadata({
 
 export default async function Receipt({ searchParams }: ReceiptPageProps) {
   try {
-    const { id, payInHash, back_url } = await searchParams;
+    const { id, back_url } = await searchParams;
 
-    if (!id && !payInHash) {
+    if (!id) {
       return redirectToError({
         type: "INVALID_REQUEST",
         source: "receipt",
@@ -56,16 +56,12 @@ export default async function Receipt({ searchParams }: ReceiptPageProps) {
       });
     }
 
-    // Use id if available, otherwise use payInHash
-    const identifier = id || payInHash!;
-    const isHash = !id && !!payInHash;
-
-    const result = await getPaymentData(identifier, isHash);
+    const result = await getPaymentData(id);
     console.log("Payment data:", result);
     if (!result.success || !result.payment) {
       return redirectToError({
         type: "PAYMENT_NOT_FOUND",
-        id: identifier,
+        id,
       });
     }
 
@@ -76,7 +72,7 @@ export default async function Receipt({ searchParams }: ReceiptPageProps) {
     ) {
       return redirectToError({
         type: "PAYMENT_UNPAID",
-        id: identifier,
+        id,
       });
     }
 

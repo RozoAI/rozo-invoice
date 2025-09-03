@@ -125,8 +125,6 @@ export function PaymentContent({
       };
     }
 
-    console.log("params", params);
-
     setPayParams(params as PayParams);
     resetPayment(params);
   }, [isToStellar, isToSolana, payment]);
