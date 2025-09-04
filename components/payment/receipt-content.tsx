@@ -4,7 +4,10 @@ import BoxedCard from "@/components/boxed-card";
 import { CardContent } from "@/components/ui/card";
 import { useExplorer } from "@/hooks/use-explorer";
 import { useShareReceipt } from "@/hooks/use-share-receipt";
-import { PaymentResponse, pollPaymentUntilPayout } from "@/lib/payment-api";
+import {
+  PaymentResponse,
+  pollPaymentUntilPayoutClient,
+} from "@/lib/payment-api";
 import { RozoPayOrderView } from "@rozoai/intent-common";
 import { useEffect, useState } from "react";
 import { PaymentStatus } from "./receipt/payment-status";
@@ -49,7 +52,7 @@ export default function ReceiptContent({
     if (!hasAnyDestinationHash && currentPayment.id && !isPolling) {
       setIsPolling(true);
 
-      pollPaymentUntilPayout(currentPayment.id)
+      pollPaymentUntilPayoutClient(currentPayment.id)
         .then((result) => {
           if (!cancelled && result.success && result.payment) {
             setCurrentPayment(result.payment);

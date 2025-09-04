@@ -60,21 +60,28 @@ function validateEnvironment(): { rozo: ApiConfig; daimo: ApiConfig } | null {
   const daimoUrl = process.env.DAIMO_API_URL;
   const daimoKey = process.env.DAIMO_API_KEY;
 
-  if (!rozoUrl || !rozoKey || !daimoUrl || !daimoKey) {
+  const missing = [];
+  if (!rozoUrl) missing.push("ROZO_API_URL");
+  if (!rozoKey) missing.push("ROZO_API_KEY");
+  if (!daimoUrl) missing.push("DAIMO_API_URL");
+  if (!daimoKey) missing.push("DAIMO_API_KEY");
+
+  if (missing.length > 0) {
+    console.error("Missing environment variables:", missing.join(", "));
     return null;
   }
 
   return {
     rozo: {
-      url: rozoUrl,
+      url: rozoUrl!,
       headers: {
-        Authorization: `Bearer ${rozoKey}`,
+        Authorization: `Bearer ${rozoKey!}`,
         "Content-Type": "application/json",
       },
     },
     daimo: {
-      url: daimoUrl,
-      headers: { "Api-Key": daimoKey, "Content-Type": "application/json" },
+      url: daimoUrl!,
+      headers: { "Api-Key": daimoKey!, "Content-Type": "application/json" },
     },
   };
 }
@@ -186,6 +193,93 @@ export async function getPaymentData(
   };
 }
 
+// Client-side function to fetch payment data via API route
+export async function getPaymentDataClient(
+  idOrHash: string,
+  isHash: boolean = false
+): Promise<PaymentResult> {
+  try {
+    const url = `/api/payment/${idOrHash}${isHash ? "?isHash=true" : ""}`;
+    const response = await fetch(url);
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    };
+  }
+}
+
+// Client-side polling function to fetch payment data until destination hash exists
+export async function pollPaymentUntilPayoutClient(
+  id: string,
+  maxAttempts: number = 60, // 5 minutes max (60 * 5s)
+  intervalMs: number = 5000 // 5 seconds
+): Promise<PaymentResult> {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+
+    const poll = async () => {
+      attempts++;
+
+      try {
+        const result = await getPaymentDataClient(id);
+
+        if (!result.success) {
+          if (attempts >= maxAttempts) {
+            reject(
+              new Error(
+                `Polling failed after ${maxAttempts} attempts: ${result.error}`
+              )
+            );
+            return;
+          }
+          // Continue polling on API errors
+
+          setTimeout(poll, intervalMs);
+          return;
+        }
+
+        // Check if any destination hash exists (payoutTransactionHash or destination.txHash)
+        const payment = result.payment as PaymentResponse;
+        const hasPayoutHash = payment?.payoutTransactionHash;
+        const hasDestinationTxHash =
+          payment?.destination &&
+          "txHash" in payment.destination &&
+          payment.destination.txHash;
+
+        if (hasPayoutHash || hasDestinationTxHash) {
+          resolve(result);
+          return;
+        }
+
+        // Check if we've reached max attempts
+        if (attempts >= maxAttempts) {
+          reject(
+            new Error(
+              `Polling timeout: destination hash (payoutTransactionHash or destination.txHash) not found after ${maxAttempts} attempts`
+            )
+          );
+          return;
+        }
+
+        // Continue polling
+        setTimeout(poll, intervalMs);
+      } catch (error) {
+        if (attempts >= maxAttempts) {
+          reject(error);
+          return;
+        }
+
+        setTimeout(poll, intervalMs);
+      }
+    };
+
+    poll();
+  });
+}
+
 // Polling function to fetch payment data until destination hash exists (payoutTransactionHash or destination.txHash)
 export async function pollPaymentUntilPayout(
   id: string,
@@ -224,12 +318,18 @@ export async function pollPaymentUntilPayout(
           payment.destination.txHash;
 
         if (hasPayoutHash || hasDestinationTxHash) {
+          console.log(
+            `[pollPaymentUntilPayout] Success! Found destination hash after ${attempts} attempts`
+          );
           resolve(result);
           return;
         }
 
         // Check if we've reached max attempts
         if (attempts >= maxAttempts) {
+          console.error(
+            `[pollPaymentUntilPayout] Timeout: No destination hash found after ${maxAttempts} attempts`
+          );
           reject(
             new Error(
               `Polling timeout: destination hash (payoutTransactionHash or destination.txHash) not found after ${maxAttempts} attempts`
@@ -246,11 +346,17 @@ export async function pollPaymentUntilPayout(
           return;
         }
         // Continue polling on unexpected errors
+        console.log(
+          `[pollPaymentUntilPayout] Retrying after error in ${intervalMs}ms...`
+        );
         setTimeout(poll, intervalMs);
       }
     };
 
     // Start polling immediately
+    console.log(
+      `[pollPaymentUntilPayout] Starting polling for payment ID: ${id}`
+    );
     poll();
   });
 }

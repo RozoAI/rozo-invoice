@@ -1,7 +1,8 @@
 import { PaymentResponse } from "@/lib/payment-api";
 import { RozoPayOrderView, getChainName } from "@rozoai/intent-common";
 import { formatDistanceToNow } from "date-fns";
-import { BadgeCheckIcon } from "lucide-react";
+import { BadgeAlertIcon, BadgeCheckIcon } from "lucide-react";
+import { useMemo } from "react";
 
 interface PaymentStatusProps {
   payment: RozoPayOrderView | PaymentResponse;
@@ -68,13 +69,23 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
     return "Amount unavailable";
   };
 
+  const getPaymentStatus = useMemo(() => {
+    if (payment.status === "payment_unpaid") {
+      return "Payment in Progress";
+    }
+    return viewType === "user" ? "Payment Completed" : "Payment Received";
+  }, [payment.status, viewType]);
+
   return (
     <div className="flex flex-col items-center w-full">
-      <BadgeCheckIcon className="size-[90px] fill-[#0052FF] text-white" />
+      {getPaymentStatus === "Payment Completed" && (
+        <BadgeCheckIcon className="size-[90px] fill-[#0052FF] text-white" />
+      )}
+      {getPaymentStatus === "Payment in Progress" && (
+        <BadgeAlertIcon className="size-[90px] fill-yellow-500 text-white" />
+      )}
       <div className="space-y-1 mt-2">
-        <h3 className="font-semibold text-xl">
-          {viewType === "user" ? "Payment Completed" : "Payment Received"}
-        </h3>
+        <h3 className="font-semibold text-xl">{getPaymentStatus}</h3>
       </div>
 
       <div className="mt-6">
