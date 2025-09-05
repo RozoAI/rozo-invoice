@@ -3,18 +3,14 @@
 import BoxedCard from "@/components/boxed-card";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
-import { AlertCircle, ArrowLeft, Home } from "lucide-react";
+import { AlertCircle, Home } from "lucide-react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
 function ErrorContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Extract error details from URL parameters
-  const errorMessage = searchParams.get("message");
-  const errorSource = searchParams.get("source");
   const errorId = searchParams.get("id");
   const errorType = searchParams.get("type") || "PAYMENT_NOT_FOUND";
 
@@ -29,33 +25,9 @@ function ErrorContent() {
         return "Connection Error";
       case "INVALID_REQUEST":
         return "Invalid Request";
-      case "PAYMENT_UNPAID":
-        return "Payment Unpaid";
       default:
         return "Payment Not Found";
     }
-  };
-
-  // Create a descriptive message based on available information
-  const getErrorMessage = () => {
-    if (errorMessage) {
-      return errorMessage;
-    }
-
-    const baseMessage =
-      errorSource === "receipt"
-        ? "We couldn't load the payment receipt"
-        : "We encountered an error while processing your request";
-
-    if (errorId) {
-      return `${baseMessage} for ID: ${errorId}.`;
-    }
-
-    return `${baseMessage}. This could be due to a network issue or the requested information might not be available.`;
-  };
-
-  const handleGoBack = () => {
-    router.back();
   };
 
   return (
@@ -73,21 +45,6 @@ function ErrorContent() {
               {getErrorTitle()}
             </h1>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-3 w-full max-w-sm">
-          <Button onClick={handleGoBack} className="w-full" size="lg">
-            <ArrowLeft className="size-4 mr-2" />
-            Go Back
-          </Button>
-
-          <Button variant="outline" asChild className="w-full" size="lg">
-            <Link href="/">
-              <Home className="size-4 mr-2" />
-              Go Home
-            </Link>
-          </Button>
         </div>
 
         {/* Help Text */}

@@ -4,8 +4,7 @@ export type ErrorType =
   | "PAYMENT_NOT_FOUND"
   | "API_ERROR"
   | "NETWORK_ERROR"
-  | "INVALID_REQUEST"
-  | "PAYMENT_UNPAID";
+  | "INVALID_REQUEST";
 
 export type ErrorSource = "receipt" | "checkout" | "payment";
 
