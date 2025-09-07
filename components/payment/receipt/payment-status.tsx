@@ -78,12 +78,12 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
 
   return (
     <div className="flex flex-col items-center w-full">
-      {getPaymentStatus === "Payment Completed" && (
+      {payment.status === "payment_unpaid" ? (
+        <BadgeAlertIcon className="size-[90px] fill-yellow-500 text-white" />
+      ) : (
         <BadgeCheckIcon className="size-[90px] fill-[#0052FF] text-white" />
       )}
-      {getPaymentStatus === "Payment in Progress" && (
-        <BadgeAlertIcon className="size-[90px] fill-yellow-500 text-white" />
-      )}
+
       <div className="space-y-1 mt-2">
         <h3 className="font-semibold text-xl">{getPaymentStatus}</h3>
       </div>
