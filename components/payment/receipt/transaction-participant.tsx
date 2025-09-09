@@ -82,10 +82,12 @@ export function TransactionParticipant({
           <div className="text-xs text-muted-foreground bg-muted border rounded-full px-2 py-0.5">
             {getChainName(Number(chainId))}
           </div>
-          <ExternalLinkIcon
-            className="size-4 cursor-pointer"
-            onClick={() => onExplorerClick({ chainId, hash: txHash })}
-          />
+          {txHash && (
+            <ExternalLinkIcon
+              className="size-4 cursor-pointer"
+              onClick={() => onExplorerClick({ chainId, hash: txHash })}
+            />
+          )}
         </div>
       </div>
     </div>
