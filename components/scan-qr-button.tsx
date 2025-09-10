@@ -22,7 +22,7 @@ import { PaymentCompletedEvent, baseUSDC } from "@rozoai/intent-common";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
 import { Loader2, ScanLine, Wallet } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { getAddress } from "viem";
 import { TransactionDetails } from "./transaction-details";
@@ -35,6 +35,7 @@ export type ParsedTransfer = {
   isStellar: boolean;
   toAddress: string;
   toStellarAddress?: string;
+  toSolanaAddress?: string;
   toChain: number;
   toUnits: string | null;
   toToken: string | null;
@@ -51,6 +52,14 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
 
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const payToStellar = useMemo(() => {
+    return parsedTransfer?.toStellarAddress;
+  }, [parsedTransfer]);
+
+  const payToSolana = useMemo(() => {
+    return parsedTransfer?.toSolanaAddress;
+  }, [parsedTransfer]);
 
   // Check for qr query parameter and parse it
   useEffect(() => {

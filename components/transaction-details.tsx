@@ -72,12 +72,6 @@ export function TransactionDetails({
                 coppiedText={transfer.toStellarAddress}
               />
             )}
-            <DetailRow
-              label="Bridge Address"
-              value={transfer.toAddress}
-              isAddress
-              coppiedText={transfer.toAddress}
-            />
           </>
         ) : (
           <DetailRow
@@ -95,7 +89,7 @@ export function TransactionDetails({
           />
         )}
 
-        {transfer.toToken && (
+        {!transfer.isStellar && transfer.toToken && (
           <DetailRow
             label={transfer.isStellar ? "Asset" : "Contract Address"}
             value={formatAddress(transfer.toToken)}
@@ -103,11 +97,13 @@ export function TransactionDetails({
             coppiedText={transfer.toToken}
           />
         )}
-        <DetailRow
-          label="Chain ID"
-          value={`${getChainName(transfer.toChain)} (${transfer.toChain})`}
-          coppiedText={transfer.toChain.toString()}
-        />
+        {!transfer.isStellar && (
+          <DetailRow
+            label="Chain ID"
+            value={`${getChainName(transfer.toChain)} (${transfer.toChain})`}
+            coppiedText={transfer.toChain.toString()}
+          />
+        )}
 
         {transfer.message && (
           <Alert variant="default">
