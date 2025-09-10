@@ -288,7 +288,9 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
           }}
           onPaymentCompleted={(args: PaymentCompletedEvent) => {
             setIsLoading(false);
-            toast.success(`Payment completed for $${parsedTransfer.toUnits}`);
+            toast.success(
+              `Payment completed for $${args.payment.destination.amountUnits}`
+            );
           }}
         >
           {({ show }) => (
