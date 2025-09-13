@@ -58,9 +58,9 @@ async function getPayment(id: string): Promise<LoaderData> {
 export default async function Checkout({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string }>;
+  searchParams: Promise<{ id?: string; appId?: string }>;
 }): Promise<ReactElement> {
-  const { id } = await searchParams;
+  const { id, appId } = await searchParams;
   const loaderData = await getPayment(id || "");
   console.log("loaderData", loaderData);
   if (!loaderData.success) {
@@ -70,5 +70,5 @@ export default async function Checkout({
     });
   }
 
-  return <CheckoutContent loaderData={loaderData} />;
+  return <CheckoutContent loaderData={loaderData} appId={appId} />;
 }

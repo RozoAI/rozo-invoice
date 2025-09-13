@@ -20,8 +20,10 @@ type LoaderData = {
 
 export default function CheckoutContent({
   loaderData,
+  appId,
 }: {
   loaderData: LoaderData;
+  appId?: string;
 }) {
   const { resolvedTheme } = useTheme();
 
@@ -41,7 +43,7 @@ export default function CheckoutContent({
 
         {loaderData.success && loaderData.payment ? (
           <PaymentContent
-            appId={loaderData.appId ?? ""}
+            appId={appId ?? loaderData.appId ?? ""}
             data={loaderData.payment}
           />
         ) : (
