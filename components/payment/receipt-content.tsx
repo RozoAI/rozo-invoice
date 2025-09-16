@@ -84,10 +84,7 @@ export default function ReceiptContent({
 
         {showMoreActions &&
         ((currentPayment?.source && currentPayment?.destination) ||
-          ("payinTransactionHash" in currentPayment &&
-            "destination" in currentPayment &&
-            currentPayment.payinTransactionHash &&
-            currentPayment.destination)) ? (
+          ("destination" in currentPayment && currentPayment.destination)) ? (
           <TransactionFlow
             payment={currentPayment}
             viewType={viewType}

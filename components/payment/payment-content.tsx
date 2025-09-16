@@ -13,7 +13,12 @@ import {
   type RozoPayOrderView,
 } from "@rozoai/intent-common";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
-import { CircleCheckIcon, ExternalLink, Loader2 } from "lucide-react";
+import {
+  CircleCheckIcon,
+  CircleXIcon,
+  ExternalLink,
+  Loader2,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
@@ -86,6 +91,17 @@ export function PaymentContent({
     return "Amount unavailable";
   }, [payment]);
 
+  const paymentItems = useMemo(() => {
+    // Check for items in metadata (PaymentResponse)
+    if ("metadata" in payment && payment.metadata?.items) {
+      const items = payment.metadata.items;
+      // Ensure items is an array
+      return Array.isArray(items) ? items : null;
+    }
+    // Could add support for RozoPayOrderView items here if needed
+    return null;
+  }, [payment]);
+
   const txUrl = useMemo(() => {
     if (!("txHash" in payment.destination) || !payment.destination.txHash)
       return undefined;
@@ -133,13 +149,37 @@ export function PaymentContent({
   console.log({ isToStellar, isToSolana, payment });
 
   return (
-    <div className="flex w-full flex-1 flex-col items-center justify-center gap-8 md:justify-start">
+    <div className="flex w-full flex-1 flex-col items-center justify-center gap-4 md:justify-start">
       {/* Price Display */}
       <div className="py-4">
         <div className="font-bold text-5xl text-foreground">
           {paymentAmount}
         </div>
       </div>
+
+      {/* Items Section */}
+      {paymentItems && paymentItems.length > 0 && (
+        <div className="w-full space-y-3">
+          <div className="font-medium text-foreground text-center">Items</div>
+          <div className="space-y-2">
+            {paymentItems.map((item, index: number) => (
+              <div
+                key={index}
+                className="flex flex-col space-y-1 rounded-lg border bg-muted/30 p-3"
+              >
+                <div className="font-medium text-foreground text-sm">
+                  {item.name}
+                </div>
+                {item.description && (
+                  <div className="text-muted-foreground text-xs">
+                    {item.description}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Order Information */}
       {payment.externalId && (
@@ -207,6 +247,14 @@ export function PaymentContent({
               View Transaction
             </Link>
           )}
+        </div>
+      )}
+      {payment.status === "payment_expired" && (
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex items-center gap-1">
+            <CircleXIcon className="size-8 fill-red-600 text-white" />
+            <span className="font-semibold text-red-600">Payment Expired</span>
+          </div>
         </div>
       )}
     </div>

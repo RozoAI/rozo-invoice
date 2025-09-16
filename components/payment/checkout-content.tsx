@@ -61,7 +61,7 @@ export default function CheckoutContent({
           <div className="mx-auto flex flex-row items-center justify-center gap-2">
             <ChainsStacked />
             <span className="text-muted-foreground text-sm">
-              1000+ tokens accepted
+              Safe and Secure Payments
             </span>
           </div>
         </CardFooter>

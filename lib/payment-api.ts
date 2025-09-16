@@ -21,7 +21,10 @@ export interface PaymentResponse {
   };
   externalId: string | null;
   metadata: {
-    items: any[];
+    items: Array<{
+      name: string;
+      description?: string;
+    }>;
     payer: Record<string, any>;
     intent: string;
     flush_tx: string;
