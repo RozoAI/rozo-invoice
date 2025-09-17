@@ -200,6 +200,12 @@ export function PaymentContent({
           toChain={payParams.toChain as number}
           toUnits={payParams.toUnits as string}
           toToken={payParams.toToken as `0x${string}`}
+          {...(isToStellar && {
+            toStellarAddress: payParams.toStellarAddress,
+          })}
+          {...(isToSolana && {
+            toSolanaAddress: payParams.toSolanaAddress,
+          })}
           externalId={payment.externalId ?? undefined}
           onPaymentStarted={() => {
             setIsLoading(true);
@@ -228,6 +234,7 @@ export function PaymentContent({
           )}
         </RozoPayButton.Custom>
       )}
+
       {payment.status === "payment_completed" && (
         <div className="flex flex-col items-center gap-2 ">
           <div className="flex items-center gap-1">
@@ -249,6 +256,7 @@ export function PaymentContent({
           )}
         </div>
       )}
+
       {payment.status === "payment_expired" && (
         <div className="flex flex-col items-center gap-2">
           <div className="flex items-center gap-1">
