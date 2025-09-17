@@ -25,7 +25,6 @@ async function getPayment(id: string): Promise<LoaderData> {
   // Future work: Unify API endpoints and migrate all payment processing to internal systems or make our internal API support all IDs.
   try {
     const response = await getPaymentData(id);
-    console.log("response", response);
     if (!response.success) {
       return {
         success: false,
@@ -62,7 +61,7 @@ export default async function Checkout({
 }): Promise<ReactElement> {
   const { id, appId } = await searchParams;
   const loaderData = await getPayment(id || "");
-  console.log("loaderData", loaderData);
+
   if (!loaderData.success) {
     return redirectToError({
       type: id ? "PAYMENT_NOT_FOUND" : "INVALID_REQUEST",

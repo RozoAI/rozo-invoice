@@ -6,7 +6,6 @@ import { ScanQRButton } from "@/components/scan-qr-button";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { useTheme } from "next-themes";
-import { Suspense } from "react";
 
 export default function Home() {
   const { resolvedTheme } = useTheme();
@@ -27,11 +26,9 @@ export default function Home() {
       </CardHeader>
 
       <CardContent className="space-y-6">
-        <Suspense fallback={<div>Loading...</div>}>
-          <ScanQRButton
-            appId={process.env.NEXT_PUBLIC_DAIMO_API_KEY ?? "rozoInvoice"}
-          />
-        </Suspense>
+        <ScanQRButton
+          appId={process.env.NEXT_PUBLIC_DAIMO_API_KEY ?? "rozoInvoice"}
+        />
       </CardContent>
 
       <CardFooter className="pb-0 md:pb-8 flex justify-center gap-2">

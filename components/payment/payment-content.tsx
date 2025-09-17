@@ -146,8 +146,6 @@ export function PaymentContent({
     resetPayment(params);
   }, [isToStellar, isToSolana, payment]);
 
-  console.log({ isToStellar, isToSolana, payment });
-
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center gap-4 md:justify-start">
       {/* Price Display */}
@@ -160,7 +158,6 @@ export function PaymentContent({
       {/* Items Section */}
       {paymentItems && paymentItems.length > 0 && (
         <div className="w-full space-y-3">
-          <div className="font-medium text-foreground text-center">Items</div>
           <div className="space-y-2">
             {paymentItems.map((item, index: number) => (
               <div

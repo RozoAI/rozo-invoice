@@ -25,6 +25,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { getAddress } from "viem";
+import { InputAddress } from "./input-address";
 import { TransactionDetails } from "./transaction-details";
 
 interface ScanQRButtonProps {
@@ -234,37 +235,50 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
   return (
     <>
       {!parsedTransfer && (
-        <Drawer open={isScannerOpen} onOpenChange={setIsScannerOpen}>
-          <DrawerTrigger asChild className="m-auto w-full">
-            <Button className="py-8 text-lg">
-              <ScanLine className="size-7" />
-              Scan QR Code
-            </Button>
-          </DrawerTrigger>
-          <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle>Scan QR Code</DrawerTitle>
-            </DrawerHeader>
-            <div className="p-4">
-              <div className="mx-auto w-full max-w-sm">
-                <div className="w-full overflow-hidden rounded-lg">
-                  <ScanQr
-                    onScan={handleScan}
-                    onError={handleScanError}
-                    sound={false}
-                    components={{
-                      finder: false,
-                      torch: false,
-                    }}
-                  />
-                </div>
-                <p className="mt-4 text-center text-muted-foreground text-sm">
-                  Position the QR code within the scanner frame
-                </p>
-              </div>
+        <>
+          <InputAddress />
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
             </div>
-          </DrawerContent>
-        </Drawer>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or
+              </span>
+            </div>
+          </div>
+          <Drawer open={isScannerOpen} onOpenChange={setIsScannerOpen}>
+            <DrawerTrigger asChild className="m-auto w-full">
+              <Button className="py-8 text-lg">
+                <ScanLine className="size-7" />
+                Scan QR Code
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Scan QR Code</DrawerTitle>
+              </DrawerHeader>
+              <div className="p-4">
+                <div className="mx-auto w-full max-w-sm">
+                  <div className="w-full overflow-hidden rounded-lg">
+                    <ScanQr
+                      onScan={handleScan}
+                      onError={handleScanError}
+                      sound={false}
+                      components={{
+                        finder: false,
+                        torch: false,
+                      }}
+                    />
+                  </div>
+                  <p className="mt-4 text-center text-muted-foreground text-sm">
+                    Position the QR code within the scanner frame
+                  </p>
+                </div>
+              </div>
+            </DrawerContent>
+          </Drawer>
+        </>
       )}
 
       {parsedTransfer !== null && (
