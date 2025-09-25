@@ -3,6 +3,26 @@ import { RozoPayOrderView } from "@rozoai/intent-common";
 import { ArrowDown } from "lucide-react";
 import { TransactionParticipant } from "./transaction-participant";
 
+// Type guard to check if payment is PaymentResponse
+function isPaymentResponse(
+  payment: RozoPayOrderView | PaymentResponse
+): payment is PaymentResponse {
+  return "payinchainid" in payment;
+}
+
+// Type guard to check if payment has metadata with preferred_chain
+function hasPreferredChain(
+  payment: RozoPayOrderView | PaymentResponse
+): boolean {
+  return (
+    "metadata" in payment &&
+    payment.metadata !== null &&
+    payment.metadata !== undefined &&
+    typeof payment.metadata === "object" &&
+    "preferred_chain" in payment.metadata
+  );
+}
+
 interface TransactionFlowProps {
   payment: RozoPayOrderView | PaymentResponse;
   viewType: "user" | "merchant";
@@ -20,19 +40,19 @@ export function TransactionFlow({
   viewType,
   onExplorerClick,
 }: TransactionFlowProps) {
-  // Helper to get source transaction hash
-  const getSourceTxHash = () => {
+  // Helper to safely get source transaction hash
+  const getSourceTxHash = (): string => {
     if (payment?.source?.txHash) {
       return payment.source.txHash;
     }
-    if ("payinTransactionHash" in payment && payment.payinTransactionHash) {
+    if (isPaymentResponse(payment) && payment.payinTransactionHash) {
       return payment.payinTransactionHash;
     }
     return "";
   };
 
-  // Helper to get destination transaction hash
-  const getDestinationTxHash = () => {
+  // Helper to safely get destination transaction hash
+  const getDestinationTxHash = (): string => {
     if (
       payment?.destination &&
       "txHash" in payment.destination &&
@@ -40,11 +60,47 @@ export function TransactionFlow({
     ) {
       return payment.destination.txHash;
     }
-    if ("payoutTransactionHash" in payment && payment.payoutTransactionHash) {
+    if (isPaymentResponse(payment) && payment.payoutTransactionHash) {
       return payment.payoutTransactionHash;
     }
     return "";
   };
+
+  // Helper to safely get payer address
+  const getPayerAddress = (): string => {
+    if (payment?.source?.payerAddress) {
+      return payment.source.payerAddress;
+    }
+    if ("payerAddress" in payment && typeof payment.payerAddress === "string") {
+      return payment.payerAddress;
+    }
+    return "";
+  };
+
+  // Helper to safely get source chain ID with proper fallback logic
+  const getSourceChainId = (): string => {
+    // First priority: source.chainId
+    if (payment?.source?.chainId) {
+      return payment.source.chainId;
+    }
+
+    // Second priority: payinchainid (for PaymentResponse)
+    if (isPaymentResponse(payment) && payment.payinchainid) {
+      return payment.payinchainid;
+    }
+
+    // Third priority: metadata.preferred_chain
+    if (hasPreferredChain(payment)) {
+      const preferredChain = (payment.metadata as any).preferred_chain;
+      if (typeof preferredChain === "string" && preferredChain) {
+        return preferredChain;
+      }
+    }
+
+    return "";
+  };
+
+  const sourceChainId = getSourceChainId();
 
   if (viewType === "user") {
     return (
@@ -53,18 +109,8 @@ export function TransactionFlow({
         <TransactionParticipant
           type="sender"
           name="Sender"
-          address={
-            payment?.source?.payerAddress ??
-            ("payerAddress" in payment
-              ? (payment.payerAddress as string)
-              : "") ??
-            ""
-          }
-          chainId={
-            payment.source?.chainId ??
-            ("payinchainid" in payment ? payment.payinchainid : "") ??
-            ""
-          }
+          address={getPayerAddress()}
+          chainId={sourceChainId}
           txHash={getSourceTxHash()}
           isCurrentUser={true}
           onExplorerClick={onExplorerClick}
@@ -79,7 +125,7 @@ export function TransactionFlow({
             type="recipient"
             name="Merchant"
             address={payment?.destination?.destinationAddress ?? ""}
-            chainId={payment.destination?.chainId ?? ""}
+            chainId={payment?.destination?.chainId ?? ""}
             txHash={getDestinationTxHash()}
             onExplorerClick={onExplorerClick}
           />
@@ -95,7 +141,7 @@ export function TransactionFlow({
         type="recipient"
         name="Merchant"
         address={payment?.destination?.destinationAddress ?? ""}
-        chainId={payment.destination?.chainId ?? ""}
+        chainId={payment?.destination?.chainId ?? ""}
         txHash={getDestinationTxHash()}
         isCurrentUser={true}
         onExplorerClick={onExplorerClick}
@@ -109,18 +155,8 @@ export function TransactionFlow({
         <TransactionParticipant
           type="sender"
           name="Sender"
-          address={
-            payment?.source?.payerAddress ??
-            ("payerAddress" in payment
-              ? (payment.payerAddress as string)
-              : "") ??
-            ""
-          }
-          chainId={
-            payment.source?.chainId ??
-            ("payinchainid" in payment ? payment.payinchainid : "") ??
-            ""
-          }
+          address={getPayerAddress()}
+          chainId={sourceChainId}
           txHash={getSourceTxHash()}
           onExplorerClick={onExplorerClick}
         />

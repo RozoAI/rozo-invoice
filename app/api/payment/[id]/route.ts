@@ -9,6 +9,7 @@ export async function GET(
     const { id } = await context.params;
     const { searchParams } = new URL(request.url);
     const isHash = searchParams.get("isHash") === "true";
+    const isMugglePay = id.includes("mugglepay_order");
 
     if (!id) {
       return NextResponse.json(
@@ -17,7 +18,7 @@ export async function GET(
       );
     }
 
-    const result = await getPaymentData(id, isHash);
+    const result = await getPaymentData(id, isHash, isMugglePay);
     return NextResponse.json(result);
   } catch (error) {
     console.error("API route error:", error);

@@ -79,9 +79,11 @@ export function TransactionParticipant({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="text-xs text-muted-foreground bg-muted border rounded-full px-2 py-0.5">
-            {getChainName(Number(chainId))}
-          </div>
+          {chainId && (
+            <div className="text-xs text-muted-foreground bg-muted border rounded-full px-2 py-0.5">
+              {getChainName(Number(chainId))}
+            </div>
+          )}
           {txHash && (
             <ExternalLinkIcon
               className="size-4 cursor-pointer"

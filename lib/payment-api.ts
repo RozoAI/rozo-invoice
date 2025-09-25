@@ -123,7 +123,8 @@ async function fetchFromAPI(
 // Main payment fetcher with fallback strategy
 export async function getPaymentData(
   idOrHash: string,
-  isHash: boolean = false
+  isHash: boolean = false,
+  isMugglePay: boolean = false
 ): Promise<PaymentResult> {
   if (!idOrHash) {
     return { success: false, error: "Payment ID or hash is required" };
@@ -139,7 +140,11 @@ export async function getPaymentData(
   }
 
   // Determine the endpoint based on whether it's an ID or hash
-  const endpoint = isHash ? `payment/tx/${idOrHash}` : `payment/id/${idOrHash}`;
+  const endpoint = isHash
+    ? `payment/tx/${idOrHash}`
+    : isMugglePay
+    ? `payment-api/${idOrHash}`
+    : `payment/id/${idOrHash}`;
   console.log("Endpoint:", endpoint);
   // Try Rozo API first
   const rozoResponse = await fetchFromAPI(

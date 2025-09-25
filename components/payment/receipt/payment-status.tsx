@@ -11,7 +11,7 @@ interface PaymentStatusProps {
 
 export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
   const getChainInfo = () => {
-    if (viewType === "user" && payment?.source) {
+    if (viewType === "user" && payment.source) {
       return payment.source.chainId === "10001" ||
         payment.source.chainId === "1500"
         ? "Stellar"
@@ -28,19 +28,32 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
         : getChainName(Number(payment.payinchainid));
     }
 
+    if (
+      viewType == "user" &&
+      "metadata" in payment &&
+      payment.metadata &&
+      "preferred_chain" in payment.metadata
+    ) {
+      return getChainName(Number(payment.metadata.preferred_chain));
+    }
+
     if (viewType === "merchant" && payment?.destination) {
       return payment.destination.chainId === "10001" ||
         payment.destination.chainId === "1500"
         ? "Stellar"
         : getChainName(Number(payment.destination.chainId));
     }
+
     return "Unknown";
   };
 
   const shouldShowChainInfo =
     (viewType === "user" &&
       (payment?.source ||
-        ("payinchainid" in payment && payment.payinchainid))) ||
+        ("payinchainid" in payment && payment.payinchainid) ||
+        ("metadata" in payment &&
+          payment.metadata &&
+          "preferred_chain" in payment.metadata))) ||
     (viewType === "merchant" && payment?.destination);
 
   const getPaymentAmount = () => {

@@ -30,8 +30,8 @@ export async function generateMetadata({
     // Use id if available, otherwise use payInHash
     const identifier = id || payInHash!;
     const isHash = !id && !!payInHash;
-
-    const result = await getPaymentData(identifier, isHash);
+    const isMugglePay = identifier.includes("mugglepay_order");
+    const result = await getPaymentData(identifier, isHash, isMugglePay);
 
     if (!result.success || !result.payment) {
       return generateErrorMetadata();
@@ -47,6 +47,7 @@ export async function generateMetadata({
 export default async function Receipt({ searchParams }: ReceiptPageProps) {
   try {
     const { id, back_url } = await searchParams;
+    const isMugglePay = id?.includes("mugglepay_order");
 
     if (!id) {
       return redirectToError({
@@ -56,7 +57,7 @@ export default async function Receipt({ searchParams }: ReceiptPageProps) {
       });
     }
 
-    const result = await getPaymentData(id);
+    const result = await getPaymentData(id, false, isMugglePay);
     console.log("Payment data:", result);
     if (!result.success || !result.payment) {
       return redirectToError({

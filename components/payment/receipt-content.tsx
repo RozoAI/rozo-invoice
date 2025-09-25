@@ -9,7 +9,7 @@ import {
   pollPaymentUntilPayoutClient,
 } from "@/lib/payment-api";
 import { RozoPayOrderView } from "@rozoai/intent-common";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PaymentStatus } from "./receipt/payment-status";
 import { ReceiptActions } from "./receipt/receipt-actions";
 import { TransactionFlow } from "./receipt/transaction-flow";
@@ -31,6 +31,18 @@ export default function ReceiptContent({
 
   const { openExplorer } = useExplorer();
   const { shareReceipt } = useShareReceipt(currentPayment);
+
+  // Helper to safely get payment items
+  const paymentItems = useMemo(() => {
+    // Check for items in metadata (PaymentResponse)
+    if ("metadata" in currentPayment && currentPayment.metadata?.items) {
+      const items = currentPayment.metadata.items;
+      // Ensure items is an array
+      return Array.isArray(items) ? items : null;
+    }
+    // Could add support for RozoPayOrderView items here if needed
+    return null;
+  }, [currentPayment]);
 
   // Sync currentPayment with payment prop changes
   useEffect(() => {
@@ -85,11 +97,35 @@ export default function ReceiptContent({
         {showMoreActions &&
         ((currentPayment?.source && currentPayment?.destination) ||
           ("destination" in currentPayment && currentPayment.destination)) ? (
-          <TransactionFlow
-            payment={currentPayment}
-            viewType={viewType}
-            onExplorerClick={openExplorer}
-          />
+          <>
+            {/* Items Section */}
+            {paymentItems && paymentItems.length > 0 && (
+              <div className="w-full space-y-3 max-w-[350px]">
+                <div className="space-y-2">
+                  {paymentItems.map((item, index: number) => (
+                    <div
+                      key={index}
+                      className="flex flex-col space-y-1 rounded-lg border bg-muted/30 p-3"
+                    >
+                      <div className="font-medium text-foreground text-sm">
+                        {item.name}
+                      </div>
+                      {item.description && (
+                        <div className="text-muted-foreground text-xs">
+                          {item.description}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <TransactionFlow
+              payment={currentPayment}
+              viewType={viewType}
+              onExplorerClick={openExplorer}
+            />
+          </>
         ) : null}
 
         <ReceiptActions
