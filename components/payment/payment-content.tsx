@@ -23,6 +23,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { toast } from "sonner";
+import { getAddress } from "viem";
 
 export interface PaymentContentProps {
   appId: string;
@@ -36,6 +37,7 @@ interface PayParams {
   toToken: `0x${string}`;
   toStellarAddress?: string;
   toSolanaAddress?: string;
+  metadata?: Record<string, string>;
 }
 
 /**
@@ -121,7 +123,7 @@ export function PaymentContent({
       params = {
         toAddress: validAddress,
         toChain: baseUSDC.chainId,
-        toToken: baseUSDC.token,
+        toToken: getAddress(baseUSDC.token),
         toUnits: payment.destination.amountUnits,
         toStellarAddress: payment.destination.destinationAddress,
       };
@@ -129,17 +131,21 @@ export function PaymentContent({
       params = {
         toAddress: validAddress,
         toChain: baseUSDC.chainId,
-        toToken: baseUSDC.token,
+        toToken: getAddress(baseUSDC.token),
         toUnits: payment.destination.amountUnits,
         toSolanaAddress: payment.destination.destinationAddress,
       };
     } else {
       params = {
-        toAddress: payment.destination.destinationAddress,
+        toAddress: getAddress(payment.destination.destinationAddress),
         toChain: Number(payment.destination.chainId),
-        toToken: payment.destination.tokenAddress as `0x${string}`,
+        toToken: getAddress(payment.destination.tokenAddress),
         toUnits: payment.destination.amountUnits,
       };
+    }
+
+    if ("metadata" in payment && payment.metadata) {
+      (params as any).metadata = payment.metadata as Record<string, string>;
     }
 
     setPayParams(params as PayParams);
@@ -204,6 +210,9 @@ export function PaymentContent({
             toSolanaAddress: payParams.toSolanaAddress,
           })}
           externalId={payment.externalId ?? undefined}
+          {...(payParams.metadata && {
+            metadata: payParams.metadata as Record<string, string>,
+          })}
           onPaymentStarted={() => {
             setIsLoading(true);
           }}
