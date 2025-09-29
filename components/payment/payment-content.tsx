@@ -145,7 +145,10 @@ export function PaymentContent({
     }
 
     if ("metadata" in payment && payment.metadata) {
-      (params as any).metadata = payment.metadata as Record<string, string>;
+      Object.assign(params, {
+        ...params,
+        metadata: payment.metadata,
+      });
     }
 
     setPayParams(params as PayParams);
