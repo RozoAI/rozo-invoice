@@ -6,7 +6,7 @@ import { createConfig, WagmiProvider } from "wagmi";
 
 const config = createConfig(
   getDefaultConfig({
-    appName: "Rozo Pay",
+    appName: "Rozo Invoice",
     appIcon: "https://rozo.ai/rozo-logo.png",
   })
 );
@@ -17,9 +17,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RozoPayProvider payApiUrl={process.env.NEXT_PUBLIC_PAY_API_URL}>
-          {children}
-        </RozoPayProvider>
+        <RozoPayProvider>{children}</RozoPayProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );
