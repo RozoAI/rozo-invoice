@@ -82,16 +82,35 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
     return "Amount unavailable";
   };
 
+  const isMugglePay = useMemo(() => {
+    return (
+      payment.metadata &&
+      "appId" in payment.metadata &&
+      payment.metadata.appId.includes("MP")
+    );
+  }, [payment.metadata]);
+
   const getPaymentStatus = useMemo(() => {
-    if (payment.status === "payment_unpaid") {
+    if (payment.status === "payment_unpaid" && !isMugglePay) {
       return "Payment in Progress";
     }
     return viewType === "user" ? "Payment Completed" : "Payment Received";
-  }, [payment.status, viewType]);
+  }, [payment.status, viewType, isMugglePay]);
+
+  const paidDate = useMemo(() => {
+    if (payment.status === "payment_completed") {
+      if (payment.metadata && "forwarder_processed_at" in payment.metadata) {
+        return payment.metadata.forwarder_processed_at;
+      }
+
+      return payment.createdAt;
+    }
+    return null;
+  }, [payment.status, payment.createdAt, payment.metadata]);
 
   return (
     <div className="flex flex-col items-center w-full">
-      {payment.status === "payment_unpaid" ? (
+      {payment.status === "payment_unpaid" && !isMugglePay ? (
         <BadgeAlertIcon className="size-[90px] fill-yellow-500 text-white" />
       ) : (
         <BadgeCheckIcon className="size-[90px] fill-[#0052FF] text-white" />
@@ -109,9 +128,9 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
             {viewType === "user" ? "Sent" : "Received"}{" "}
             {formatDistanceToNow(
               new Date(
-                isNaN(Number(payment?.createdAt))
-                  ? payment?.createdAt || ""
-                  : Number(payment?.createdAt) * 1000
+                isNaN(Number(paidDate))
+                  ? paidDate || ""
+                  : Number(paidDate) * 1000
               ),
               {
                 addSuffix: true,

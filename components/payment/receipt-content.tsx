@@ -13,7 +13,6 @@ import { useEffect, useMemo, useState } from "react";
 import { PaymentStatus } from "./receipt/payment-status";
 import { ReceiptActions } from "./receipt/receipt-actions";
 import { TransactionFlow } from "./receipt/transaction-flow";
-import { ViewTypeToggle } from "./receipt/view-type-toggle";
 
 export default function ReceiptContent({
   payment,
@@ -23,7 +22,7 @@ export default function ReceiptContent({
   backUrl?: string;
 }) {
   const [viewType, setViewType] = useState<"user" | "merchant">("user");
-  const [showMoreActions, setShowMoreActions] = useState(false);
+  const [showMoreActions, setShowMoreActions] = useState(true);
   const [currentPayment, setCurrentPayment] = useState<
     RozoPayOrderView | PaymentResponse
   >(payment);
@@ -90,13 +89,12 @@ export default function ReceiptContent({
   return (
     <BoxedCard className="flex-1">
       <CardContent className="flex flex-1 flex-col items-center gap-8 px-4 py-0 text-center">
-        <ViewTypeToggle viewType={viewType} onViewTypeChange={setViewType} />
+        {/* <ViewTypeToggle viewType={viewType} onViewTypeChange={setViewType} /> */}
 
         <PaymentStatus payment={currentPayment} viewType={viewType} />
 
-        {showMoreActions &&
-        ((currentPayment?.source && currentPayment?.destination) ||
-          ("destination" in currentPayment && currentPayment.destination)) ? (
+        {(currentPayment?.source && currentPayment?.destination) ||
+        ("destination" in currentPayment && currentPayment.destination) ? (
           <>
             {/* Items Section */}
             {paymentItems && paymentItems.length > 0 && (
@@ -128,12 +126,7 @@ export default function ReceiptContent({
           </>
         ) : null}
 
-        <ReceiptActions
-          showMoreActions={showMoreActions}
-          onToggleActions={() => setShowMoreActions(!showMoreActions)}
-          onShare={shareReceipt}
-          backUrl={backUrl}
-        />
+        <ReceiptActions onShare={shareReceipt} />
       </CardContent>
     </BoxedCard>
   );
