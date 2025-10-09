@@ -2,6 +2,7 @@ import { FabActions } from "@/components/fab-actions";
 import Footer from "@/components/footer";
 import IntercomInitializer from "@/components/intercom";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Web3Provider } from "@/providers/web3-provider";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
@@ -40,7 +41,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <main className="flex min-h-screen flex-col justify-between gap-4 md:min-h-screen md:items-center md:justify-center py-4">
-            <Web3Provider>{children}</Web3Provider>
+            <Web3Provider>
+              <TooltipProvider>{children}</TooltipProvider>
+            </Web3Provider>
             <Toaster position="top-center" />
             <IntercomInitializer
               appId={process.env.INTERCOM_APP_ID as string}

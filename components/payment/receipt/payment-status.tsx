@@ -1,6 +1,11 @@
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { PaymentResponse } from "@/lib/payment-api";
 import { RozoPayOrderView, getChainName } from "@rozoai/intent-common";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { BadgeAlertIcon, BadgeCheckIcon } from "lucide-react";
 import { useMemo } from "react";
 
@@ -108,6 +113,12 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
     return null;
   }, [payment.status, payment.createdAt, payment.metadata]);
 
+  const getFormattedDate = (date: string | number | null) => {
+    if (!date) return "";
+    const dateObj = new Date(isNaN(Number(date)) ? date : Number(date) * 1000);
+    return format(dateObj, "PPpp"); // e.g., "Jan 1, 2024 at 12:00:00 PM"
+  };
+
   return (
     <div className="flex flex-col items-center w-full">
       {payment.status === "payment_unpaid" && !isMugglePay ? (
@@ -126,16 +137,25 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
           <span className="text-muted-foreground text-xs">
             on {getChainInfo()} &bull;{" "}
             {viewType === "user" ? "Sent" : "Received"}{" "}
-            {formatDistanceToNow(
-              new Date(
-                isNaN(Number(paidDate))
-                  ? paidDate || ""
-                  : Number(paidDate) * 1000
-              ),
-              {
-                addSuffix: true,
-              }
-            )}
+            <Tooltip useTouch>
+              <TooltipTrigger asChild>
+                <span className="cursor-help underline decoration-dotted">
+                  {formatDistanceToNow(
+                    new Date(
+                      isNaN(Number(paidDate))
+                        ? paidDate || ""
+                        : Number(paidDate) * 1000
+                    ),
+                    {
+                      addSuffix: true,
+                    }
+                  )}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{getFormattedDate(paidDate)}</p>
+              </TooltipContent>
+            </Tooltip>
           </span>
         )}
       </div>
