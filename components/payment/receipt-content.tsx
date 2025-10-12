@@ -50,6 +50,8 @@ export default function ReceiptContent({
 
   // Start polling if no destination hash exists (payoutTransactionHash or destination.txHash)
   useEffect(() => {
+    const hasSenderAddress =
+      "payerAddress" in currentPayment && currentPayment.payerAddress;
     const hasPayoutHash =
       "payoutTransactionHash" in currentPayment &&
       currentPayment.payoutTransactionHash;
@@ -60,12 +62,18 @@ export default function ReceiptContent({
     const hasAnyDestinationHash = hasPayoutHash || hasDestinationTxHash;
     let cancelled = false;
 
-    if (!hasAnyDestinationHash && currentPayment.id && !isPolling) {
+    if (
+      !hasAnyDestinationHash &&
+      currentPayment.id &&
+      !isPolling &&
+      !hasSenderAddress
+    ) {
       setIsPolling(true);
 
       pollPaymentUntilPayoutClient(currentPayment.id)
         .then((result) => {
           if (!cancelled && result.success && result.payment) {
+            console.log("Polling success:", result.payment);
             setCurrentPayment(result.payment);
           }
         })

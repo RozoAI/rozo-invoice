@@ -41,7 +41,10 @@ export default function Footer({ className }: { className?: string }) {
         className
       )}
     >
-      <div className="flex items-center gap-2">
+      <Link
+        href="/"
+        className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+      >
         <Avatar className="size-6 rounded-none">
           <AvatarImage
             src={resolvedTheme === "dark" ? "/logo-white.png" : "/logo.png"}
@@ -51,7 +54,7 @@ export default function Footer({ className }: { className?: string }) {
         <span className="font-bold text-foreground text-lg tracking-tight">
           ROZO
         </span>
-      </div>
+      </Link>
       <div className="flex items-center justify-center gap-4">
         <Link
           href="https://x.com/ROZOai"

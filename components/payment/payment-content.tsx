@@ -9,7 +9,6 @@ import {
   rozoStellar,
   solana,
   stellar,
-  type PaymentCompletedEvent,
   type RozoPayOrderView,
 } from "@rozoai/intent-common";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
@@ -222,7 +221,8 @@ export function PaymentContent({
           onPaymentBounced={() => {
             setIsLoading(false);
           }}
-          onPaymentCompleted={(args: PaymentCompletedEvent) => {
+          onPaymentCompleted={(args: any) => {
+            router.replace(`/receipt?id=${args.rozoPaymentId}`);
             setIsLoading(false);
             toast.success(`Payment completed for $${payParams.toUnits}`);
           }}
@@ -252,7 +252,7 @@ export function PaymentContent({
               Payment Completed
             </span>
           </div>
-          {txUrl && (
+          {txUrl ? (
             <Link
               href={txUrl}
               target="_blank"
@@ -262,6 +262,16 @@ export function PaymentContent({
               <ExternalLink size={14} />
               View Transaction
             </Link>
+          ) : (
+            <Button className="w-full mt-6" asChild>
+              <Link
+                href={`/receipt?id=${payment.id}`}
+                rel="noopener noreferrer"
+              >
+                <ExternalLink size={14} />
+                See Receipt
+              </Link>
+            </Button>
           )}
         </div>
       )}
