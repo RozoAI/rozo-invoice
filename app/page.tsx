@@ -2,6 +2,7 @@
 
 import BoxedCard from "@/components/boxed-card";
 import ChainsStacked from "@/components/chains-stacked";
+import { ContactSupport } from "@/components/contact-support";
 import { ScanQRButton } from "@/components/scan-qr-button";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -34,11 +35,15 @@ export default function Home() {
         </Suspense>
       </CardContent>
 
-      <CardFooter className="pb-0 md:pb-8 flex justify-center gap-2">
-        <ChainsStacked />
-        <span className="text-muted-foreground text-sm">
-          Safe and Secure Payments
-        </span>
+      <CardFooter className="pb-0 flex flex-col gap-4">
+        <div className="flex justify-center gap-2">
+          <ChainsStacked />
+          <span className="text-muted-foreground text-sm">
+            Safe and Secure Payments
+          </span>
+        </div>
+
+        <ContactSupport />
       </CardFooter>
     </BoxedCard>
   );

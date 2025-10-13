@@ -1,7 +1,7 @@
 "use client";
 
 import BoxedCard from "@/components/boxed-card";
-import { CardContent } from "@/components/ui/card";
+import { CardContent, CardFooter } from "@/components/ui/card";
 import { useExplorer } from "@/hooks/use-explorer";
 import { useShareReceipt } from "@/hooks/use-share-receipt";
 import {
@@ -10,6 +10,8 @@ import {
 } from "@/lib/payment-api";
 import { RozoPayOrderView } from "@rozoai/intent-common";
 import { useEffect, useMemo, useState } from "react";
+import ChainsStacked from "../chains-stacked";
+import { ContactSupport } from "../contact-support";
 import { PaymentStatus } from "./receipt/payment-status";
 import { ReceiptActions } from "./receipt/receipt-actions";
 import { TransactionFlow } from "./receipt/transaction-flow";
@@ -136,6 +138,17 @@ export default function ReceiptContent({
 
         <ReceiptActions onShare={shareReceipt} />
       </CardContent>
+
+      <CardFooter className="pb-0 flex flex-col gap-4 mx-auto">
+        <div className="flex justify-center gap-2">
+          <ChainsStacked />
+          <span className="text-muted-foreground text-sm">
+            Safe and Secure Payments
+          </span>
+        </div>
+
+        <ContactSupport />
+      </CardFooter>
     </BoxedCard>
   );
 }
