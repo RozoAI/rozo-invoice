@@ -147,7 +147,10 @@ export function PaymentContent({
     if ("metadata" in payment && payment.metadata) {
       Object.assign(params, {
         ...params,
-        metadata: payment.metadata,
+        metadata: {
+          ...payment.metadata,
+          customDeeplinkUrl: window.location.href,
+        },
       });
     }
 
