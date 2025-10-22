@@ -52,49 +52,60 @@ export default function ReceiptContent({
 
   // Start polling if no destination hash exists (payoutTransactionHash or destination.txHash)
   useEffect(() => {
-    const hasSenderAddress =
-      "payerAddress" in currentPayment && currentPayment.payerAddress;
-    const hasPayoutHash =
-      "payoutTransactionHash" in currentPayment &&
-      currentPayment.payoutTransactionHash;
-    const hasDestinationTxHash =
-      currentPayment.destination &&
-      "txHash" in currentPayment.destination &&
-      currentPayment.destination.txHash;
-    const hasAnyDestinationHash = hasPayoutHash || hasDestinationTxHash;
-    let cancelled = false;
+    if (!currentPayment?.id) return;
 
+    // Stop polling if payout hash already exists
     if (
-      !hasAnyDestinationHash &&
-      currentPayment.id &&
-      !isPolling &&
-      !hasSenderAddress
-    ) {
-      setIsPolling(true);
+      "payoutTransactionHash" in currentPayment &&
+      currentPayment.payoutTransactionHash
+    )
+      return;
 
-      pollPaymentUntilPayoutClient(currentPayment.id)
-        .then((result) => {
-          if (!cancelled && result.success && result.payment) {
-            console.log("Polling success:", result.payment);
-            setCurrentPayment(result.payment);
-          }
-        })
-        .catch((error) => {
-          if (!cancelled) {
-            console.error("Polling failed:", error);
-          }
-        })
-        .finally(() => {
-          if (!cancelled) {
+    let cancelled = false;
+    setIsPolling(true);
+
+    const poll = async () => {
+      try {
+        const result = await pollPaymentUntilPayoutClient(
+          currentPayment.id,
+          1000
+        );
+        if (cancelled) return;
+
+        if (result.success && result.payment) {
+          setCurrentPayment(result.payment);
+
+          // Stop polling when payout hash appears
+          if (
+            "payoutTransactionHash" in result.payment &&
+            result.payment.payoutTransactionHash
+          ) {
             setIsPolling(false);
+            return;
           }
-        });
-    }
+
+          // Continue polling recursively
+          poll();
+        } else {
+          // Retry even if not successful
+          poll();
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Polling failed:", error);
+          // Retry after delay if desired
+          setTimeout(() => !cancelled && poll(), 2000);
+        }
+      }
+    };
+
+    poll();
 
     return () => {
       cancelled = true;
+      setIsPolling(false);
     };
-  }, [currentPayment.id, isPolling]);
+  }, [currentPayment?.id]);
 
   return (
     <BoxedCard className="flex-1">

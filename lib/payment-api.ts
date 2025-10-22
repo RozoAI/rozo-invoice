@@ -222,8 +222,8 @@ export async function getPaymentDataClient(
 // Client-side polling function to fetch payment data until destination hash exists
 export async function pollPaymentUntilPayoutClient(
   id: string,
-  maxAttempts: number = 60, // 5 minutes max (60 * 5s)
-  intervalMs: number = 5000 // 5 seconds
+  intervalMs: number = 5000, // 5 seconds
+  maxAttempts: number = 60 // 5 minutes max (60 * 5s)
 ): Promise<PaymentResult> {
   return new Promise((resolve, reject) => {
     let attempts = 0;
@@ -243,7 +243,6 @@ export async function pollPaymentUntilPayoutClient(
             );
             return;
           }
-          // Continue polling on API errors
 
           setTimeout(poll, intervalMs);
           return;
@@ -252,12 +251,8 @@ export async function pollPaymentUntilPayoutClient(
         // Check if any destination hash exists (payoutTransactionHash or destination.txHash)
         const payment = result.payment as PaymentResponse;
         const hasPayoutHash = payment?.payoutTransactionHash;
-        const hasDestinationTxHash =
-          payment?.destination &&
-          "txHash" in payment.destination &&
-          payment.destination.txHash;
 
-        if (hasPayoutHash || hasDestinationTxHash) {
+        if (hasPayoutHash || result.payment?.status === "payment_completed") {
           resolve(result);
           return;
         }

@@ -112,10 +112,9 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
       if (payment.metadata && "forwarder_processed_at" in payment.metadata) {
         return payment.metadata.forwarder_processed_at;
       }
-
-      return payment.createdAt;
     }
-    return null;
+
+    return payment.createdAt;
   }, [payment.status, payment.createdAt, payment.metadata]);
 
   const getFormattedDate = (date: string | number | null) => {
@@ -143,7 +142,13 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
         {shouldShowChainInfo && (
           <span className="text-muted-foreground text-xs">
             on {getChainInfo()} &bull;{" "}
-            {viewType === "user" ? "Sent" : "Received"}{" "}
+            {payment.status === "payment_completed" ? (
+              <>
+                <span>{viewType === "user" ? "Sent" : "Received"} </span>
+              </>
+            ) : (
+              "Created at "
+            )}
             <Tooltip useTouch>
               <TooltipTrigger asChild>
                 <span className="cursor-help underline decoration-dotted">
