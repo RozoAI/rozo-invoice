@@ -6,7 +6,7 @@ import {
 import { PaymentResponse } from "@/lib/payment-api";
 import { RozoPayOrderView, getChainName } from "@rozoai/intent-common";
 import { format, formatDistanceToNow } from "date-fns";
-import { BadgeAlertIcon, BadgeCheckIcon, BadgeXIcon } from "lucide-react";
+import { BadgeAlertIcon, BadgeCheckIcon, ClockFading } from "lucide-react";
 import { useMemo } from "react";
 
 interface PaymentStatusProps {
@@ -126,7 +126,7 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
   return (
     <div className="flex flex-col items-center w-full">
       {payment.status === "payment_expired" ? (
-        <BadgeXIcon className="size-[90px] fill-red-600 text-white" />
+        <ClockFading className="size-[65px] text-neutral-400" />
       ) : payment.status === "payment_unpaid" && !isMugglePay ? (
         <BadgeAlertIcon className="size-[90px] fill-yellow-500 text-white" />
       ) : (
