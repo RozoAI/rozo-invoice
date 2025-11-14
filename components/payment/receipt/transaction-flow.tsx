@@ -1,6 +1,7 @@
 import { PaymentResponse } from "@/lib/payment-api";
 import { RozoPayOrderView } from "@rozoai/intent-common";
 import { ArrowDown } from "lucide-react";
+import { useMemo } from "react";
 import { TransactionParticipant } from "./transaction-participant";
 
 // Type guard to check if payment is PaymentResponse
@@ -100,6 +101,10 @@ export function TransactionFlow({
     return "";
   };
 
+  const isForMerchant = useMemo(() => {
+    return payment?.metadata?.for_merchant;
+  }, [payment]);
+
   const sourceChainId = getSourceChainId();
 
   if (viewType === "user") {
@@ -123,7 +128,7 @@ export function TransactionFlow({
         <div className="-mt-6">
           <TransactionParticipant
             type="recipient"
-            name="Merchant"
+            name={isForMerchant ? "Merchant" : "Recipient"}
             address={payment?.destination?.destinationAddress ?? ""}
             chainId={payment?.destination?.chainId ?? ""}
             txHash={getDestinationTxHash()}
@@ -139,7 +144,7 @@ export function TransactionFlow({
       {/* Merchant View: Recipient -> Sender */}
       <TransactionParticipant
         type="recipient"
-        name="Merchant"
+        name={isForMerchant ? "Merchant" : "Recipient"}
         address={payment?.destination?.destinationAddress ?? ""}
         chainId={payment?.destination?.chainId ?? ""}
         txHash={getDestinationTxHash()}

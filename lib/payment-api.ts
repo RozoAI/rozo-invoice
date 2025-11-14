@@ -29,10 +29,10 @@ export interface PaymentResponse {
     intent: string;
     flush_tx: string;
     webhookUrl: string;
-    daimoOrderId: string;
     processing_method: string;
     forwarder_processed: boolean;
     forwarder_processed_at: string;
+    for_merchant?: boolean;
   };
   payinTransactionHash: string;
   payoutTransactionHash: string;
