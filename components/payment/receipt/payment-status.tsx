@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Tooltip,
   TooltipContent,
@@ -6,7 +7,12 @@ import {
 import { PaymentResponse } from "@/lib/payment-api";
 import { RozoPayOrderView, getChainName } from "@rozoai/intent-common";
 import { format, formatDistanceToNow } from "date-fns";
-import { BadgeAlertIcon, BadgeCheckIcon, ClockFading } from "lucide-react";
+import {
+  AlertCircle,
+  BadgeAlertIcon,
+  BadgeCheckIcon,
+  ClockFading,
+} from "lucide-react";
 import { useMemo } from "react";
 
 interface PaymentStatusProps {
@@ -34,7 +40,7 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
     }
 
     if (
-      viewType == "user" &&
+      viewType === "user" &&
       "metadata" in payment &&
       payment.metadata &&
       "preferred_chain" in payment.metadata
@@ -104,8 +110,34 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
       return "Payment Expired";
     }
 
+    if (payment.status === "payment_error_liquidity") {
+      return "Payment Unavailable";
+    }
+
+    if (payment.status === "payment_error_recipient_trustline") {
+      return "Payment Unavailable";
+    }
+
+    if (payment.status === "payment_completed") {
+      return viewType === "user" ? "Payment Completed" : "Payment Received";
+    }
+
     return viewType === "user" ? "Payment Completed" : "Payment Received";
   }, [payment.status, viewType, isMugglePay]);
+
+  const isErrorStatus = useMemo(() => {
+    return (
+      payment.status === "payment_error_liquidity" ||
+      payment.status === "payment_error_recipient_trustline"
+    );
+  }, [payment.status]);
+
+  const errorMessage = useMemo(() => {
+    if (isErrorStatus && "message" in payment && payment.message) {
+      return payment.message;
+    }
+    return null;
+  }, [isErrorStatus, payment]);
 
   const paidDate = useMemo(() => {
     if (payment.status === "payment_completed") {
@@ -127,6 +159,8 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
     <div className="flex flex-col items-center w-full">
       {payment.status === "payment_expired" ? (
         <ClockFading className="size-[65px] text-neutral-400" />
+      ) : isErrorStatus ? (
+        <AlertCircle className="size-[90px] text-red-500" />
       ) : payment.status === "payment_unpaid" && !isMugglePay ? (
         <BadgeAlertIcon className="size-[90px] fill-yellow-500 text-white" />
       ) : (
@@ -136,6 +170,15 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
       <div className="space-y-1 mt-2">
         <h3 className="font-semibold text-xl">{getPaymentStatus}</h3>
       </div>
+
+      {errorMessage && (
+        <Alert variant="destructive" className="mt-4 max-w-md">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="col-start-2">
+            {errorMessage}
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="mt-6">
         <h2 className="font-bold text-4xl">{getPaymentAmount()}</h2>

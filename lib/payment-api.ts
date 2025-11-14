@@ -3,6 +3,7 @@ import { RozoPayOrderView } from "@rozoai/intent-common";
 export interface PaymentResponse {
   id: string;
   status: string;
+  message?: string;
   createdAt: string;
   receivingAddress: string;
   display: {
