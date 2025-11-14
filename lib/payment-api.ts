@@ -21,6 +21,7 @@ export interface PaymentResponse {
   };
   externalId: string | null;
   metadata: {
+    appId: string;
     items: Array<{
       name: string;
       description?: string;
