@@ -32,7 +32,7 @@ export interface PaymentResponse {
     processing_method: string;
     forwarder_processed: boolean;
     forwarder_processed_at: string;
-    for_merchant?: boolean;
+    forMerchant?: boolean;
   };
   payinTransactionHash: string;
   payoutTransactionHash: string;

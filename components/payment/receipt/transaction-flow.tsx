@@ -102,7 +102,7 @@ export function TransactionFlow({
   };
 
   const isForMerchant = useMemo(() => {
-    return payment?.metadata?.for_merchant;
+    return payment?.metadata?.forMerchant;
   }, [payment]);
 
   const sourceChainId = getSourceChainId();
