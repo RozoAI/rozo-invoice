@@ -119,11 +119,19 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
     }
 
     if (payment.status === "payment_completed") {
+      // Check if payoutTransactionHash exists
+      const hasPayoutHash =
+        "payoutTransactionHash" in payment && payment.payoutTransactionHash;
+
+      if (!hasPayoutHash) {
+        return "Payment in Progress";
+      }
+
       return viewType === "user" ? "Payment Completed" : "Payment Received";
     }
 
     return viewType === "user" ? "Payment Completed" : "Payment Received";
-  }, [payment.status, viewType, isMugglePay]);
+  }, [payment, viewType, isMugglePay]);
 
   const isErrorStatus = useMemo(() => {
     return (
@@ -155,13 +163,19 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
     return format(dateObj, "PPpp"); // e.g., "Jan 1, 2024 at 12:00:00 PM"
   };
 
+  const hasPayoutHash =
+    "payoutTransactionHash" in payment && payment.payoutTransactionHash;
+  const showInProgressIcon =
+    (payment.status === "payment_unpaid" && !isMugglePay) ||
+    (payment.status === "payment_completed" && !hasPayoutHash);
+
   return (
     <div className="flex flex-col items-center w-full">
       {payment.status === "payment_expired" ? (
         <ClockFading className="size-[65px] text-neutral-400" />
       ) : isErrorStatus ? (
         <AlertCircle className="size-[90px] text-red-500" />
-      ) : payment.status === "payment_unpaid" && !isMugglePay ? (
+      ) : showInProgressIcon ? (
         <BadgeAlertIcon className="size-[90px] fill-yellow-500 text-white" />
       ) : (
         <BadgeCheckIcon className="size-[90px] fill-[#0052FF] text-white" />
