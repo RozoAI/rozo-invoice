@@ -163,6 +163,35 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
     return format(dateObj, "PPpp"); // e.g., "Jan 1, 2024 at 12:00:00 PM"
   };
 
+  const getFeeInfo = () => {
+    if ("metadata" in payment && payment.metadata) {
+      const metadata = payment.metadata as Record<string, unknown>;
+      if (
+        "provider_response" in metadata &&
+        metadata.provider_response &&
+        typeof metadata.provider_response === "object"
+      ) {
+        const providerResponse = metadata.provider_response as Record<
+          string,
+          unknown
+        >;
+        if (
+          "data" in providerResponse &&
+          providerResponse.data &&
+          typeof providerResponse.data === "object"
+        ) {
+          const data = providerResponse.data as Record<string, unknown>;
+          if ("fee" in data && typeof data.fee === "number") {
+            return data.fee === 0 ? "Free" : `$${data.fee.toFixed(2)}`;
+          }
+        }
+      }
+    }
+    return null;
+  };
+
+  const feeInfo = getFeeInfo();
+
   const hasPayoutHash =
     "payoutTransactionHash" in payment && payment.payoutTransactionHash;
   const showInProgressIcon =
@@ -196,6 +225,11 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
 
       <div className="mt-6">
         <h2 className="font-bold text-4xl">{getPaymentAmount()}</h2>
+        {feeInfo && (
+          <div className="text-muted-foreground text-sm mt-1">
+            Fee: {feeInfo}
+          </div>
+        )}
         {shouldShowChainInfo && (
           <span className="text-muted-foreground text-xs">
             on {getChainInfo()} &bull;{" "}
