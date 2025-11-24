@@ -4,7 +4,6 @@ import { PaymentResponse } from "@/lib/payment-api";
 import { RozoPayOrderView } from "@rozoai/intent-common";
 import { useTheme } from "next-themes";
 import BoxedCard from "../boxed-card";
-import ChainsStacked from "../chains-stacked";
 import { ContactSupport } from "../contact-support";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import { CardContent, CardFooter } from "../ui/card";
@@ -59,10 +58,6 @@ export default function CheckoutContent({
       </CardContent>
       {loaderData.success && (
         <CardFooter className="pb-0 flex flex-col gap-4">
-          <div className="flex justify-center gap-2">
-            <ChainsStacked />
-          </div>
-
           <ContactSupport />
         </CardFooter>
       )}

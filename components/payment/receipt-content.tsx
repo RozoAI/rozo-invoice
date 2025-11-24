@@ -10,7 +10,6 @@ import {
 } from "@/lib/payment-api";
 import { RozoPayOrderView } from "@rozoai/intent-common";
 import { useEffect, useMemo, useState } from "react";
-import ChainsStacked from "../chains-stacked";
 import { ContactSupport } from "../contact-support";
 import { PaymentStatus } from "./receipt/payment-status";
 import { ReceiptActions } from "./receipt/receipt-actions";
@@ -151,10 +150,6 @@ export default function ReceiptContent({
       </CardContent>
 
       <CardFooter className="pb-0 flex flex-col gap-4 mx-auto">
-        <div className="flex justify-center gap-2">
-          <ChainsStacked />
-        </div>
-
         <ContactSupport />
       </CardFooter>
     </BoxedCard>

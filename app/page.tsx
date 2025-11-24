@@ -1,7 +1,6 @@
 "use client";
 
 import BoxedCard from "@/components/boxed-card";
-import ChainsStacked from "@/components/chains-stacked";
 import { ContactSupport } from "@/components/contact-support";
 import { ScanQRButton } from "@/components/scan-qr-button";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
@@ -37,10 +36,6 @@ export default function Home() {
       </CardContent>
 
       <CardFooter className="pb-0 flex flex-col gap-4">
-        <div className="flex justify-center gap-2">
-          <ChainsStacked />
-        </div>
-
         <ContactSupport />
       </CardFooter>
     </BoxedCard>
