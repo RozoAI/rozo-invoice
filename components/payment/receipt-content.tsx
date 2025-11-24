@@ -153,9 +153,6 @@ export default function ReceiptContent({
       <CardFooter className="pb-0 flex flex-col gap-4 mx-auto">
         <div className="flex justify-center gap-2">
           <ChainsStacked />
-          <span className="text-muted-foreground text-sm">
-            Safe and Secure Payments
-          </span>
         </div>
 
         <ContactSupport />
