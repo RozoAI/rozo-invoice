@@ -18,7 +18,7 @@ import {
   type StellarParseResult,
 } from "@rozoai/deeplink-core";
 import { ScanQr } from "@rozoai/deeplink-react";
-import { baseUSDC } from "@rozoai/intent-common";
+import { baseUSDC, PaymentCompletedEvent } from "@rozoai/intent-common";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
 import { Loader2, ScanLine, Wallet } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -56,10 +56,6 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
 
   const payToStellar = useMemo(() => {
     return parsedTransfer?.toStellarAddress;
-  }, [parsedTransfer]);
-
-  const payToSolana = useMemo(() => {
-    return parsedTransfer?.toSolanaAddress;
   }, [parsedTransfer]);
 
   // Check for qr query parameter and parse it
@@ -301,11 +297,16 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
           onPaymentBounced={() => {
             setIsLoading(false);
           }}
-          onPaymentCompleted={(args: any) => {
+          onPaymentCompleted={(args: PaymentCompletedEvent) => {
             console.log("Payment completed:", args);
             router.replace(`/receipt?id=${args.rozoPaymentId}`);
             setIsLoading(false);
-            toast.success(`Payment completed for $${parsedTransfer.toUnits}`);
+
+            toast.success(
+              `Payment completed for $${
+                parsedTransfer.toUnits || args.payment.display.paymentValue
+              }`
+            );
           }}
         >
           {({ show }) => (

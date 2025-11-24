@@ -55,9 +55,9 @@ export function TransactionParticipant({
           <AvatarImage src="/" alt={name} />
           <AvatarFallback className="bg-transparent">
             {isMerchant ? (
-              <StoreIcon className="size-5" />
+              <StoreIcon className="size-5 dark:text-neutral-900" />
             ) : (
-              <User className="size-5" />
+              <User className="size-5 dark:text-neutral-900" />
             )}
           </AvatarFallback>
         </Avatar>

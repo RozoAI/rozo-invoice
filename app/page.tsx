@@ -23,7 +23,8 @@ export default function Home() {
               alt="Rozo Pay"
             />
           </Avatar>
-          <h1 className="font-bold text-foreground">Rozo Invoice</h1>
+          <h1 className="font-bold text-foreground">Rozo Intent</h1>
+          <p>Send USDC to Base or Stellar from any chains</p>
         </div>
       </CardHeader>
 

@@ -67,6 +67,12 @@ export function InputAddress({ onAddressParsed }: InputAddressProps) {
     router.replace(`?qr=${encodeURIComponent(inputValue)}`);
   };
 
+  const handleKeyDown = (event: any) => {
+    if (event.key === "Enter") {
+      handleSubmit(event);
+    }
+  };
+
   return (
     <div className="w-full space-y-3">
       <form onSubmit={handleSubmit} className="flex gap-2">
@@ -74,8 +80,9 @@ export function InputAddress({ onAddressParsed }: InputAddressProps) {
           <Input
             type="text"
             value={inputValue}
+            placeholder="Enter wallet address (EVM or Stellar)"
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Enter wallet address or QR code data..."
+            onKeyDown={handleKeyDown}
           />
         </div>
         <Button
