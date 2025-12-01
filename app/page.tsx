@@ -30,7 +30,7 @@ export default function Home() {
       <CardContent className="space-y-6">
         <Suspense fallback={<div>Loading...</div>}>
           <ScanQRButton
-            appId={process.env.NEXT_PUBLIC_DAIMO_API_KEY ?? "rozoInvoice"}
+            appId={process.env.NEXT_PUBLIC_ROZO_APP_ID ?? "rozoInvoice"}
           />
         </Suspense>
       </CardContent>

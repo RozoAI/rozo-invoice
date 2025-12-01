@@ -5,6 +5,7 @@ import { CardContent, CardFooter } from "@/components/ui/card";
 import { useExplorer } from "@/hooks/use-explorer";
 import { useShareReceipt } from "@/hooks/use-share-receipt";
 import {
+  NewPaymentResponse,
   PaymentResponse,
   pollPaymentUntilPayoutClient,
 } from "@/lib/payment-api";
@@ -19,13 +20,13 @@ export default function ReceiptContent({
   payment,
   backUrl,
 }: {
-  payment: RozoPayOrderView | PaymentResponse;
+  payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
   backUrl?: string;
 }) {
   const [viewType, setViewType] = useState<"user" | "merchant">("user");
   const [showMoreActions, setShowMoreActions] = useState(true);
   const [currentPayment, setCurrentPayment] = useState<
-    RozoPayOrderView | PaymentResponse
+    RozoPayOrderView | PaymentResponse | NewPaymentResponse
   >(payment);
   const [isPolling, setIsPolling] = useState(false);
 
@@ -76,8 +77,12 @@ export default function ReceiptContent({
 
           // Stop polling when payout hash appears
           if (
-            "payoutTransactionHash" in result.payment &&
-            result.payment.payoutTransactionHash
+            ("payoutTransactionHash" in result.payment &&
+              result.payment.payoutTransactionHash) ||
+            ("destination" in result.payment &&
+              result.payment.destination &&
+              "txHash" in result.payment.destination &&
+              result.payment.destination.txHash)
           ) {
             setIsPolling(false);
             return;

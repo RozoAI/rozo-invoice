@@ -19,10 +19,6 @@ async function getPayment(id: string): Promise<LoaderData> {
     return { success: false, error: "Payment ID is required" };
   }
 
-  // TODO: Temporary DAIMO API integration - We need to migrate to our internal API
-  // The current implementation uses DAIMO API because our internal API only supports IDs
-  // registered in our database. Some orders created via Rozo SDK still follow the Daimo flow.
-  // Future work: Unify API endpoints and migrate all payment processing to internal systems or make our internal API support all IDs.
   try {
     const response = await getPaymentData(id);
     if (!response.success) {
@@ -34,20 +30,14 @@ async function getPayment(id: string): Promise<LoaderData> {
 
     const paymentData = response.payment;
 
-    // Check if the response is from Daimo API (RozoPayOrderView)
-    // Checkout page only supports Daimo payments
-    // if (response.source !== "daimo") {
-    //   return {
-    //     success: false,
-    //     error:
-    //       "Checkout is only available for Daimo payments. Please use the receipt page instead.",
-    //   };
-    // }
-
     return {
       success: true,
       payment: paymentData as PaymentData,
-      appId: process.env.DAIMO_API_KEY,
+      appId:
+        paymentData &&
+        ("appId" in paymentData
+          ? paymentData.appId
+          : paymentData.metadata?.appId ?? process.env.NEXT_PUBLIC_ROZO_APP_ID),
     };
   } catch (error) {
     return { success: false, error };

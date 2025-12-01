@@ -1,9 +1,9 @@
 import { RozoPayOrderView } from "@rozoai/intent-common";
 import { Metadata } from "next";
-import { PaymentResponse } from "./payment-api";
+import { NewPaymentResponse, PaymentResponse } from "./payment-api";
 
 export function generatePaymentMetadata(
-  payment: RozoPayOrderView | PaymentResponse
+  payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse
 ): Metadata {
   const amount = getPaymentAmount(payment);
   const title = `Payment Receipt - ${amount}`;
@@ -33,7 +33,9 @@ export function generateErrorMetadata(): Metadata {
   };
 }
 
-function getPaymentAmount(payment: RozoPayOrderView | PaymentResponse): string {
+function getPaymentAmount(
+  payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse
+): string {
   if (
     "display" in payment &&
     "paymentValue" in payment.display &&
@@ -48,6 +50,14 @@ function getPaymentAmount(payment: RozoPayOrderView | PaymentResponse): string {
 
   if ("destination" in payment && "amountUnits" in payment.destination) {
     const amount = parseFloat(payment.destination.amountUnits);
+    return `$${amount.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+
+  if ("source" in payment && payment.source && "amount" in payment.source) {
+    const amount = parseFloat(payment.source.amount ?? "0");
     return `$${amount.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,

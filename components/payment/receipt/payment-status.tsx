@@ -4,7 +4,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { PaymentResponse } from "@/lib/payment-api";
+import { NewPaymentResponse, PaymentResponse } from "@/lib/payment-api";
 import { RozoPayOrderView, getChainName } from "@rozoai/intent-common";
 import { format, formatDistanceToNow } from "date-fns";
 import {
@@ -16,7 +16,7 @@ import {
 import { useMemo } from "react";
 
 interface PaymentStatusProps {
-  payment: RozoPayOrderView | PaymentResponse;
+  payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
   viewType: "user" | "merchant";
 }
 
@@ -89,6 +89,17 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}`;
+    } else if (
+      "source" in payment &&
+      payment.source &&
+      "amount" in payment.source
+    ) {
+      // RozoPayOrderView
+      const amount = parseFloat(payment.source.amount ?? "0");
+      return `$${amount.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`;
     }
     return "Amount unavailable";
   };
@@ -102,34 +113,37 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
   }, [payment.metadata]);
 
   const getPaymentStatus = useMemo(() => {
-    if (payment.status === "payment_unpaid" && !isMugglePay) {
+    const { status } = payment;
+
+    if (status === "payment_unpaid") {
+      return isMugglePay ? "Payment in Progress" : "Payment Unpaid";
+    }
+    if (status === "payment_expired") return "Payment Expired";
+    if (
+      status === "payment_error_liquidity" ||
+      status === "payment_error_recipient_trustline"
+    ) {
+      return "Payment Unavailable";
+    }
+    if (
+      status === "payment_payin_completed" ||
+      status === "payment_payout_started"
+    ) {
       return "Payment in Progress";
     }
-
-    if (payment.status === "payment_expired") {
-      return "Payment Expired";
-    }
-
-    if (payment.status === "payment_error_liquidity") {
-      return "Payment Unavailable";
-    }
-
-    if (payment.status === "payment_error_recipient_trustline") {
-      return "Payment Unavailable";
-    }
-
-    if (payment.status === "payment_completed") {
-      // Check if payoutTransactionHash exists
+    if (
+      status === "payment_completed" ||
+      status === "payment_payout_completed"
+    ) {
       const hasPayoutHash =
-        "payoutTransactionHash" in payment && payment.payoutTransactionHash;
-
-      if (!hasPayoutHash) {
-        return "Payment in Progress";
-      }
-
+        ("payoutTransactionHash" in payment && payment.payoutTransactionHash) ||
+        ("destination" in payment &&
+          payment.destination &&
+          "txHash" in payment.destination &&
+          payment.destination.txHash);
+      if (!hasPayoutHash) return "Payment in Progress";
       return viewType === "user" ? "Payment Completed" : "Payment Received";
     }
-
     return viewType === "user" ? "Payment Completed" : "Payment Received";
   }, [payment, viewType, isMugglePay]);
 
@@ -185,6 +199,14 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
             return data.fee === 0 ? "Free" : `$${data.fee.toFixed(2)}`;
           }
         }
+      }
+    }
+
+    if ("source" in payment && payment.source) {
+      const source = payment.source as Record<string, unknown>;
+      if ("fee" in source) {
+        const fee = source.fee as string;
+        return fee === "0" ? "Free" : `$${fee}`;
       }
     }
     return null;

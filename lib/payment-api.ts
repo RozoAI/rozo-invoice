@@ -40,10 +40,234 @@ export interface PaymentResponse {
   payoutTransactionHash: string;
 }
 
+/**
+ * FeeType, Fee calculation type:
+ * - exactIn (default): Fee deducted from input, recipient receives amount - fee
+ * - exactOut: Fee added to input, recipient receives exact amount
+ */
+export enum FeeType {
+  ExactIn = "exactIn",
+  ExactOut = "exactOut",
+}
+
+/**
+ * PaymentStatus, Payment status
+ */
+export enum PaymentStatus {
+  PaymentBounced = "payment_bounced",
+  PaymentCompleted = "payment_completed",
+  PaymentExpired = "payment_expired",
+  PaymentPayinCompleted = "payment_payin_completed",
+  PaymentPayoutCompleted = "payment_payout_completed",
+  PaymentRefunded = "payment_refunded",
+  PaymentStarted = "payment_started",
+  PaymentUnpaid = "payment_unpaid",
+}
+
+/**
+ * PaymentErrorCode, Error code (only present when status is payment_bounced)
+ */
+export enum PaymentErrorCode {
+  AmountTooHigh = "amountTooHigh",
+  AmountTooLow = "amountTooLow",
+  ChainUnavailable = "chainUnavailable",
+  InsufficientLiquidity = "insufficientLiquidity",
+  InvalidRecipient = "invalidRecipient",
+  MissingTrustline = "missingTrustline",
+  NetworkError = "networkError",
+  ProviderError = "providerError",
+  ServiceMaintenance = "serviceMaintenance",
+}
+
+/**
+ * DestinationRequest
+ */
+export interface DestinationRequest {
+  /**
+   * Receive amount (required for type=exactOut).
+   * For exactIn, this field is omitted in request and calculated in response.
+   */
+  amount?: string;
+  chainId: number;
+  /**
+   * Final recipient's wallet address
+   */
+  receiverAddress: string;
+  /**
+   * Memo for Stellar/Solana destinations
+   */
+  receiverMemo?: string;
+  /**
+   * Override default token address
+   */
+  tokenAddress?: string;
+  tokenSymbol: string;
+  [property: string]: any;
+}
+
+/**
+ * DisplayInfo
+ */
+export interface DisplayInfo {
+  /**
+   * Display currency
+   */
+  currency: string;
+  /**
+   * Detailed description
+   */
+  description?: string;
+  /**
+   * Short title
+   */
+  title: string;
+  [property: string]: any;
+}
+
+/**
+ * SourceRequest
+ */
+export interface SourceRequest {
+  /**
+   * Pay-in amount (required for type=exactIn).
+   * For exactOut, this field is omitted in request and calculated in response.
+   */
+  amount?: string;
+  chainId: number;
+  /**
+   * Override default token address
+   */
+  tokenAddress?: string;
+  tokenSymbol: string;
+  [property: string]: any;
+}
+
+/**
+ * DestinationResponse
+ */
+export interface DestinationResponse {
+  /**
+   * Amount to be sent to recipient
+   */
+  amount?: string;
+  chainId?: number;
+  /**
+   * Withdrawal confirmation time
+   */
+  confirmedAt?: Date;
+  /**
+   * Final recipient's wallet
+   */
+  receiverAddress?: string;
+  /**
+   * Memo for Stellar/Solana
+   */
+  receiverMemo?: string;
+  /**
+   * Token contract address
+   */
+  tokenAddress?: string;
+  tokenSymbol?: string;
+  /**
+   * Withdrawal transaction hash
+   */
+  txHash?: string;
+  [property: string]: any;
+}
+
+/**
+ * SourceResponse
+ */
+export interface SourceResponse {
+  /**
+   * Amount payer must send
+   */
+  amount?: string;
+  /**
+   * Actual amount received
+   */
+  amountReceived?: string;
+  chainId?: number;
+  /**
+   * Deposit confirmation time
+   */
+  confirmedAt?: Date;
+  /**
+   * Fee amount
+   */
+  fee?: string;
+  /**
+   * Deposit address (where payer sends funds)
+   */
+  receiverAddress?: string;
+  /**
+   * Memo for Stellar/Solana deposits
+   */
+  receiverMemo?: string;
+  /**
+   * Payer's wallet address (populated after deposit)
+   */
+  senderAddress?: string;
+  /**
+   * Token contract address
+   */
+  tokenAddress?: string;
+  tokenSymbol?: string;
+  /**
+   * Deposit transaction hash
+   */
+  txHash?: string;
+  [property: string]: any;
+}
+
+/**
+ * NewPaymentResponse
+ */
+export interface NewPaymentResponse {
+  /**
+   * Your application ID
+   */
+  appId: string;
+  /**
+   * ISO 8601 timestamp
+   */
+  createdAt: Date;
+  destination: DestinationResponse;
+  display: DisplayInfo;
+  errorCode: PaymentErrorCode | null;
+  /**
+   * ISO 8601 timestamp (when payment expires)
+   */
+  expiresAt: Date;
+  /**
+   * Payment ID
+   */
+  id: string;
+  metadata: { [key: string]: any } | null;
+  /**
+   * Your order reference ID
+   */
+  orderId: string | null;
+  source: SourceResponse;
+  status: PaymentStatus;
+  type: FeeType;
+  /**
+   * ISO 8601 timestamp
+   */
+  updatedAt: Date;
+  /**
+   * Secret for webhook signature verification.
+   * Only present when webhookUrl was provided in the request.
+   * Store this securely to verify incoming webhook signatures.
+   */
+  webhookSecret: string | null;
+  [property: string]: any;
+}
+
 export interface PaymentResult {
   success: boolean;
-  payment?: PaymentResponse | RozoPayOrderView;
-  source?: "rozo" | "daimo";
+  payment?: PaymentResponse | RozoPayOrderView | NewPaymentResponse;
+  source?: "rozo" | "newRozo";
   error?: string;
 }
 
@@ -59,17 +283,15 @@ interface ApiConfig {
 }
 
 // Environment variable validation
-function validateEnvironment(): { rozo: ApiConfig; daimo: ApiConfig } | null {
+function validateEnvironment(): { rozo: ApiConfig; newRozo: ApiConfig } | null {
   const rozoUrl = process.env.ROZO_API_URL;
   const rozoKey = process.env.ROZO_API_KEY;
-  const daimoUrl = process.env.DAIMO_API_URL;
-  const daimoKey = process.env.DAIMO_API_KEY;
+  const newRozoUrl = process.env.NEW_ROZO_API_URL;
 
   const missing = [];
   if (!rozoUrl) missing.push("ROZO_API_URL");
   if (!rozoKey) missing.push("ROZO_API_KEY");
-  if (!daimoUrl) missing.push("DAIMO_API_URL");
-  if (!daimoKey) missing.push("DAIMO_API_KEY");
+  if (!newRozoUrl) missing.push("NEW_ROZO_API_URL");
 
   if (missing.length > 0) {
     console.error("Missing environment variables:", missing.join(", "));
@@ -84,9 +306,12 @@ function validateEnvironment(): { rozo: ApiConfig; daimo: ApiConfig } | null {
         "Content-Type": "application/json",
       },
     },
-    daimo: {
-      url: daimoUrl!,
-      headers: { "Api-Key": daimoKey!, "Content-Type": "application/json" },
+    newRozo: {
+      url: newRozoUrl!,
+      headers: {
+        Authorization: `Bearer ${rozoKey!}`,
+        "Content-Type": "application/json",
+      },
     },
   };
 }
@@ -149,10 +374,9 @@ export async function getPaymentData(
     : `payment/id/${idOrHash}`;
   console.log("Endpoint:", endpoint);
   // Try Rozo API first
-  const rozoResponse = await fetchFromAPI(
-    `${config.rozo.url}/${endpoint}`,
-    config.rozo.headers
-  );
+  const rozoUrl = `${config.rozo.url}/${endpoint}`;
+  console.log("Rozo API URL:", rozoUrl);
+  const rozoResponse = await fetchFromAPI(rozoUrl, config.rozo.headers);
 
   if (rozoResponse.success && rozoResponse.data) {
     return {
@@ -163,36 +387,37 @@ export async function getPaymentData(
   }
 
   console.log(
-    "Rozo API failed, falling back to Daimo API:",
+    "Rozo API failed, falling back to new Rozo API:",
     rozoResponse.error
   );
-  // Rozo API failed, try Daimo API as fallback (only for ID-based requests)
+  // Rozo API failed, try new Rozo   API as fallback (only for ID-based requests)
   console.warn(
-    "Rozo API failed, falling back to Daimo API:",
+    "Rozo API failed, falling back to new Rozo API:",
     rozoResponse.error
   );
 
-  // Only try Daimo API for ID-based requests, not hash-based
+  // Only try new Rozo API for ID-based requests, not hash-based
   if (!isHash) {
-    const daimoResponse = await fetchFromAPI(
-      `${config.daimo.url}/payment/${idOrHash}`,
-      config.daimo.headers
-    );
+    const url = `${config.newRozo.url}/payment-api/payments/${idOrHash}`;
 
-    if (daimoResponse.success && daimoResponse.data) {
+    console.log("New Rozo API URL:", url);
+
+    const newRozoResponse = await fetchFromAPI(url, config.newRozo.headers);
+
+    if (newRozoResponse.success && newRozoResponse.data) {
       return {
         success: true,
-        payment: daimoResponse.data as RozoPayOrderView,
-        source: "daimo",
+        payment: newRozoResponse.data as unknown as NewPaymentResponse,
+        source: "newRozo",
       };
     }
 
-    console.log("Daimo API failed:", daimoResponse.error);
+    console.log("new Rozo API failed:", newRozoResponse.error);
 
     // Both APIs failed
     return {
       success: false,
-      error: `Payment failed to fetch from both APIs. Rozo: ${rozoResponse.error}, Daimo: ${daimoResponse.error}`,
+      error: `Payment failed to fetch from both APIs. Rozo: ${rozoResponse.error}, new Rozo: ${newRozoResponse.error}`,
     };
   }
 
@@ -221,63 +446,127 @@ export async function getPaymentDataClient(
   }
 }
 
+// Track active polling instances to prevent concurrent polling for the same ID
+const activePolling = new Map<string, { cancel: () => void }>();
+
 // Client-side polling function to fetch payment data until destination hash exists
 export async function pollPaymentUntilPayoutClient(
   id: string,
   intervalMs: number = 5000, // 5 seconds
   maxAttempts: number = 60 // 5 minutes max (60 * 5s)
 ): Promise<PaymentResult> {
+  // Cancel any existing polling for this ID
+  const existing = activePolling.get(id);
+  if (existing) {
+    existing.cancel();
+  }
+
   return new Promise((resolve, reject) => {
     let attempts = 0;
+    let resolved = false;
+    let cancelled = false;
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    const cancel = () => {
+      cancelled = true;
+      resolved = true;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      activePolling.delete(id);
+    };
+
+    // Register this polling instance
+    activePolling.set(id, { cancel });
 
     const poll = async () => {
+      // Prevent multiple concurrent polls
+      if (resolved || cancelled) return;
+
       attempts++;
 
       try {
         const result = await getPaymentDataClient(id);
 
+        if (cancelled) return;
+
         if (!result.success) {
           if (attempts >= maxAttempts) {
-            reject(
-              new Error(
-                `Polling failed after ${maxAttempts} attempts: ${result.error}`
-              )
-            );
+            if (!resolved) {
+              resolved = true;
+              activePolling.delete(id);
+              reject(
+                new Error(
+                  `Polling failed after ${maxAttempts} attempts: ${result.error}`
+                )
+              );
+            }
             return;
           }
 
-          setTimeout(poll, intervalMs);
+          if (!resolved && !cancelled) {
+            timeoutId = setTimeout(poll, intervalMs);
+          }
           return;
         }
 
         // Check if any destination hash exists (payoutTransactionHash or destination.txHash)
         const payment = result.payment as PaymentResponse;
-        const hasPayoutHash = payment?.payoutTransactionHash;
+        const hasPayoutHash =
+          payment?.payoutTransactionHash ||
+          (payment?.destination &&
+            "txHash" in payment.destination &&
+            payment.destination.txHash);
+        const hasCompletedStatus =
+          result.payment?.status === "payment_completed" ||
+          result.payment?.status === "payment_payout_completed";
 
-        if (hasPayoutHash || result.payment?.status === "payment_completed") {
+        // Resolve once with the result
+        if (!resolved) {
+          resolved = true;
+          activePolling.delete(id);
           resolve(result);
+        }
+
+        // Stop polling if we have the payout hash or completed status
+        if (hasPayoutHash || hasCompletedStatus) {
           return;
         }
 
         // Check if we've reached max attempts
         if (attempts >= maxAttempts) {
-          reject(
-            new Error(
-              `Polling timeout: destination hash (payoutTransactionHash or destination.txHash) not found after ${maxAttempts} attempts`
-            )
-          );
+          if (!resolved) {
+            resolved = true;
+            activePolling.delete(id);
+            reject(
+              new Error(
+                `Polling timeout: destination hash (payoutTransactionHash or destination.txHash) not found after ${maxAttempts} attempts`
+              )
+            );
+          }
           return;
         }
 
-        // Continue polling
-        setTimeout(poll, intervalMs);
+        // Continue polling only if not resolved yet
+        if (!resolved && !cancelled) {
+          timeoutId = setTimeout(poll, intervalMs);
+        }
       } catch (error) {
+        if (cancelled) return;
+
         if (attempts >= maxAttempts) {
-          reject(error);
+          if (!resolved) {
+            resolved = true;
+            activePolling.delete(id);
+            reject(error);
+          }
           return;
         }
 
-        setTimeout(poll, intervalMs);
+        if (!resolved && !cancelled) {
+          timeoutId = setTimeout(poll, intervalMs);
+        }
       }
     };
 

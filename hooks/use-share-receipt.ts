@@ -1,8 +1,10 @@
-import { PaymentResponse } from "@/lib/payment-api";
+import { NewPaymentResponse, PaymentResponse } from "@/lib/payment-api";
 import { RozoPayOrderView } from "@rozoai/intent-common";
 import { useCallback } from "react";
 
-export function useShareReceipt(payment: RozoPayOrderView | PaymentResponse) {
+export function useShareReceipt(
+  payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse
+) {
   const shareReceipt = useCallback(async () => {
     if (!payment) return;
     const url = window.location.href;
