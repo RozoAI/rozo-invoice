@@ -214,26 +214,32 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
 
   const feeInfo = getFeeInfo();
 
-  const hasPayoutHash =
-    "payoutTransactionHash" in payment && payment.payoutTransactionHash;
-  const showInProgressIcon =
-    (payment.status === "payment_unpaid" && !isMugglePay) ||
-    (payment.status === "payment_completed" && !hasPayoutHash);
+  const paymentStatus = getPaymentStatus;
+
+  const renderStatusIcon = () => {
+    if (paymentStatus === "Payment Expired") {
+      return <ClockFading className="size-[65px] text-neutral-400" />;
+    }
+    if (paymentStatus === "Payment Unavailable") {
+      return <AlertCircle className="size-[90px] text-red-500" />;
+    }
+    if (
+      paymentStatus === "Payment in Progress" ||
+      paymentStatus === "Payment Unpaid"
+    ) {
+      return (
+        <BadgeAlertIcon className="size-[90px] fill-yellow-500 text-white" />
+      );
+    }
+    return <BadgeCheckIcon className="size-[90px] fill-[#0052FF] text-white" />;
+  };
 
   return (
     <div className="flex flex-col items-center w-full">
-      {payment.status === "payment_expired" ? (
-        <ClockFading className="size-[65px] text-neutral-400" />
-      ) : isErrorStatus ? (
-        <AlertCircle className="size-[90px] text-red-500" />
-      ) : showInProgressIcon ? (
-        <BadgeAlertIcon className="size-[90px] fill-yellow-500 text-white" />
-      ) : (
-        <BadgeCheckIcon className="size-[90px] fill-[#0052FF] text-white" />
-      )}
+      {renderStatusIcon()}
 
       <div className="space-y-1 mt-2">
-        <h3 className="font-semibold text-xl">{getPaymentStatus}</h3>
+        <h3 className="font-semibold text-xl">{paymentStatus}</h3>
       </div>
 
       {errorMessage && (
