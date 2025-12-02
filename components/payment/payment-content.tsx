@@ -1,7 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { PaymentResponse } from "@/lib/payment-api";
+import {
+  DestinationResponse,
+  NewPaymentResponse,
+  PaymentResponse,
+  SourceResponse,
+} from "@/lib/payment-api";
 import {
   baseUSDC,
   getChainExplorerTxUrl,
@@ -26,7 +31,7 @@ import { getAddress } from "viem";
 
 export interface PaymentContentProps {
   appId: string;
-  data: RozoPayOrderView | PaymentResponse;
+  data: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
 }
 
 interface PayParams {
@@ -89,6 +94,17 @@ export function PaymentContent({
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}`;
+    } else if (
+      "source" in payment &&
+      payment.source &&
+      "amount" in payment.source
+    ) {
+      // NewPaymentResponse
+      const amount = parseFloat(payment.source.amount as string);
+      return `$${amount.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`;
     }
     return "Amount unavailable";
   }, [payment]);
@@ -118,29 +134,39 @@ export function PaymentContent({
     const validAddress = "0x0000000000000000000000000000000000000000";
 
     let params = {};
+    const toUnits =
+      payment.destination.amountUnits ||
+      ((payment.source as SourceResponse)?.amount as string);
 
     if (isToStellar) {
       params = {
         toAddress: validAddress,
         toChain: baseUSDC.chainId,
         toToken: getAddress(baseUSDC.token),
-        toUnits: payment.destination.amountUnits,
-        toStellarAddress: payment.destination.destinationAddress,
+        toUnits: toUnits,
+        toStellarAddress:
+          payment.destination.destinationAddress ||
+          (payment.destination as DestinationResponse).receiverAddress,
       };
     } else if (isToSolana) {
       params = {
         toAddress: validAddress,
         toChain: baseUSDC.chainId,
         toToken: getAddress(baseUSDC.token),
-        toUnits: payment.destination.amountUnits,
-        toSolanaAddress: payment.destination.destinationAddress,
+        toUnits: toUnits,
+        toSolanaAddress:
+          payment.destination.destinationAddress ||
+          (payment.destination as DestinationResponse).receiverAddress,
       };
     } else {
       params = {
-        toAddress: getAddress(payment.destination.destinationAddress),
+        toAddress: getAddress(
+          payment.destination.destinationAddress ||
+            (payment.destination as DestinationResponse).receiverAddress
+        ),
         toChain: Number(payment.destination.chainId),
-        toToken: getAddress(payment.destination.tokenAddress),
-        toUnits: payment.destination.amountUnits,
+        toToken: getAddress(payment.destination.tokenAddress as string),
+        toUnits: toUnits,
       };
     }
 
@@ -233,6 +259,7 @@ export function PaymentContent({
               setIsLoading(false);
               toast.success(`Payment completed for $${payParams.toUnits}`);
             }}
+            closeOnSuccess
           >
             {({ show }) => (
               <Button

@@ -273,7 +273,7 @@ export interface PaymentResult {
 
 interface ApiResponse {
   success: boolean;
-  data?: PaymentResponse | RozoPayOrderView;
+  data?: PaymentResponse | RozoPayOrderView | NewPaymentResponse;
   error?: string;
 }
 
@@ -337,7 +337,10 @@ async function fetchFromAPI(
       };
     }
 
-    const data = (await response.json()) as PaymentResponse | RozoPayOrderView;
+    const data = (await response.json()) as
+      | PaymentResponse
+      | RozoPayOrderView
+      | NewPaymentResponse;
     return { success: true, data };
   } catch (error) {
     return {
@@ -407,7 +410,7 @@ export async function getPaymentData(
     if (newRozoResponse.success && newRozoResponse.data) {
       return {
         success: true,
-        payment: newRozoResponse.data as unknown as NewPaymentResponse,
+        payment: newRozoResponse.data as NewPaymentResponse,
         source: "newRozo",
       };
     }
@@ -512,7 +515,7 @@ export async function pollPaymentUntilPayoutClient(
         }
 
         // Check if any destination hash exists (payoutTransactionHash or destination.txHash)
-        const payment = result.payment as PaymentResponse;
+        const payment = result.payment as PaymentResponse | NewPaymentResponse;
         const hasPayoutHash =
           payment?.payoutTransactionHash ||
           (payment?.destination &&

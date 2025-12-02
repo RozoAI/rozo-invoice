@@ -1,10 +1,14 @@
 import CheckoutContent from "@/components/payment/checkout-content";
 import { redirectToError } from "@/lib/error-utils";
-import { getPaymentData, PaymentResponse } from "@/lib/payment-api";
+import {
+  getPaymentData,
+  NewPaymentResponse,
+  PaymentResponse,
+} from "@/lib/payment-api";
 import type { RozoPayOrderView } from "@rozoai/intent-common";
 import type { ReactElement } from "react";
 
-type PaymentData = RozoPayOrderView | PaymentResponse;
+type PaymentData = RozoPayOrderView | PaymentResponse | NewPaymentResponse;
 
 type LoaderData = {
   success: boolean;
