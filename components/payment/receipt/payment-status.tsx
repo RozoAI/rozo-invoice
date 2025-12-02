@@ -1,3 +1,4 @@
+import { Ring } from "@/components/icons/loader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Tooltip,
@@ -112,41 +113,6 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
     );
   }, [payment.metadata]);
 
-  const getPaymentStatus = useMemo(() => {
-    const { status } = payment;
-
-    if (status === "payment_unpaid") {
-      return isMugglePay ? "Payment in Progress" : "Payment Unpaid";
-    }
-    if (status === "payment_expired") return "Payment Expired";
-    if (
-      status === "payment_error_liquidity" ||
-      status === "payment_error_recipient_trustline"
-    ) {
-      return "Payment Unavailable";
-    }
-    if (
-      status === "payment_payin_completed" ||
-      status === "payment_payout_started"
-    ) {
-      return "Payment in Progress";
-    }
-    if (
-      status === "payment_completed" ||
-      status === "payment_payout_completed"
-    ) {
-      const hasPayoutHash =
-        ("payoutTransactionHash" in payment && payment.payoutTransactionHash) ||
-        ("destination" in payment &&
-          payment.destination &&
-          "txHash" in payment.destination &&
-          payment.destination.txHash);
-      if (!hasPayoutHash) return "Payment in Progress";
-      return viewType === "user" ? "Payment Completed" : "Payment Received";
-    }
-    return viewType === "user" ? "Payment Completed" : "Payment Received";
-  }, [payment, viewType, isMugglePay]);
-
   const isErrorStatus = useMemo(() => {
     return (
       payment.status === "payment_error_liquidity" ||
@@ -214,29 +180,75 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
 
   const feeInfo = getFeeInfo();
 
-  const paymentStatus = getPaymentStatus;
+  const paymentStatus = useMemo(() => {
+    const { status } = payment;
 
-  const renderStatusIcon = () => {
+    if (status === "payment_unpaid") {
+      return "Payment Unpaid";
+    }
+
+    if (status === "payment_expired") return "Payment Expired";
+
+    if (
+      status === "payment_error_liquidity" ||
+      status === "payment_error_recipient_trustline"
+    ) {
+      return "Payment Unavailable";
+    }
+
+    if (
+      status === "payment_payin_completed" ||
+      status === "payment_payout_started"
+    ) {
+      return "Payment in Progress";
+    }
+
+    if (status === "payment_completed" && isMugglePay) {
+      return "Payment Completed";
+    }
+
+    if (
+      status === "payment_completed" ||
+      status === "payment_payout_completed"
+    ) {
+      const hasPayoutHash =
+        ("payoutTransactionHash" in payment && payment.payoutTransactionHash) ||
+        ("destination" in payment &&
+          payment.destination &&
+          "txHash" in payment.destination &&
+          payment.destination.txHash);
+
+      if (!hasPayoutHash) return "Payment in Progress";
+    }
+
+    return viewType === "user" ? "Payment Completed" : "Payment Received";
+  }, [payment, viewType, isMugglePay]);
+
+  const renderStatusIcon = useMemo(() => {
     if (paymentStatus === "Payment Expired") {
       return <ClockFading className="size-[65px] text-neutral-400" />;
     }
+
     if (paymentStatus === "Payment Unavailable") {
       return <AlertCircle className="size-[90px] text-red-500" />;
     }
-    if (
-      paymentStatus === "Payment in Progress" ||
-      paymentStatus === "Payment Unpaid"
-    ) {
+
+    if (paymentStatus === "Payment Unpaid") {
       return (
         <BadgeAlertIcon className="size-[90px] fill-yellow-500 text-white" />
       );
     }
+
+    if (paymentStatus === "Payment in Progress") {
+      return <Ring width={65} height={65} className="text-[#0052FF]" />;
+    }
+
     return <BadgeCheckIcon className="size-[90px] fill-[#0052FF] text-white" />;
-  };
+  }, [paymentStatus]);
 
   return (
     <div className="flex flex-col items-center w-full">
-      {renderStatusIcon()}
+      {renderStatusIcon}
 
       <div className="space-y-1 mt-2">
         <h3 className="font-semibold text-xl">{paymentStatus}</h3>
