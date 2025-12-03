@@ -82,7 +82,9 @@ export default function ReceiptContent({
             ("destination" in result.payment &&
               result.payment.destination &&
               "txHash" in result.payment.destination &&
-              result.payment.destination.txHash)
+              result.payment.destination.txHash) ||
+            result.payment.status === "payment_completed" ||
+            result.payment.status === "payment_payout_completed"
           ) {
             setIsPolling(false);
             return;
