@@ -18,11 +18,17 @@ import {
   type StellarParseResult,
 } from "@rozoai/deeplink-core";
 import { ScanQr } from "@rozoai/deeplink-react";
-import { baseUSDC, PaymentCompletedEvent } from "@rozoai/intent-common";
+import {
+  baseUSDC,
+  FeeType,
+  PaymentCompletedEvent,
+  rozoStellar,
+  rozoStellarUSDC,
+} from "@rozoai/intent-common";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
 import { Loader2, ScanLine, Wallet } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getAddress } from "viem";
 import { InputAddress } from "./input-address";
@@ -33,13 +39,10 @@ interface ScanQRButtonProps {
 }
 
 export type ParsedTransfer = {
-  isStellar: boolean;
   toAddress: string;
-  toStellarAddress?: string;
-  toSolanaAddress?: string;
   toChain: number;
   toUnits: string | null;
-  toToken: string | null;
+  toToken: string;
   message?: string;
 };
 
@@ -53,10 +56,6 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
 
   const searchParams = useSearchParams();
   const router = useRouter();
-
-  const payToStellar = useMemo(() => {
-    return parsedTransfer?.toStellarAddress;
-  }, [parsedTransfer]);
 
   // Check for qr query parameter and parse it
   useEffect(() => {
@@ -107,7 +106,6 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
         const data = parsed as AddressParseResult;
         if (data.address) {
           parsedData = {
-            isStellar: false,
             toAddress: getAddress(data.address),
             toChain,
             toUnits: null,
@@ -138,7 +136,6 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
 
           if (addressParam?.value && data.address) {
             parsedData = {
-              isStellar: false,
               toAddress: getAddress(addressParam.value),
               toChain,
               toUnits: amountParam?.value
@@ -152,7 +149,6 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
         // Handle regular ethereum addresses
         else if (data.address) {
           parsedData = {
-            isStellar: false,
             toAddress: getAddress(data.address),
             toChain,
             toUnits: data.amount ? formatAmount(data.amount) : null,
@@ -172,14 +168,12 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
         const data = parsed as StellarParseResult;
         if (data.address && data.toStellarAddress) {
           parsedData = {
-            isStellar: true,
             toAddress: data.address,
-            toStellarAddress: data.toStellarAddress,
-            toChain,
+            toChain: rozoStellar.chainId,
             toUnits: data.amount
               ? String(parseFloat(String(data.amount || 0)))
               : null,
-            toToken: data.asset?.contract || baseUSDC.token,
+            toToken: data.asset?.contract || rozoStellarUSDC.token,
             message: data.message,
           };
         }
@@ -208,9 +202,8 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
     setParsedTransfer(parsedData);
     resetPayment({
       toChain: parsedData.toChain,
-      toAddress: getAddress(parsedData.toAddress),
-      toStellarAddress: parsedData.toStellarAddress,
-      toToken: getAddress(parsedData.toToken),
+      toAddress: parsedData.toAddress,
+      toToken: parsedData.toToken,
       toUnits: parsedData.toUnits ?? undefined,
     });
   };
@@ -282,15 +275,13 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
           defaultOpen
           closeOnSuccess
           appId={appId}
-          toAddress={parsedTransfer.toAddress as `0x${string}`}
+          toAddress={parsedTransfer.toAddress}
           toChain={parsedTransfer.toChain}
-          {...(parsedTransfer.isStellar && {
-            toStellarAddress: parsedTransfer.toStellarAddress,
-          })}
           {...(parsedTransfer.toUnits && {
             toUnits: parsedTransfer.toUnits,
           })}
-          toToken={parsedTransfer.toToken as `0x${string}`}
+          toToken={parsedTransfer.toToken}
+          feeType={FeeType.ExactIn}
           onPaymentStarted={() => {
             setIsLoading(true);
           }}

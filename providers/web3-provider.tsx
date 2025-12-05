@@ -13,11 +13,17 @@ const config = createConfig(
 
 const queryClient = new QueryClient();
 
-export function Web3Provider({ children }: { children: React.ReactNode }) {
+export function Web3Provider({
+  children,
+  apiVersion = "v1",
+}: {
+  children: React.ReactNode;
+  apiVersion?: "v1" | "v2";
+}) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RozoPayProvider>{children}</RozoPayProvider>
+        <RozoPayProvider apiVersion={apiVersion}>{children}</RozoPayProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

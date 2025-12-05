@@ -16,6 +16,7 @@ type LoaderData = {
   appId?: string;
   error?: unknown;
   theme?: string;
+  apiVersion?: "v1" | "v2";
 };
 
 async function getPayment(id: string): Promise<LoaderData> {
@@ -37,6 +38,7 @@ async function getPayment(id: string): Promise<LoaderData> {
     return {
       success: true,
       payment: paymentData as PaymentData,
+      apiVersion: response.source === "rozo" ? "v1" : "v2",
       appId:
         paymentData &&
         ("appId" in paymentData
