@@ -168,7 +168,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
         const data = parsed as StellarParseResult;
         if (data.address && data.toStellarAddress) {
           parsedData = {
-            toAddress: data.address,
+            toAddress: data.toStellarAddress,
             toChain: rozoStellar.chainId,
             toUnits: data.amount
               ? String(parseFloat(String(data.amount || 0)))

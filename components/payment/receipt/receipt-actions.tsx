@@ -21,15 +21,6 @@ export function ReceiptActions({ onShare }: ReceiptActionsProps) {
           Share Receipt
         </Button>
       </div>
-
-      {/* <Button
-        variant="outline"
-        className="w-full rounded-lg text-muted-foreground max-w-[350px]"
-        size="sm"
-        asChild
-      >
-        <Link href={backUrl || "/"}>Back to Home</Link>
-      </Button> */}
     </>
   );
 }

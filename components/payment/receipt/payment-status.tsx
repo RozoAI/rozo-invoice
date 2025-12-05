@@ -18,30 +18,19 @@ import { useMemo } from "react";
 
 interface PaymentStatusProps {
   payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
-  viewType: "user" | "merchant";
 }
 
-export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
+export function PaymentStatus({ payment }: PaymentStatusProps) {
   const getChainInfo = () => {
-    if (viewType === "user" && payment.source) {
-      return payment.source.chainId === "10001" ||
-        payment.source.chainId === "1500"
-        ? "Stellar"
-        : getChainName(Number(payment.source.chainId));
+    if (payment.source) {
+      return getChainName(Number(payment.source.chainId));
+    }
+
+    if ("payinchainid" in payment && payment.payinchainid) {
+      return getChainName(Number(payment.payinchainid));
     }
 
     if (
-      viewType === "user" &&
-      "payinchainid" in payment &&
-      payment.payinchainid
-    ) {
-      return payment.payinchainid === "10001" || payment.payinchainid === "1500"
-        ? "Stellar"
-        : getChainName(Number(payment.payinchainid));
-    }
-
-    if (
-      viewType === "user" &&
       "metadata" in payment &&
       payment.metadata &&
       "preferred_chain" in payment.metadata
@@ -49,24 +38,18 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
       return getChainName(Number(payment.metadata.preferred_chain));
     }
 
-    if (viewType === "merchant" && payment?.destination) {
-      return payment.destination.chainId === "10001" ||
-        payment.destination.chainId === "1500"
-        ? "Stellar"
-        : getChainName(Number(payment.destination.chainId));
-    }
-
     return "Unknown";
   };
 
-  const shouldShowChainInfo =
-    (viewType === "user" &&
-      (payment?.source ||
-        ("payinchainid" in payment && payment.payinchainid) ||
-        ("metadata" in payment &&
-          payment.metadata &&
-          "preferred_chain" in payment.metadata))) ||
-    (viewType === "merchant" && payment?.destination);
+  const shouldShowChainInfo = useMemo(() => {
+    return (
+      payment?.source ||
+      ("payinchainid" in payment && payment.payinchainid) ||
+      ("metadata" in payment &&
+        payment.metadata &&
+        "preferred_chain" in payment.metadata)
+    );
+  }, [payment]);
 
   const getPaymentAmount = () => {
     if (
@@ -143,7 +126,7 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
     return format(dateObj, "PPpp"); // e.g., "Jan 1, 2024 at 12:00:00 PM"
   };
 
-  const getFeeInfo = () => {
+  const feeInfo = useMemo(() => {
     if ("metadata" in payment && payment.metadata) {
       const metadata = payment.metadata as Record<string, unknown>;
       if (
@@ -176,9 +159,7 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
       }
     }
     return null;
-  };
-
-  const feeInfo = getFeeInfo();
+  }, [payment]);
 
   const paymentStatus = useMemo(() => {
     const { status } = payment;
@@ -191,9 +172,14 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
 
     if (
       status === "payment_error_liquidity" ||
-      status === "payment_error_recipient_trustline"
+      status === "payment_error_recipient_trustline" ||
+      status === "payment_bounced"
     ) {
       return "Payment Unavailable";
+    }
+
+    if (status === "payment_refunded") {
+      return "Payment Refunded";
     }
 
     if (
@@ -207,22 +193,8 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
       return "Payment Completed";
     }
 
-    if (
-      status === "payment_completed" ||
-      status === "payment_payout_completed"
-    ) {
-      const hasPayoutHash =
-        ("payoutTransactionHash" in payment && payment.payoutTransactionHash) ||
-        ("destination" in payment &&
-          payment.destination &&
-          "txHash" in payment.destination &&
-          payment.destination.txHash);
-
-      if (!hasPayoutHash) return "Payment in Progress";
-    }
-
-    return viewType === "user" ? "Payment Completed" : "Payment Received";
-  }, [payment, viewType, isMugglePay]);
+    return "Payment Completed";
+  }, [payment, isMugglePay]);
 
   const renderStatusIcon = useMemo(() => {
     if (paymentStatus === "Payment Expired") {
@@ -275,7 +247,7 @@ export function PaymentStatus({ payment, viewType }: PaymentStatusProps) {
             on {getChainInfo()} &bull;{" "}
             {payment.status === "payment_completed" ? (
               <>
-                <span>{viewType === "user" ? "Sent" : "Received"} </span>
+                <span>Sent </span>
               </>
             ) : (
               "Created at "

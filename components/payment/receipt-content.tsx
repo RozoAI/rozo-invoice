@@ -2,7 +2,6 @@
 
 import BoxedCard from "@/components/boxed-card";
 import { CardContent, CardFooter } from "@/components/ui/card";
-import { useExplorer } from "@/hooks/use-explorer";
 import { useShareReceipt } from "@/hooks/use-share-receipt";
 import {
   NewPaymentResponse,
@@ -23,14 +22,11 @@ export default function ReceiptContent({
   payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
   backUrl?: string;
 }) {
-  const [viewType, setViewType] = useState<"user" | "merchant">("user");
-  const [showMoreActions, setShowMoreActions] = useState(true);
   const [currentPayment, setCurrentPayment] = useState<
     RozoPayOrderView | PaymentResponse | NewPaymentResponse
   >(payment);
   const [isPolling, setIsPolling] = useState(false);
 
-  const { openExplorer } = useExplorer();
   const { shareReceipt } = useShareReceipt(currentPayment);
 
   // Helper to safely get payment items
@@ -118,7 +114,7 @@ export default function ReceiptContent({
       <CardContent className="flex flex-1 flex-col items-center gap-8 px-4 py-0 text-center">
         {/* <ViewTypeToggle viewType={viewType} onViewTypeChange={setViewType} /> */}
 
-        <PaymentStatus payment={currentPayment} viewType={viewType} />
+        <PaymentStatus payment={currentPayment} />
 
         {(currentPayment?.source && currentPayment?.destination) ||
         ("destination" in currentPayment && currentPayment.destination) ? (
@@ -145,11 +141,7 @@ export default function ReceiptContent({
                 </div>
               </div>
             )}
-            <TransactionFlow
-              payment={currentPayment}
-              viewType={viewType}
-              onExplorerClick={openExplorer}
-            />
+            <TransactionFlow payment={currentPayment} />
           </>
         ) : null}
 

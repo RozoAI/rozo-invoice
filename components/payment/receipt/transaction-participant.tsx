@@ -9,14 +9,17 @@ interface TransactionParticipantProps {
   name: string;
   address: string;
   chainId: string;
-  txHash: string;
+  txHash?: string;
+  explorerAddress?: string;
   isCurrentUser?: boolean;
   onExplorerClick: ({
     chainId,
     hash,
+    address,
   }: {
     chainId: string;
-    hash: string;
+    hash?: string;
+    address?: string;
   }) => void;
 }
 
@@ -26,6 +29,7 @@ export function TransactionParticipant({
   address,
   chainId,
   txHash,
+  explorerAddress,
   isCurrentUser = false,
   onExplorerClick,
 }: TransactionParticipantProps) {
@@ -84,10 +88,16 @@ export function TransactionParticipant({
               {getChainName(Number(chainId))}
             </div>
           )}
-          {txHash && (
+          {(txHash || explorerAddress) && (
             <ExternalLinkIcon
               className="size-4 cursor-pointer"
-              onClick={() => onExplorerClick({ chainId, hash: txHash })}
+              onClick={() =>
+                onExplorerClick({
+                  chainId,
+                  hash: txHash,
+                  address: explorerAddress,
+                })
+              }
             />
           )}
         </div>

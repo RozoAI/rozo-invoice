@@ -1,3 +1,4 @@
+import { useExplorer } from "@/hooks/use-explorer";
 import { NewPaymentResponse, PaymentResponse } from "@/lib/payment-api";
 import { RozoPayOrderView } from "@rozoai/intent-common";
 import { ArrowDown } from "lucide-react";
@@ -26,21 +27,11 @@ function hasPreferredChain(
 
 interface TransactionFlowProps {
   payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
-  viewType: "user" | "merchant";
-  onExplorerClick: ({
-    chainId,
-    hash,
-  }: {
-    chainId: string;
-    hash: string;
-  }) => void;
 }
 
-export function TransactionFlow({
-  payment,
-  viewType,
-  onExplorerClick,
-}: TransactionFlowProps) {
+export function TransactionFlow({ payment }: TransactionFlowProps) {
+  const { openExplorer } = useExplorer();
+
   // Helper to safely get payer address
   const getSourcePayerAddress = (): string => {
     if (payment?.source?.payerAddress) {
@@ -141,51 +132,54 @@ export function TransactionFlow({
     );
   }, [payment]);
 
-  const sourceChainId = getSourceChainId();
-
-  if (viewType === "user") {
+  const isPaymentCompleted = useMemo(() => {
     return (
-      <div className="flex flex-col w-full gap-4 max-w-[350px]">
-        {/* User View: Sender -> Recipient */}
-        <TransactionParticipant
-          type="sender"
-          name="Sender"
-          address={getSourcePayerAddress()}
-          chainId={sourceChainId}
-          txHash={getSourceTxHash()}
-          isCurrentUser={true}
-          onExplorerClick={onExplorerClick}
-        />
-
-        <div className="flex size-8 items-center justify-center self-center">
-          <ArrowDown className="text-muted-foreground size-5" />
-        </div>
-
-        <div className="-mt-6">
-          <TransactionParticipant
-            type="recipient"
-            name={isForMerchant ? "Merchant" : "Recipient"}
-            address={getDestinationAddress()}
-            chainId={getDestinationChainId()}
-            txHash={getDestinationTxHash()}
-            onExplorerClick={onExplorerClick}
-          />
-        </div>
-      </div>
+      payment.status === "payment_completed" ||
+      payment.status === "payment_payout_completed"
     );
-  }
+  }, [payment.status]);
+
+  const destinationTxHash = getDestinationTxHash();
+  const destinationAddress = getDestinationAddress();
+  const destinationChainId = getDestinationChainId();
+
+  // For recipient: if payment is completed but no TX hash, use address
+  const recipientExplorerData = useMemo(() => {
+    if (
+      isPaymentCompleted &&
+      !destinationTxHash &&
+      destinationAddress &&
+      destinationChainId
+    ) {
+      return {
+        address: destinationAddress,
+        txHash: undefined,
+      };
+    }
+    return {
+      address: undefined,
+      txHash: destinationTxHash,
+    };
+  }, [
+    isPaymentCompleted,
+    destinationTxHash,
+    destinationAddress,
+    destinationChainId,
+  ]);
+
+  const sourceChainId = getSourceChainId();
 
   return (
     <div className="flex flex-col w-full gap-4 max-w-[350px]">
-      {/* Merchant View: Recipient -> Sender */}
+      {/* User View: Sender -> Recipient */}
       <TransactionParticipant
-        type="recipient"
-        name={isForMerchant ? "Merchant" : "Recipient"}
-        address={getDestinationAddress()}
-        chainId={getDestinationChainId()}
-        txHash={getDestinationTxHash()}
+        type="sender"
+        name="Sender"
+        address={getSourcePayerAddress()}
+        chainId={sourceChainId}
+        txHash={getSourceTxHash()}
         isCurrentUser={true}
-        onExplorerClick={onExplorerClick}
+        onExplorerClick={openExplorer}
       />
 
       <div className="flex size-8 items-center justify-center self-center">
@@ -194,12 +188,13 @@ export function TransactionFlow({
 
       <div className="-mt-6">
         <TransactionParticipant
-          type="sender"
-          name="Sender"
-          address={getSourcePayerAddress()}
-          chainId={sourceChainId}
-          txHash={getSourceTxHash()}
-          onExplorerClick={onExplorerClick}
+          type="recipient"
+          name={isForMerchant ? "Merchant" : "Recipient"}
+          address={destinationAddress}
+          chainId={destinationChainId}
+          txHash={recipientExplorerData.txHash}
+          explorerAddress={recipientExplorerData.address}
+          onExplorerClick={openExplorer}
         />
       </div>
     </div>
