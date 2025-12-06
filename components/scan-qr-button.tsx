@@ -173,7 +173,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
             toUnits: data.amount
               ? String(parseFloat(String(data.amount || 0)))
               : null,
-            toToken: data.asset?.contract || rozoStellarUSDC.token,
+            toToken: rozoStellarUSDC.token,
             message: data.message,
           };
         }

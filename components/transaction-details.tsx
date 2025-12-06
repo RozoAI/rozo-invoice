@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn, formatAddress } from "@/lib/utils";
-import { getChainName } from "@rozoai/intent-common";
+import { getChainName, rozoStellar, stellar } from "@rozoai/intent-common";
 import { CircleAlert, Copy } from "lucide-react";
 import { toast } from "sonner";
 import type { ParsedTransfer } from "./scan-qr-button";
@@ -56,20 +56,23 @@ export function TransactionDetails({
   transfer,
   className,
 }: TransactionDetailsProps) {
+  const isStellar =
+    transfer.toChain === rozoStellar.chainId ||
+    transfer.toChain === stellar.chainId;
   return (
     <Card className={cn("w-full", className)}>
       <CardHeader className="p-0">
         <CardTitle>Transaction Details</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4 p-0">
-        {transfer.isStellar ? (
+        {isStellar ? (
           <>
-            {transfer.toStellarAddress && (
+            {transfer.toAddress && (
               <DetailRow
                 label="Destination Address"
-                value={transfer.toStellarAddress}
+                value={transfer.toAddress}
                 isAddress
-                coppiedText={transfer.toStellarAddress}
+                coppiedText={transfer.toAddress}
               />
             )}
           </>
@@ -89,15 +92,15 @@ export function TransactionDetails({
           />
         )}
 
-        {!transfer.isStellar && transfer.toToken && (
+        {!isStellar && transfer.toToken && (
           <DetailRow
-            label={transfer.isStellar ? "Asset" : "Contract Address"}
+            label={isStellar ? "Asset" : "Contract Address"}
             value={formatAddress(transfer.toToken)}
-            isAddress={!transfer.isStellar}
+            isAddress={!isStellar}
             coppiedText={transfer.toToken}
           />
         )}
-        {!transfer.isStellar && (
+        {!isStellar && (
           <DetailRow
             label="Chain ID"
             value={`${getChainName(transfer.toChain)} (${transfer.toChain})`}
