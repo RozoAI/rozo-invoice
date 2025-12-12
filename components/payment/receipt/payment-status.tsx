@@ -218,6 +218,7 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
     return <BadgeCheckIcon className="size-[90px] fill-[#0052FF] text-white" />;
   }, [paymentStatus]);
 
+  console.log("paymentStatus", paymentStatus);
   return (
     <div className="flex flex-col items-center w-full">
       {renderStatusIcon}

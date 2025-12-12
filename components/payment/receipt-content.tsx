@@ -3,6 +3,7 @@
 import BoxedCard from "@/components/boxed-card";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { usePollPayout } from "@/hooks/use-poll-payout";
+import { usePusherPayout } from "@/hooks/use-pusher-payout";
 import { useShareReceipt } from "@/hooks/use-share-receipt";
 import { NewPaymentResponse, PaymentResponse } from "@/lib/payment-api";
 import { RozoPayOrderView } from "@rozoai/intent-common";
@@ -15,13 +16,28 @@ import { TransactionFlow } from "./receipt/transaction-flow";
 export default function ReceiptContent({
   payment,
   backUrl,
-  enablePolling = true,
+  enablePolling = false,
+  enablePusher = true,
 }: {
   payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
   backUrl?: string;
   enablePolling?: boolean;
+  enablePusher?: boolean;
 }) {
-  const { currentPayment } = usePollPayout(payment, enablePolling);
+  const { currentPayment: polledPayment } = usePollPayout(
+    payment,
+    enablePolling
+  );
+  const { currentPayment: pusherPayment } = usePusherPayout(
+    enablePolling ? polledPayment : payment,
+    enablePusher
+  );
+  // Use pusher payment if enabled, otherwise use polled payment or original payment
+  const currentPayment = enablePusher
+    ? pusherPayment
+    : enablePolling
+    ? polledPayment
+    : payment;
   const { shareReceipt } = useShareReceipt(currentPayment);
 
   // Helper to safely get payment items
