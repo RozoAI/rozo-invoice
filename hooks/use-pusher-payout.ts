@@ -19,20 +19,31 @@ export function usePusherPayout(
   const [currentPayment, setCurrentPayment] = useState<
     RozoPayOrderView | PaymentResponse | NewPaymentResponse
   >(payment);
+  const [shouldFallbackToPolling, setShouldFallbackToPolling] = useState(false);
   const pusherRef = useRef<Pusher | null>(null);
   const channelRef = useRef<any>(null);
   const paymentIdRef = useRef<string | undefined>(payment?.id);
+  const currentPaymentRef = useRef<
+    RozoPayOrderView | PaymentResponse | NewPaymentResponse
+  >(payment);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasReceivedUpdateRef = useRef<boolean>(false);
 
   // Sync currentPayment with payment prop changes
   useEffect(() => {
     setCurrentPayment(payment);
     paymentIdRef.current = payment?.id;
+    currentPaymentRef.current = payment;
   }, [payment]);
 
   useEffect(() => {
     if (!enabled) {
       console.log("[usePusherPayout] Disabled, cleaning up...");
       // Cleanup if disabled
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
       if (channelRef.current) {
         channelRef.current.unbind_all();
         channelRef.current = null;
@@ -41,6 +52,8 @@ export function usePusherPayout(
         pusherRef.current.disconnect();
         pusherRef.current = null;
       }
+      setShouldFallbackToPolling(false);
+      hasReceivedUpdateRef.current = false;
       return;
     }
 
@@ -52,6 +65,9 @@ export function usePusherPayout(
     }
 
     paymentIdRef.current = currentPayment.id;
+    currentPaymentRef.current = currentPayment;
+    hasReceivedUpdateRef.current = false;
+    setShouldFallbackToPolling(false);
 
     console.log(
       "[usePusherPayout] Initializing Pusher for payment:",
@@ -71,12 +87,45 @@ export function usePusherPayout(
     const channel = pusher.subscribe(channelName);
     channelRef.current = channel;
 
-    // Log subscription success
+    // Log subscription success and start 1-minute timeout
     channel.bind("pusher:subscription_succeeded", () => {
       console.log(
         "[usePusherPayout] Successfully subscribed to channel:",
         channelName
       );
+
+      // Check if payment already has destination_txhash (using ref for latest value)
+      const payment = currentPaymentRef.current;
+      const hasDestinationTxHash =
+        ("payoutTransactionHash" in payment && payment.payoutTransactionHash) ||
+        (payment.destination &&
+          "txHash" in payment.destination &&
+          payment.destination.txHash);
+
+      // Only start timeout if payment doesn't already have destination_txhash
+      if (!hasDestinationTxHash) {
+        console.log(
+          "[usePusherPayout] Starting 1-minute timeout for fallback to polling"
+        );
+
+        // Set timeout for 1 minute (60000ms)
+        timeoutRef.current = setTimeout(() => {
+          if (!hasReceivedUpdateRef.current) {
+            console.log(
+              "[usePusherPayout] No updates received in 1 minute, enabling polling fallback"
+            );
+            setShouldFallbackToPolling(true);
+          } else {
+            console.log(
+              "[usePusherPayout] Updates received, no fallback needed"
+            );
+          }
+        }, 60000); // 1 minute
+      } else {
+        console.log(
+          "[usePusherPayout] Payment already has destination_txhash, skipping timeout"
+        );
+      }
     });
 
     // Log subscription errors
@@ -102,6 +151,16 @@ export function usePusherPayout(
           paymentIdRef.current
         );
         return;
+      }
+
+      // Mark that we've received an update and clear the timeout
+      hasReceivedUpdateRef.current = true;
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+        console.log(
+          "[usePusherPayout] Update received, cleared fallback timeout"
+        );
       }
 
       console.log("[usePusherPayout] Processing status update:", {
@@ -190,6 +249,8 @@ export function usePusherPayout(
           ),
         });
 
+        // Update ref with latest payment
+        currentPaymentRef.current = updated;
         return updated;
       });
     });
@@ -197,6 +258,10 @@ export function usePusherPayout(
     // Cleanup on unmount or when dependencies change
     return () => {
       console.log("[usePusherPayout] Cleaning up Pusher connection");
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
       if (channelRef.current) {
         channelRef.current.unbind_all();
         channelRef.current = null;
@@ -205,8 +270,10 @@ export function usePusherPayout(
         pusherRef.current.disconnect();
         pusherRef.current = null;
       }
+      hasReceivedUpdateRef.current = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPayment?.id, enabled]);
 
-  return { currentPayment };
+  return { currentPayment, shouldFallbackToPolling };
 }

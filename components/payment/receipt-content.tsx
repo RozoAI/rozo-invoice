@@ -24,18 +24,18 @@ export default function ReceiptContent({
   enablePolling?: boolean;
   enablePusher?: boolean;
 }) {
+  const { currentPayment: pusherPayment, shouldFallbackToPolling } =
+    usePusherPayout(payment, enablePusher);
+  // Enable polling if Pusher fallback is triggered or explicitly enabled
+  const effectivePolling = enablePolling || shouldFallbackToPolling;
   const { currentPayment: polledPayment } = usePollPayout(
-    payment,
-    enablePolling
-  );
-  const { currentPayment: pusherPayment } = usePusherPayout(
-    enablePolling ? polledPayment : payment,
-    enablePusher
+    enablePusher ? pusherPayment : payment,
+    effectivePolling
   );
   // Use pusher payment if enabled, otherwise use polled payment or original payment
   const currentPayment = enablePusher
     ? pusherPayment
-    : enablePolling
+    : effectivePolling
     ? polledPayment
     : payment;
   const { shareReceipt } = useShareReceipt(currentPayment);
