@@ -9,6 +9,7 @@ import { NewPaymentResponse, PaymentResponse } from "@/lib/payment-api";
 import { RozoPayOrderView } from "@rozoai/intent-common";
 import { useMemo } from "react";
 import { ContactSupport } from "../contact-support";
+import { EmailInput } from "./receipt/email-input";
 import { PaymentStatus } from "./receipt/payment-status";
 import { ReceiptActions } from "./receipt/receipt-actions";
 import { TransactionFlow } from "./receipt/transaction-flow";
@@ -89,6 +90,8 @@ export default function ReceiptContent({
         ) : null}
 
         <ReceiptActions onShare={shareReceipt} />
+
+        {currentPayment?.id && <EmailInput paymentId={currentPayment.id} />}
       </CardContent>
 
       <CardFooter className="pb-0 flex flex-col gap-4 mx-auto">
