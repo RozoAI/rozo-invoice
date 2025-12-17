@@ -55,6 +55,16 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
     );
   }, [payment]);
 
+  const getCurrencySymbol = useMemo(() => {
+    let currency = "USD";
+
+    if ("display" in payment && "currency" in payment.display) {
+      currency = payment.display.currency;
+    }
+
+    return currency === "EUR" ? "€" : "$";
+  }, [payment]);
+
   const getPaymentAmount = () => {
     if (
       "display" in payment &&
@@ -67,28 +77,26 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}`;
-    } else if (
-      "destination" in payment &&
-      "amountUnits" in payment.destination
-    ) {
+    }
+
+    if ("destination" in payment && "amountUnits" in payment.destination) {
       // PaymentResponse
       const amount = parseFloat(payment.destination.amountUnits);
-      return `$${amount.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`;
-    } else if (
-      "source" in payment &&
-      payment.source &&
-      "amount" in payment.source
-    ) {
-      // RozoPayOrderView
-      const amount = parseFloat(payment.source.amount ?? "0");
-      return `$${amount.toLocaleString("en-US", {
+      return `${getCurrencySymbol}${amount.toLocaleString("en-US", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}`;
     }
+
+    if ("source" in payment && payment.source && "amount" in payment.source) {
+      // RozoPayOrderView
+      const amount = parseFloat(payment.source.amount ?? "0");
+      return `${getCurrencySymbol}${amount.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`;
+    }
+
     return "Amount unavailable";
   };
 
@@ -149,7 +157,9 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
         ) {
           const data = providerResponse.data as Record<string, unknown>;
           if ("fee" in data && typeof data.fee === "number") {
-            return data.fee === 0 ? "Free" : `$${data.fee.toFixed(2)}`;
+            return data.fee === 0
+              ? "Free"
+              : `${getCurrencySymbol}${data.fee.toFixed(2)}`;
           }
         }
       }
@@ -159,7 +169,7 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
       const source = payment.source as Record<string, unknown>;
       if ("fee" in source) {
         const fee = source.fee as string;
-        return fee === "0" ? "Free" : `$${fee}`;
+        return fee === "0" ? "Free" : `${getCurrencySymbol}${fee}`;
       }
     }
     return null;
@@ -241,7 +251,6 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
     return paymentStatus;
   }, [paymentStatus]);
 
-  console.log("paymentStatus", paymentStatus);
   return (
     <div className="flex flex-col items-center w-full">
       {renderStatusIcon}
