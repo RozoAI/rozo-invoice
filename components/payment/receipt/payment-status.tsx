@@ -5,7 +5,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { NewPaymentResponse, PaymentResponse } from "@/lib/payment-api";
+import {
+  NewPaymentResponse,
+  PaymentResponse,
+  PaymentStatus as PaymentStatusEnum,
+} from "@/lib/payment-api";
 import { RozoPayOrderView, getChainName } from "@rozoai/intent-common";
 import { format, formatDistanceToNow } from "date-fns";
 import {
@@ -171,25 +175,28 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
     if (status === "payment_expired") return "Payment Expired";
 
     if (
-      status === "payment_error_liquidity" ||
-      status === "payment_error_recipient_trustline" ||
-      status === "payment_bounced"
+      status === PaymentStatusEnum.PaymentErrorLiquidity ||
+      status === PaymentStatusEnum.PaymentErrorRecipientTrustline
     ) {
       return "Payment Unavailable";
     }
 
-    if (status === "payment_refunded") {
+    if (status === PaymentStatusEnum.PaymentBounced) {
+      return "Payment Bounced";
+    }
+
+    if (status === PaymentStatusEnum.PaymentRefunded) {
       return "Payment Refunded";
     }
 
     if (
-      status === "payment_payin_completed" ||
-      status === "payment_payout_started"
+      status === PaymentStatusEnum.PaymentPayinCompleted ||
+      status === PaymentStatusEnum.PaymentPayoutStarted
     ) {
       return "Payment in Progress";
     }
 
-    if (status === "payment_completed" && isMugglePay) {
+    if (status === PaymentStatusEnum.PaymentCompleted && isMugglePay) {
       return "Payment Completed";
     }
 
@@ -202,7 +209,11 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
     }
 
     if (paymentStatus === "Payment Unavailable") {
-      return <AlertCircle className="size-[90px] text-red-500" />;
+      return <AlertCircle className="size-[90px] text-neutral-400" />;
+    }
+
+    if (paymentStatus === "Payment Bounced") {
+      return <AlertCircle className="size-[90px] text-neutral-400" />;
     }
 
     if (paymentStatus === "Payment Unpaid") {
@@ -218,12 +229,28 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
     return <BadgeCheckIcon className="size-[90px] fill-[#0052FF] text-white" />;
   }, [paymentStatus]);
 
+  const paymentDescription = useMemo(() => {
+    if (paymentStatus === "Payment Bounced") {
+      return "Payment bounced due to invalid recipient address. Please contact support.";
+    }
+
+    if (paymentStatus === "Payment Unavailable") {
+      return "Payment unavailable due to insufficient liquidity. Please contact support.";
+    }
+
+    return paymentStatus;
+  }, [paymentStatus]);
+
+  console.log("paymentStatus", paymentStatus);
   return (
     <div className="flex flex-col items-center w-full">
       {renderStatusIcon}
 
       <div className="space-y-1 mt-2">
         <h3 className="font-semibold text-xl">{paymentStatus}</h3>
+        {paymentDescription && (
+          <p className="text-muted-foreground text-xs">{paymentDescription}</p>
+        )}
       </div>
 
       {errorMessage && (
