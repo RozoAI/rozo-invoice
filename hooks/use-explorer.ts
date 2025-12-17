@@ -15,6 +15,10 @@ export function useExplorer() {
       hash?: string;
       address?: string;
     }) => {
+      console.log("chainId", chainId);
+      console.log("hash", hash);
+      console.log("address", address);
+
       if (hash) {
         const url = getChainExplorerTxUrl(Number(chainId), hash);
         if (url) {

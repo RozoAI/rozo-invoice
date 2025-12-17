@@ -241,7 +241,6 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
     return paymentStatus;
   }, [paymentStatus]);
 
-  console.log("paymentStatus", paymentStatus);
   return (
     <div className="flex flex-col items-center w-full">
       {renderStatusIcon}

@@ -1,4 +1,4 @@
-import ReceiptContent from "@/components/payment/receipt-content";
+import { Receipt } from "@/components/payment/receipt/receipt";
 import {
   getMissingParamsMessage,
   getUnknownErrorMessage,
@@ -44,7 +44,7 @@ export async function generateMetadata({
   }
 }
 
-export default async function Receipt({ searchParams }: ReceiptPageProps) {
+export default async function ReceiptPage({ searchParams }: ReceiptPageProps) {
   try {
     const { id, back_url } = await searchParams;
     const isMugglePay = id?.includes("mugglepay_order");
@@ -66,7 +66,7 @@ export default async function Receipt({ searchParams }: ReceiptPageProps) {
       });
     }
 
-    return <ReceiptContent payment={result.payment} backUrl={back_url} />;
+    return <Receipt payment={result.payment} />;
   } catch (error) {
     // Re-throw Next.js redirect errors to avoid double redirect
     if (

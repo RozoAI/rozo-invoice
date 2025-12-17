@@ -1,9 +1,13 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { updatePaymentEmail } from "@rozoai/intent-common";
-import { Check, Loader2, Mail } from "lucide-react";
+import { Check, Loader2, MailIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -52,41 +56,41 @@ export function EmailInput({ paymentId }: EmailInputProps) {
     }
   };
 
-  if (isSubmitted) {
-    return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground animate-in fade-in duration-200">
-        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-        <span>Email saved successfully</span>
-      </div>
-    );
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-[350px] space-y-2">
-      <div className="text-xs text-muted-foreground text-center mb-1">
-        Add your email for support updates
+    <form onSubmit={handleSubmit} className="w-full space-y-2">
+      <div className="text-xs text-muted-foreground mb-1">
+        Get support updates by email
       </div>
       <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-          <Input
+        <InputGroup>
+          <InputGroupAddon>
+            <MailIcon />
+          </InputGroupAddon>
+          <InputGroupInput
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="your@email.com"
-            className="pl-9"
-            disabled={isLoading}
+            disabled={isLoading || isSubmitted}
             aria-label="Email address"
           />
-        </div>
-        <Button
-          type="submit"
-          disabled={!email.trim() || isLoading}
-          size="default"
-          className="shrink-0"
-        >
-          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
-        </Button>
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton
+              aria-label="Submit"
+              title="Submit"
+              disabled={!email.trim() || isLoading || isSubmitted}
+              onClick={handleSubmit}
+            >
+              {isLoading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : isSubmitted ? (
+                <Check className="size-4 text-green-600" />
+              ) : (
+                "Submit"
+              )}
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
       </div>
     </form>
   );
