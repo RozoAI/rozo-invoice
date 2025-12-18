@@ -248,7 +248,7 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
       return "Payment unavailable due to insufficient liquidity. Please contact support.";
     }
 
-    return paymentStatus;
+    return null;
   }, [paymentStatus]);
 
   return (
