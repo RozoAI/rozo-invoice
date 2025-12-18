@@ -206,7 +206,11 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
       return "Payment in Progress";
     }
 
-    if (status === PaymentStatusEnum.PaymentCompleted && isMugglePay) {
+    if (
+      (status === PaymentStatusEnum.PaymentCompleted ||
+        status === PaymentStatusEnum.PaymentPayoutCompleted) &&
+      isMugglePay
+    ) {
       return "Payment Completed";
     }
 

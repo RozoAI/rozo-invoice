@@ -1,6 +1,10 @@
 "use client";
 
-import { NewPaymentResponse, PaymentResponse } from "@/lib/payment-api";
+import {
+  NewPaymentResponse,
+  PaymentResponse,
+  getPaymentDataClient,
+} from "@/lib/payment-api";
 import { RozoPayOrderView } from "@rozoai/intent-common";
 import Pusher from "pusher-js";
 import { useEffect, useRef, useState } from "react";
@@ -134,7 +138,7 @@ export function usePusherPayout(
     });
 
     // Listen for status-update event
-    channel.bind("status-update", (data: PusherStatusUpdatePayload) => {
+    channel.bind("status-update", async (data: PusherStatusUpdatePayload) => {
       console.log("[usePusherPayout] Received status-update event:", {
         payment_id: data.payment_id,
         status: data.status,
@@ -163,7 +167,30 @@ export function usePusherPayout(
         );
       }
 
-      console.log("[usePusherPayout] Processing status update:", {
+      // Fetch fresh data from API to ensure we have the complete state
+      console.log("[usePusherPayout] Fetching fresh payment data from API...");
+      try {
+        const result = await getPaymentDataClient(data.payment_id);
+        if (result.success && result.payment) {
+          console.log(
+            "[usePusherPayout] API fetch successful, updating state with full data"
+          );
+          setCurrentPayment(result.payment);
+          currentPaymentRef.current = result.payment;
+          return;
+        }
+        console.warn(
+          "[usePusherPayout] API fetch failed or returned no data, falling back to manual update:",
+          result.error
+        );
+      } catch (error) {
+        console.error(
+          "[usePusherPayout] Error fetching payment data from API:",
+          error
+        );
+      }
+
+      console.log("[usePusherPayout] Processing status update manually:", {
         status: data.status,
         destination_txhash: data.destination_txhash,
         source_txhash: data.source_txhash,
