@@ -8,7 +8,6 @@ import {
   SourceResponse,
 } from "@/lib/payment-api";
 import {
-  baseUSDC,
   getChainExplorerTxUrl,
   rozoSolana,
   rozoStellar,
@@ -28,7 +27,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { toast } from "sonner";
-import { getAddress } from "viem";
 
 export interface PaymentContentProps {
   appId: string;
@@ -148,44 +146,22 @@ export function PaymentContent({
   }, [payment.destination]);
 
   useEffect(() => {
-    const validAddress = "0x0000000000000000000000000000000000000000";
-
-    let params = {};
     const toUnits =
       payment.destination.amountUnits ||
       ((payment.source as SourceResponse)?.amount as string);
+    const toChain = Number(payment.destination.chainId);
+    const toAddress =
+      payment.destination.destinationAddress ||
+      (payment.destination as DestinationResponse).receiverAddress;
+    const toToken = payment.destination.tokenAddress;
 
-    if (isToStellar) {
-      params = {
-        toAddress: validAddress,
-        toChain: baseUSDC.chainId,
-        toToken: getAddress(baseUSDC.token),
-        toUnits: toUnits,
-        toStellarAddress:
-          payment.destination.destinationAddress ||
-          (payment.destination as DestinationResponse).receiverAddress,
-      };
-    } else if (isToSolana) {
-      params = {
-        toAddress: validAddress,
-        toChain: baseUSDC.chainId,
-        toToken: getAddress(baseUSDC.token),
-        toUnits: toUnits,
-        toSolanaAddress:
-          payment.destination.destinationAddress ||
-          (payment.destination as DestinationResponse).receiverAddress,
-      };
-    } else {
-      params = {
-        toAddress: getAddress(
-          payment.destination.destinationAddress ||
-            (payment.destination as DestinationResponse).receiverAddress
-        ),
-        toChain: Number(payment.destination.chainId),
-        toToken: getAddress(payment.destination.tokenAddress as string),
-        toUnits: toUnits,
-      };
-    }
+    const params = {
+      toChain,
+      toUnits,
+      toAddress,
+      toToken,
+      preferredSymbol,
+    };
 
     if ("metadata" in payment && payment.metadata) {
       Object.assign(params, {
@@ -197,15 +173,11 @@ export function PaymentContent({
       });
     }
 
-    setPayParams({
-      ...(params as PayParams),
-      preferredSymbol,
-    });
-    resetPayment({
-      ...params,
-      preferredSymbol,
-    });
-  }, [isToStellar, isToSolana, payment, preferredSymbol]);
+    console.log(params);
+
+    setPayParams(params as PayParams);
+    resetPayment(params as PayParams);
+  }, [payment, preferredSymbol]);
 
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center gap-4 md:justify-start">
@@ -256,16 +228,10 @@ export function PaymentContent({
           <RozoPayButton.Custom
             defaultOpen
             appId={appId}
-            toAddress={payParams.toAddress as `0x${string}`}
-            toChain={payParams.toChain as number}
-            toUnits={payParams.toUnits as string}
-            toToken={payParams.toToken as `0x${string}`}
-            {...(isToStellar && {
-              toStellarAddress: payParams.toStellarAddress,
-            })}
-            {...(isToSolana && {
-              toSolanaAddress: payParams.toSolanaAddress,
-            })}
+            toAddress={payParams.toAddress}
+            toChain={payParams.toChain}
+            toUnits={payParams.toUnits}
+            toToken={payParams.toToken}
             externalId={payment.externalId ?? undefined}
             {...(payParams.metadata && {
               metadata: payParams.metadata as Record<string, string>,
