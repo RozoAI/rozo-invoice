@@ -411,6 +411,7 @@ export async function getPaymentData(
     const newRozoResponse = await fetchFromAPI(url, config.newRozo.headers);
 
     if (newRozoResponse.success && newRozoResponse.data) {
+      console.log("New Rozo API response:", newRozoResponse.data);
       return {
         success: true,
         payment: newRozoResponse.data as NewPaymentResponse,

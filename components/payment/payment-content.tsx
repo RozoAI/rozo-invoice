@@ -14,6 +14,7 @@ import {
   rozoStellar,
   solana,
   stellar,
+  TokenSymbol,
   type RozoPayOrderView,
 } from "@rozoai/intent-common";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
@@ -42,6 +43,7 @@ interface PayParams {
   toStellarAddress?: string;
   toSolanaAddress?: string;
   metadata?: Record<string, string>;
+  preferredSymbol?: TokenSymbol[];
 }
 
 /**
@@ -57,6 +59,21 @@ export function PaymentContent({
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const router = useRouter();
   const { resetPayment } = useRozoPayUI();
+
+  const preferredSymbol = useMemo(() => {
+    if (
+      (payment.source &&
+        "tokenSymbol" in payment.source &&
+        payment.source.tokenSymbol === TokenSymbol.EURC) ||
+      (payment.display &&
+        "currency" in payment.display &&
+        payment.display.currency === "EUR")
+    ) {
+      return [TokenSymbol.EURC];
+    }
+
+    return [TokenSymbol.USDC, TokenSymbol.USDT];
+  }, [payment.source]);
 
   const isToStellar = useMemo(() => {
     return (
@@ -180,9 +197,15 @@ export function PaymentContent({
       });
     }
 
-    setPayParams(params as PayParams);
-    resetPayment(params);
-  }, [isToStellar, isToSolana, payment]);
+    setPayParams({
+      ...(params as PayParams),
+      preferredSymbol,
+    });
+    resetPayment({
+      ...params,
+      preferredSymbol,
+    });
+  }, [isToStellar, isToSolana, payment, preferredSymbol]);
 
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center gap-4 md:justify-start">
@@ -247,6 +270,7 @@ export function PaymentContent({
             {...(payParams.metadata && {
               metadata: payParams.metadata as Record<string, string>,
             })}
+            preferredSymbol={payParams.preferredSymbol}
             onPaymentStarted={() => {
               setIsLoading(true);
             }}
@@ -260,6 +284,7 @@ export function PaymentContent({
               toast.success(`Payment completed for $${payParams.toUnits}`);
             }}
             closeOnSuccess
+            resetOnSuccess
           >
             {({ show }) => (
               <Button
