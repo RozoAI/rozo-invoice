@@ -10,7 +10,12 @@ import {
   PaymentResponse,
   PaymentStatus as PaymentStatusEnum,
 } from "@/lib/payment-api";
-import { RozoPayOrderView, getChainName } from "@rozoai/intent-common";
+import {
+  RozoPayOrderView,
+  getChainName,
+  rozoStellar,
+  stellar,
+} from "@rozoai/intent-common";
 import { format, formatDistanceToNow } from "date-fns";
 import {
   AlertCircle,
@@ -255,14 +260,62 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
     return null;
   }, [paymentStatus]);
 
+  const isStellarPayoutWithGAddress = useMemo(() => {
+    if (paymentStatus !== "Payment Bounced") return false;
+
+    // Check if destination exists and has chainId
+    if (
+      "destination" in payment &&
+      payment.destination &&
+      "chainId" in payment.destination
+    ) {
+      const chainId = String(payment.destination.chainId);
+      const isStellar =
+        chainId === String(stellar.chainId) ||
+        chainId === String(rozoStellar.chainId);
+
+      if (isStellar) {
+        // Check if address starts with G
+        const address =
+          ("receiverAddress" in payment.destination &&
+            payment.destination.receiverAddress) ||
+          ("destinationAddress" in payment.destination &&
+            payment.destination.destinationAddress) ||
+          "";
+
+        return address.startsWith("G");
+      }
+    }
+
+    return false;
+  }, [paymentStatus, payment]);
+
   return (
     <div className="flex flex-col items-center w-full">
       {renderStatusIcon}
 
-      <div className="space-y-1 mt-2">
+      <div className="space-y-3 mt-2 text-center max-w-md">
         <h3 className="font-semibold text-xl">{paymentStatus}</h3>
-        {paymentDescription && (
+        {paymentDescription && paymentStatus !== "Payment Bounced" && (
           <p className="text-muted-foreground text-xs">{paymentDescription}</p>
+        )}
+        {paymentStatus === "Payment Bounced" && (
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              We&apos;ve received your payment, but the payout failed.
+              Don&apos;t worry. The payout will be processed again within 24
+              hours.
+            </p>
+            {isStellarPayoutWithGAddress && (
+              <div className="mt-3 pt-3 border-t border-border">
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-medium">Note:</span> Since your payout
+                  is on Stellar and your address starts with G, please check if
+                  you have enabled the USDC trustline for your account.
+                </p>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
