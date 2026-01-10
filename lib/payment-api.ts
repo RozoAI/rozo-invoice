@@ -65,6 +65,8 @@ export enum PaymentStatus {
   PaymentRefunded = "payment_refunded",
   PaymentStarted = "payment_started",
   PaymentUnpaid = "payment_unpaid",
+  PaymentBridging = "payment_bridging",
+  PaymentBridgingHook = "payment_bridging_hook",
 }
 
 /**
@@ -376,8 +378,8 @@ export async function getPaymentData(
   const endpoint = isHash
     ? `payment/tx/${idOrHash}`
     : isMugglePay
-    ? `payment-api/${idOrHash}`
-    : `payment/id/${idOrHash}`;
+      ? `payment-api/${idOrHash}`
+      : `payment/id/${idOrHash}`;
   console.log("Endpoint:", endpoint);
   // Try Rozo API first
   const rozoUrl = `${config.rozo.url}/${endpoint}`;

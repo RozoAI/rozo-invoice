@@ -206,7 +206,9 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
 
     if (
       status === PaymentStatusEnum.PaymentPayinCompleted ||
-      status === PaymentStatusEnum.PaymentPayoutStarted
+      status === PaymentStatusEnum.PaymentPayoutStarted ||
+      status === PaymentStatusEnum.PaymentBridging ||
+      status === PaymentStatusEnum.PaymentBridgingHook
     ) {
       return "Payment in Progress";
     }
@@ -219,7 +221,14 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
       return "Payment Completed";
     }
 
-    return "Payment Completed";
+    if (
+      status === PaymentStatusEnum.PaymentPayoutCompleted ||
+      status === PaymentStatusEnum.PaymentCompleted
+    ) {
+      return "Payment Completed";
+    }
+
+    return "Payment in Progress";
   }, [payment, isMugglePay]);
 
   const renderStatusIcon = useMemo(() => {
