@@ -213,9 +213,15 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
       return "Payment in Progress";
     }
 
+    // We force the payment to be completed if it is a MugglePay payment
     if (
       (status === PaymentStatusEnum.PaymentCompleted ||
-        status === PaymentStatusEnum.PaymentPayoutCompleted) &&
+        status === PaymentStatusEnum.PaymentStarted ||
+        status === PaymentStatusEnum.PaymentPayinCompleted ||
+        status === PaymentStatusEnum.PaymentPayoutCompleted ||
+        status === PaymentStatusEnum.PaymentPayoutStarted ||
+        status === PaymentStatusEnum.PaymentBridging ||
+        status === PaymentStatusEnum.PaymentBridgingHook) &&
       isMugglePay
     ) {
       return "Payment Completed";
