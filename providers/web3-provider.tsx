@@ -15,7 +15,7 @@ const queryClient = new QueryClient();
 
 export function Web3Provider({
   children,
-  apiVersion = "v1",
+  apiVersion = "v2",
 }: {
   children: React.ReactNode;
   apiVersion?: "v1" | "v2";

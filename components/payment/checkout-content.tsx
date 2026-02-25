@@ -30,7 +30,7 @@ export default function CheckoutContent({
   const { resolvedTheme } = useTheme();
 
   return (
-    <Web3Provider apiVersion={loaderData.apiVersion}>
+    <Web3Provider apiVersion={loaderData.apiVersion || "v2"}>
       <BoxedCard className="flex-1">
         <CardContent className="flex flex-1 flex-col items-center gap-8 p-8 text-center">
           {/* Logo and Brand */}
