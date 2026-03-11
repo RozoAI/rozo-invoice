@@ -12,6 +12,7 @@ import { formatAmount } from "@/lib/amount";
 import {
   BlockchainParseResult,
   parseDeeplink,
+  SolanaParseResult,
   type AddressParseResult,
   type DeeplinkData,
   type EthereumParseResult,
@@ -22,6 +23,8 @@ import {
   baseUSDC,
   FeeType,
   PaymentCompletedEvent,
+  rozoSolana,
+  rozoSolanaUSDC,
   rozoStellar,
   rozoStellarUSDC,
 } from "@rozoai/intent-common";
@@ -64,9 +67,8 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
       const clearQrParam = () => {
         const newSearchParams = new URLSearchParams(searchParams.toString());
         newSearchParams.delete("qr");
-        const newUrl = `${window.location.pathname}${
-          newSearchParams.toString() ? `?${newSearchParams.toString()}` : ""
-        }`;
+        const newUrl = `${window.location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ""
+          }`;
         router.replace(newUrl);
       };
 
@@ -160,8 +162,17 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
       }
 
       case "solana": {
-        toast.info(`${parsed.type} support coming soon.`);
-        return;
+        const data = parsed as SolanaParseResult;
+        if (data.address) {
+          parsedData = {
+            toAddress: data.address,
+            toChain: rozoSolana.chainId,
+            toUnits: data.amount ? formatAmount(data.amount) : null,
+            toToken: rozoSolanaUSDC.token,
+            message: data.message,
+          };
+        }
+        break;
       }
 
       case "stellar": {
@@ -294,8 +305,7 @@ export function ScanQRButton({ appId }: ScanQRButtonProps) {
             setIsLoading(false);
 
             toast.success(
-              `Payment completed for $${
-                parsedTransfer.toUnits || args.payment.display.paymentValue
+              `Payment completed for $${parsedTransfer.toUnits || args.payment.display.paymentValue
               }`
             );
           }}
