@@ -2,9 +2,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn, formatAddress } from "@/lib/utils";
-import { getChainName, rozoStellar, stellar } from "@rozoai/intent-common";
+import { getChainName, getKnownToken, rozoStellar, stellar } from "@rozoai/intent-common";
 import { CircleAlert, Copy } from "lucide-react";
+import Image from "next/image";
 import { toast } from "sonner";
+import { chainLogos } from "./chains-stacked";
 import type { ParsedTransfer } from "./scan-qr-button";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
@@ -19,11 +21,13 @@ function DetailRow({
   value,
   coppiedText,
   isAddress = false,
+  logo,
 }: {
   label: string;
   value: string | number;
   isAddress?: boolean;
   coppiedText: string;
+  logo?: React.ReactNode;
 }) {
   const displayValue =
     isAddress && typeof value === "string" ? formatAddress(value) : value;
@@ -37,6 +41,7 @@ function DetailRow({
     <div className="flex justify-between items-center text-sm">
       <span className="text-muted-foreground">{label}</span>
       <div className="flex items-center gap-2">
+        {logo && <div>{logo}</div>}
         <span className="font-medium">{displayValue}</span>
         <Button
           variant="ghost"
@@ -59,6 +64,9 @@ export function TransactionDetails({
   const isStellar =
     transfer.toChain === rozoStellar.chainId ||
     transfer.toChain === stellar.chainId;
+
+  const token = getKnownToken(transfer.toChain, transfer.toToken);
+
   return (
     <Card className={cn("w-full", className)}>
       <CardHeader className="p-0">
@@ -98,13 +106,15 @@ export function TransactionDetails({
             value={formatAddress(transfer.toToken)}
             isAddress={!isStellar}
             coppiedText={transfer.toToken}
+            logo={<Image src={token?.logoURI ?? ""} alt={token?.name ?? ""} width={24} height={24} />}
           />
         )}
         {!isStellar && (
           <DetailRow
-            label="Chain ID"
-            value={`${getChainName(transfer.toChain)} (${transfer.toChain})`}
+            label="Destination Chain"
+            value={`${getChainName(transfer.toChain)}`}
             coppiedText={transfer.toChain.toString()}
+            logo={chainLogos.find((logo) => logo.type === getChainName(transfer.toChain).toLowerCase())?.component}
           />
         )}
 

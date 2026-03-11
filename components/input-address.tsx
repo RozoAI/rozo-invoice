@@ -80,7 +80,7 @@ export function InputAddress({ onAddressParsed }: InputAddressProps) {
           <Input
             type="text"
             value={inputValue}
-            placeholder="Enter wallet address (EVM or Stellar)"
+            placeholder="Enter destination address (EVM, Solana, Stellar)"
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
           />

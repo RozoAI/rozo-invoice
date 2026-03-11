@@ -1,6 +1,7 @@
 "use client";
 
 import BoxedCard from "@/components/boxed-card";
+import ChainsStacked from "@/components/chains-stacked";
 import { ContactSupport } from "@/components/contact-support";
 import { ScanQRButton } from "@/components/scan-qr-button";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
@@ -25,7 +26,10 @@ export default function Home() {
               />
             </Avatar>
             <h1 className="font-bold text-foreground">Rozo Intent</h1>
-            <p>Send USDC to Base or Stellar from any chains</p>
+            <p className="text-muted-foreground text-sm">
+              Instantly send USDC or USDT across any supported chains
+            </p>
+            <ChainsStacked />
           </div>
         </CardHeader>
 
