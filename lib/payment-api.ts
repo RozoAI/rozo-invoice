@@ -531,15 +531,13 @@ export async function pollPaymentUntilPayoutClient(
           result.payment?.status === "payment_completed" ||
           result.payment?.status === "payment_payout_completed";
 
-        // Resolve once with the result
-        if (!resolved) {
-          resolved = true;
-          activePolling.delete(id);
-          resolve(result);
-        }
-
-        // Stop polling if we have the payout hash or completed status
+        // Stop polling when payout hash or completed status exists
         if (hasPayoutHash || hasCompletedStatus) {
+          if (!resolved) {
+            resolved = true;
+            activePolling.delete(id);
+            resolve(result);
+          }
           return;
         }
 
@@ -558,7 +556,7 @@ export async function pollPaymentUntilPayoutClient(
         }
 
         // Continue polling only if not resolved yet
-        if (!resolved && !cancelled) {
+        if (!cancelled) {
           timeoutId = setTimeout(poll, intervalMs);
         }
       } catch (error) {
@@ -573,7 +571,7 @@ export async function pollPaymentUntilPayoutClient(
           return;
         }
 
-        if (!resolved && !cancelled) {
+        if (!cancelled) {
           timeoutId = setTimeout(poll, intervalMs);
         }
       }

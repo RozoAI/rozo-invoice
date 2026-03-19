@@ -25,12 +25,28 @@ export function usePollPayout(
     if (!enabled) return;
     if (!currentPayment?.id) return;
 
-    // Stop polling if payout hash already exists
+    // Stop polling if payout hash or completed status already exists
     if (
       "payoutTransactionHash" in currentPayment &&
       currentPayment.payoutTransactionHash
     )
       return;
+
+    if (
+      "destination" in currentPayment &&
+      currentPayment.destination &&
+      "txHash" in currentPayment.destination &&
+      currentPayment.destination.txHash
+    ) {
+      return;
+    }
+
+    if (
+      currentPayment.status === "payment_completed" ||
+      currentPayment.status === "payment_payout_completed"
+    ) {
+      return;
+    }
 
     let cancelled = false;
     setIsPolling(true);
@@ -39,39 +55,21 @@ export function usePollPayout(
       try {
         const result = await pollPaymentUntilPayoutClient(
           currentPayment.id,
-          1000
+          10_000,
+          6
         );
         if (cancelled) return;
 
         if (result.success && result.payment) {
           setCurrentPayment(result.payment);
-
-          // Stop polling when payout hash appears
-          if (
-            ("payoutTransactionHash" in result.payment &&
-              result.payment.payoutTransactionHash) ||
-            ("destination" in result.payment &&
-              result.payment.destination &&
-              "txHash" in result.payment.destination &&
-              result.payment.destination.txHash) ||
-            result.payment.status === "payment_completed" ||
-            result.payment.status === "payment_payout_completed"
-          ) {
-            setIsPolling(false);
-            return;
-          }
-
-          // Continue polling recursively
-          poll();
-        } else {
-          // Retry even if not successful
-          poll();
         }
+
+        setIsPolling(false);
       } catch (error) {
         if (!cancelled) {
           console.error("Polling failed:", error);
-          // Retry after delay if desired
-          setTimeout(() => !cancelled && poll(), 2000);
+          // Retry after delay
+          setTimeout(() => !cancelled && poll(), 10_000);
         }
       }
     };

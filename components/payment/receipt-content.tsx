@@ -16,8 +16,7 @@ import { TransactionFlow } from "./receipt/transaction-flow";
 
 export default function ReceiptContent({
   payment,
-  backUrl,
-  enablePolling = false,
+  enablePolling = true,
   enablePusher = true,
 }: {
   payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
@@ -34,10 +33,10 @@ export default function ReceiptContent({
     effectivePolling
   );
   // Use pusher payment if enabled, otherwise use polled payment or original payment
-  const currentPayment = enablePusher
-    ? pusherPayment
-    : effectivePolling
+  const currentPayment = effectivePolling
     ? polledPayment
+    : enablePusher
+    ? pusherPayment
     : payment;
   const { shareReceipt } = useShareReceipt(currentPayment);
 
