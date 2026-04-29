@@ -87,6 +87,19 @@ export function PaymentContent({
     );
   }, [payment.destination]);
 
+  const formatPaymentAmount = (
+    rawAmount: string,
+    currencyCode: "USD" | "EUR" = "USD"
+  ) => {
+    const amount = parseFloat(rawAmount);
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currencyCode,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
   const paymentAmount = useMemo(() => {
     if (
       "display" in payment &&
@@ -94,32 +107,32 @@ export function PaymentContent({
       "currency" in payment.display
     ) {
       // RozoPayOrderView
-      const amount = parseFloat(payment.display.paymentValue);
-      return `$${amount.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`;
+      const currencyCode =
+        payment.display.currency === "EUR" ? "EUR" : "USD";
+      return formatPaymentAmount(payment.display.paymentValue, currencyCode);
     } else if (
       "destination" in payment &&
       "amountUnits" in payment.destination
     ) {
       // PaymentResponse
-      const amount = parseFloat(payment.destination.amountUnits);
-      return `$${amount.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`;
+      const currencyCode =
+        "tokenSymbol" in payment.destination &&
+        payment.destination.tokenSymbol === TokenSymbol.EURC
+          ? "EUR"
+          : "USD";
+      return formatPaymentAmount(payment.destination.amountUnits, currencyCode);
     } else if (
       "source" in payment &&
       payment.source &&
       "amount" in payment.source
     ) {
       // NewPaymentResponse
-      const amount = parseFloat(payment.source.amount as string);
-      return `$${amount.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`;
+      const currencyCode =
+        "tokenSymbol" in payment.source &&
+        payment.source.tokenSymbol === TokenSymbol.EURC
+          ? "EUR"
+          : "USD";
+      return formatPaymentAmount(payment.source.amount as string, currencyCode);
     }
     return "Amount unavailable";
   }, [payment]);
