@@ -8,13 +8,8 @@ import {
   SourceResponse,
 } from "@/lib/payment-api";
 import {
-  getChainExplorerTxUrl,
-  rozoSolana,
-  rozoStellar,
-  solana,
-  stellar,
   TokenSymbol,
-  type RozoPayOrderView,
+  type RozoPayOrderView
 } from "@rozoai/intent-common";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
 import {
@@ -71,21 +66,7 @@ export function PaymentContent({
     }
 
     return [TokenSymbol.USDC, TokenSymbol.USDT];
-  }, [payment.source]);
-
-  const isToStellar = useMemo(() => {
-    return (
-      payment.destination.chainId === String(stellar.chainId) ||
-      payment.destination.chainId === String(rozoStellar.chainId)
-    );
-  }, [payment.destination]);
-
-  const isToSolana = useMemo(() => {
-    return (
-      payment.destination.chainId === String(solana.chainId) ||
-      payment.destination.chainId === String(rozoSolana.chainId)
-    );
-  }, [payment.destination]);
+  }, [payment.source, payment.display]);
 
   const formatPaymentAmount = (
     rawAmount: string,
@@ -117,7 +98,7 @@ export function PaymentContent({
       // PaymentResponse
       const currencyCode =
         "tokenSymbol" in payment.destination &&
-        payment.destination.tokenSymbol === TokenSymbol.EURC
+          payment.destination.tokenSymbol === TokenSymbol.EURC
           ? "EUR"
           : "USD";
       return formatPaymentAmount(payment.destination.amountUnits, currencyCode);
@@ -129,7 +110,7 @@ export function PaymentContent({
       // NewPaymentResponse
       const currencyCode =
         "tokenSymbol" in payment.source &&
-        payment.source.tokenSymbol === TokenSymbol.EURC
+          payment.source.tokenSymbol === TokenSymbol.EURC
           ? "EUR"
           : "USD";
       return formatPaymentAmount(payment.source.amount as string, currencyCode);
@@ -147,16 +128,6 @@ export function PaymentContent({
     // Could add support for RozoPayOrderView items here if needed
     return null;
   }, [payment]);
-
-  const txUrl = useMemo(() => {
-    if (!("txHash" in payment.destination) || !payment.destination.txHash)
-      return undefined;
-
-    return getChainExplorerTxUrl(
-      Number(payment.destination.chainId),
-      payment.destination.txHash
-    );
-  }, [payment.destination]);
 
   useEffect(() => {
     const toUnits =
@@ -282,37 +253,31 @@ export function PaymentContent({
           </RozoPayButton.Custom>
         )}
 
-      {payment.status === "payment_completed" && (
-        <div className="flex flex-col items-center gap-2 ">
-          <div className="flex items-center gap-1">
-            <CircleCheckIcon className="size-8 fill-green-600 text-white" />
-            <span className="font-semibold text-green-600">
-              Payment Completed
-            </span>
-          </div>
-          {txUrl ? (
-            <Link
-              href={txUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-muted-foreground text-sm underline hover:text-foreground"
-            >
-              <ExternalLink size={14} />
-              View Transaction
-            </Link>
-          ) : (
-            <Button className="w-full mt-6" asChild>
-              <Link
-                href={`/receipt?id=${payment.id}`}
-                rel="noopener noreferrer"
-              >
+      {(payment.status === "payment_completed" ||
+        payment.status === "payment_payout_completed" ||
+        payment.status === "payment_payin_completed" ||
+        payment.status === "payment_payout_started" ||
+        payment.status === "payment_bridging" ||
+        payment.status === "payment_bridging_hook" ||
+        payment.status === "payment_started") && (
+          <div className="flex flex-col items-center gap-2 ">
+            <div className="flex items-center gap-1">
+              <CircleCheckIcon className="size-8 fill-green-600 text-white" />
+              <span className="font-semibold text-green-600">
+                Payment Completed
+              </span>
+            </div>
+            <p className="text-muted-foreground text-sm text-center">
+              This invoice has already been paid.
+            </p>
+            <Button className="w-full mt-4" asChild>
+              <Link href={`/receipt?id=${payment.id}`} rel="noopener noreferrer">
                 <ExternalLink size={14} />
-                See Receipt
+                View Receipt
               </Link>
             </Button>
-          )}
-        </div>
-      )}
+          </div>
+        )}
 
       {payment.status === "payment_expired" && (
         <div className="flex flex-col items-center gap-2">
