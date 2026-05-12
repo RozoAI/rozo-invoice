@@ -3,19 +3,25 @@
 import { Button } from "@/components/ui/button";
 import {
   DestinationResponse,
+  FeeType,
   NewPaymentResponse,
   PaymentResponse,
   PaymentStatus,
   SourceResponse,
 } from "@/lib/payment-api";
 import {
+  ExternalPaymentOptions,
+  ExternalPaymentOptionsString,
+  getKnownToken,
+  rozoSolana,
+  rozoStellar,
+  Token,
   TokenSymbol,
   type RozoPayOrderView
 } from "@rozoai/intent-common";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
 import {
   AlertCircle,
-  BadgeAlertIcon,
   BadgeCheckIcon,
   ClockFading,
   ExternalLink,
@@ -25,7 +31,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { toast } from "sonner";
-import { Ring } from "../icons/loader";
 
 export interface PaymentContentProps {
   appId: string;
@@ -40,7 +45,10 @@ interface PayParams {
   toStellarAddress?: string;
   toSolanaAddress?: string;
   metadata?: Record<string, string>;
+  feeType?: FeeType;
   preferredSymbol?: TokenSymbol[];
+  preferredTokens?: Token[];
+  paymentOptions?: ExternalPaymentOptionsString[];
 }
 
 /**
@@ -190,22 +198,12 @@ export function PaymentContent({
       return <ClockFading className="size-[65px] text-neutral-400" />;
     }
 
-    if (paymentStatus === "Payment Unavailable") {
+    if (paymentStatus === "Payment Bounced" || paymentStatus === "Payment Unavailable") {
       return <AlertCircle className="size-[90px] text-neutral-400" />;
     }
 
-    if (paymentStatus === "Payment Bounced") {
-      return <AlertCircle className="size-[90px] text-neutral-400" />;
-    }
-
-    if (paymentStatus === "Payment Unpaid") {
-      return (
-        <BadgeAlertIcon className="size-[90px] fill-yellow-500 text-white" />
-      );
-    }
-
-    if (paymentStatus === "Payment in Progress") {
-      return <Ring width={65} height={65} className="text-[#0052FF]" />;
+    if (paymentStatus === "Payment Unpaid" || paymentStatus === "Payment in Progress") {
+      return null;
     }
 
     return <BadgeCheckIcon className="size-[90px] fill-[#0052FF] text-white" />;
@@ -233,13 +231,41 @@ export function PaymentContent({
       (payment.destination as DestinationResponse).receiverAddress;
     const toToken = payment.destination.tokenAddress;
 
+    if (!payment.source?.chainId || !payment.source?.tokenAddress) {
+      return;
+    }
+    const sourceToken = getKnownToken(Number(payment.source.chainId), payment.source?.tokenAddress);
+
+    const paymentOptions: ExternalPaymentOptionsString[] = [];
+
+    if (payment.source.chainId === rozoSolana.chainId) {
+      paymentOptions.push(ExternalPaymentOptions.Solana);
+    } else if (payment.source.chainId === rozoStellar.chainId) {
+      paymentOptions.push(ExternalPaymentOptions.Stellar);
+    } else {
+      paymentOptions.push(ExternalPaymentOptions.Ethereum);
+    }
+
     const params = {
       toChain,
       toUnits,
       toAddress,
       toToken,
       preferredSymbol,
+      preferredTokens: [sourceToken],
     };
+
+    if ("feeType" in payment && payment.feeType) {
+      Object.assign(params, {
+        feeType: payment.feeType as FeeType,
+      });
+    }
+
+    if (paymentOptions.length > 0) {
+      Object.assign(params, {
+        paymentOptions: paymentOptions,
+      });
+    }
 
     if ("metadata" in payment && payment.metadata) {
       Object.assign(params, {
@@ -253,8 +279,8 @@ export function PaymentContent({
 
     console.log(params);
 
-    setPayParams(params as PayParams);
     resetPayment(params as PayParams);
+    setPayParams(params as PayParams);
   }, [payment, preferredSymbol]);
 
   return (
@@ -340,10 +366,13 @@ export function PaymentContent({
             toUnits={payParams.toUnits}
             toToken={payParams.toToken}
             externalId={payment.externalId ?? undefined}
+            feeType={(payment as PaymentResponse).feeType}
+            preferredSymbol={payParams.preferredSymbol}
+            preferredTokens={payParams.preferredTokens}
+            paymentOptions={payParams.paymentOptions}
             {...(payParams.metadata && {
               metadata: payParams.metadata as Record<string, string>,
             })}
-            preferredSymbol={payParams.preferredSymbol}
             onPaymentStarted={() => {
               setIsLoading(true);
             }}

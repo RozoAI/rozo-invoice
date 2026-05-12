@@ -2,6 +2,7 @@ import { RozoPayOrderView } from "@rozoai/intent-common";
 
 export interface PaymentResponse {
   id: string;
+  feeType: FeeType;
   status: string;
   message?: string;
   createdAt: string;
@@ -272,6 +273,7 @@ export interface NewPaymentResponse {
    * Store this securely to verify incoming webhook signatures.
    */
   webhookSecret: string | null;
+  feeType: FeeType;
   [property: string]: any;
 }
 
