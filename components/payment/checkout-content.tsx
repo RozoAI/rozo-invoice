@@ -4,9 +4,10 @@ import { NewPaymentResponse, PaymentResponse } from "@/lib/payment-api";
 import { Web3Provider } from "@/providers/web3-provider";
 import { RozoPayOrderView } from "@rozoai/intent-common";
 import { useTheme } from "next-themes";
+import { useMemo } from "react";
 import BoxedCard from "../boxed-card";
 import { ContactSupport } from "../contact-support";
-import { Avatar, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { CardContent, CardFooter } from "../ui/card";
 import { ErrorContent } from "./error-content";
 import { PaymentContent } from "./payment-content";
@@ -29,20 +30,50 @@ export default function CheckoutContent({
 }) {
   const { resolvedTheme } = useTheme();
 
+  const merchant = useMemo(() => {
+    if (loaderData.payment && "merchant" in loaderData.payment && loaderData.payment.merchant) {
+      return loaderData.payment.merchant as {
+        name?: string;
+        logoUrl?: string;
+        description?: string;
+      };
+    }
+    return null;
+  }, [loaderData.payment]);
+
   return (
     <Web3Provider apiVersion={loaderData.apiVersion || "v2"}>
       <BoxedCard className="flex-1">
         <CardContent className="flex flex-1 flex-col items-center gap-8 p-8 text-center">
           {/* Logo and Brand */}
-          <div className="flex flex-col items-center gap-1">
-            <Avatar className="size-8 rounded-none">
-              <AvatarImage
-                src={resolvedTheme === "dark" ? "/logo-white.png" : "/logo.png"}
-                alt="Rozo Pay"
-              />
-            </Avatar>
-            <h1 className="font-bold text-foreground">Rozo Pay</h1>
-          </div>
+          {merchant ? (
+            <div className="flex justify-center items-center gap-2 w-full">
+              <Avatar className="size-12 rounded-lg shadow-sm">
+                <AvatarImage src={merchant.logoUrl} alt={merchant.name} />
+                <AvatarFallback className="rounded-lg text-sm font-semibold">
+                  {merchant.name?.charAt(0) ?? "M"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="space-y-0.5 text-left">
+                <p className="font-semibold text-foreground">{merchant.name}</p>
+                {merchant.description && (
+                  <p className="text-muted-foreground text-xs">
+                    {merchant.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-1">
+              <Avatar className="size-8 rounded-none">
+                <AvatarImage
+                  src={resolvedTheme === "dark" ? "/logo-white.png" : "/logo.png"}
+                  alt="Rozo Pay"
+                />
+              </Avatar>
+              <h1 className="font-bold text-foreground">Rozo Pay</h1>
+            </div>
+          )}
 
           {loaderData.success && loaderData.payment ? (
             <PaymentContent

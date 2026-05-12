@@ -5,6 +5,7 @@ import {
   DestinationResponse,
   NewPaymentResponse,
   PaymentResponse,
+  PaymentStatus,
   SourceResponse,
 } from "@/lib/payment-api";
 import {
@@ -13,15 +14,18 @@ import {
 } from "@rozoai/intent-common";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
 import {
-  CircleCheckIcon,
-  CircleXIcon,
+  AlertCircle,
+  BadgeAlertIcon,
+  BadgeCheckIcon,
+  ClockFading,
   ExternalLink,
-  Loader2,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { toast } from "sonner";
+import { Ring } from "../icons/loader";
 
 export interface PaymentContentProps {
   appId: string;
@@ -129,6 +133,109 @@ export function PaymentContent({
     return null;
   }, [payment]);
 
+  const isMugglePay = useMemo(() => {
+    return (
+      payment.metadata &&
+      "appId" in payment.metadata &&
+      payment.metadata.appId.includes("MP")
+    );
+  }, [payment.metadata]);
+
+  const paymentStatus = useMemo(() => {
+    const { status } = payment;
+
+    if (status === "payment_unpaid") {
+      return "Payment Unpaid";
+    }
+
+    if (status === "payment_expired") return "Payment Expired";
+
+    if (
+      status === PaymentStatus.PaymentErrorLiquidity ||
+      status === PaymentStatus.PaymentErrorRecipientTrustline
+    ) {
+      return "Payment Unavailable";
+    }
+
+    if (status === PaymentStatus.PaymentBounced) {
+      return "Payment Bounced";
+    }
+
+    if (status === PaymentStatus.PaymentRefunded) {
+      return "Payment Refunded";
+    }
+
+    if (
+      status === PaymentStatus.PaymentPayinCompleted ||
+      status === PaymentStatus.PaymentPayoutStarted ||
+      status === PaymentStatus.PaymentBridging ||
+      status === PaymentStatus.PaymentBridgingHook
+    ) {
+      return "Payment in Progress";
+    }
+
+    // We force the payment to be completed if it is a MugglePay payment
+    if (
+      (status === PaymentStatus.PaymentCompleted ||
+        status === PaymentStatus.PaymentStarted ||
+        status === PaymentStatus.PaymentPayinCompleted ||
+        status === PaymentStatus.PaymentPayoutCompleted ||
+        status === PaymentStatus.PaymentPayoutStarted ||
+        status === PaymentStatus.PaymentBridging ||
+        status === PaymentStatus.PaymentBridgingHook) &&
+      isMugglePay
+    ) {
+      return "Payment Completed";
+    }
+
+    if (
+      status === PaymentStatus.PaymentPayoutCompleted ||
+      status === PaymentStatus.PaymentCompleted
+    ) {
+      return "Payment Completed";
+    }
+
+    return "Payment in Progress";
+  }, [payment, isMugglePay]);
+
+  const renderStatusIcon = useMemo(() => {
+    if (paymentStatus === "Payment Expired") {
+      return <ClockFading className="size-[65px] text-neutral-400" />;
+    }
+
+    if (paymentStatus === "Payment Unavailable") {
+      return <AlertCircle className="size-[90px] text-neutral-400" />;
+    }
+
+    if (paymentStatus === "Payment Bounced") {
+      return <AlertCircle className="size-[90px] text-neutral-400" />;
+    }
+
+    if (paymentStatus === "Payment Unpaid") {
+      return (
+        <BadgeAlertIcon className="size-[90px] fill-yellow-500 text-white" />
+      );
+    }
+
+    if (paymentStatus === "Payment in Progress") {
+      return <Ring width={65} height={65} className="text-[#0052FF]" />;
+    }
+
+    return <BadgeCheckIcon className="size-[90px] fill-[#0052FF] text-white" />;
+  }, [paymentStatus]);
+
+  const paymentDescription = useMemo(() => {
+    if (paymentStatus === "Payment Bounced") {
+      return "Payment bounced due to invalid recipient address. Please contact support.";
+    }
+
+    if (paymentStatus === "Payment Unavailable") {
+      return "Payment unavailable due to insufficient liquidity. Please contact support.";
+    }
+
+    return null;
+  }, [paymentStatus]);
+
   useEffect(() => {
     const toUnits =
       payment.destination.amountUnits ||
@@ -165,12 +272,41 @@ export function PaymentContent({
 
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center gap-4 md:justify-start">
+      {renderStatusIcon}
+
+      {(payment.status !== "payment_unpaid") && (
+        <div className="text-center max-w-md">
+          <h3 className="font-semibold text-xl">{paymentStatus}</h3>
+          {paymentDescription && paymentStatus !== "Payment Bounced" && (
+            <p className="text-muted-foreground text-xs">{paymentDescription}</p>
+          )}
+          {paymentStatus === "Payment Bounced" && (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                We&apos;ve received your payment, but the payout failed.
+                Don&apos;t worry. The payout will be processed again within 24
+                hours.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Price Display */}
       <div className="py-4">
         <div className="font-bold text-5xl text-foreground">
           {paymentAmount}
         </div>
       </div>
+
+      {paymentStatus === "Payment Completed" && (
+        <Button size={"sm"} asChild>
+          <Link href={`/receipt?id=${payment.id}`} rel="noopener noreferrer">
+            <ExternalLink size={14} />
+            View Receipt
+          </Link>
+        </Button>
+      )}
 
       {/* Items Section */}
       {paymentItems && paymentItems.length > 0 && (
@@ -229,9 +365,9 @@ export function PaymentContent({
             }}
             onPaymentCompleted={(args: any) => {
               setPaymentCompleted(true);
+              toast.success(`Payment completed for $${payParams.toUnits}`);
               router.replace(`/receipt?id=${args.rozoPaymentId}`);
               setIsLoading(false);
-              toast.success(`Payment completed for $${payParams.toUnits}`);
             }}
             closeOnSuccess
             resetOnSuccess
@@ -252,41 +388,6 @@ export function PaymentContent({
             )}
           </RozoPayButton.Custom>
         )}
-
-      {(payment.status === "payment_completed" ||
-        payment.status === "payment_payout_completed" ||
-        payment.status === "payment_payin_completed" ||
-        payment.status === "payment_payout_started" ||
-        payment.status === "payment_bridging" ||
-        payment.status === "payment_bridging_hook" ||
-        payment.status === "payment_started") && (
-          <div className="flex flex-col items-center gap-2 ">
-            <div className="flex items-center gap-1">
-              <CircleCheckIcon className="size-8 fill-green-600 text-white" />
-              <span className="font-semibold text-green-600">
-                Payment Completed
-              </span>
-            </div>
-            <p className="text-muted-foreground text-sm text-center">
-              This invoice has already been paid.
-            </p>
-            <Button className="w-full mt-4" asChild>
-              <Link href={`/receipt?id=${payment.id}`} rel="noopener noreferrer">
-                <ExternalLink size={14} />
-                View Receipt
-              </Link>
-            </Button>
-          </div>
-        )}
-
-      {payment.status === "payment_expired" && (
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex items-center gap-1">
-            <CircleXIcon className="size-8 fill-red-600 text-white" />
-            <span className="font-semibold text-red-600">Payment Expired</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
