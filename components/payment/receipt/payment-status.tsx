@@ -110,8 +110,8 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
       payment.metadata &&
       "appId" in payment.metadata &&
       payment.metadata.appId.includes("MP")
-    );
-  }, [payment.metadata]);
+    ) || ((payment as PaymentResponse)?.isMerchant ?? false);
+  }, [payment]);
 
   const isErrorStatus = useMemo(() => {
     return (
@@ -181,61 +181,48 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
   }, [payment]);
 
   const paymentStatus = useMemo(() => {
-    const { status } = payment;
+    const status = payment.status as PaymentStatusEnum;
 
-    if (status === "payment_unpaid") {
-      return "Payment Unpaid";
-    }
-
-    if (status === "payment_expired") return "Payment Expired";
+    if (status === PaymentStatusEnum.PaymentUnpaid) return "Payment Unpaid";
+    if (status === PaymentStatusEnum.PaymentExpired) return "Payment Expired";
 
     if (
-      status === PaymentStatusEnum.PaymentErrorLiquidity ||
-      status === PaymentStatusEnum.PaymentErrorRecipientTrustline
+      [
+        PaymentStatusEnum.PaymentErrorLiquidity,
+        PaymentStatusEnum.PaymentErrorRecipientTrustline,
+      ].includes(status)
     ) {
       return "Payment Unavailable";
     }
 
-    if (status === PaymentStatusEnum.PaymentBounced) {
-      return "Payment Bounced";
-    }
+    if (status === PaymentStatusEnum.PaymentBounced) return "Payment Bounced";
+    if (status === PaymentStatusEnum.PaymentRefunded) return "Payment Refunded";
 
-    if (status === PaymentStatusEnum.PaymentRefunded) {
-      return "Payment Refunded";
-    }
+    const completedStatuses = [
+      PaymentStatusEnum.PaymentCompleted,
+      PaymentStatusEnum.PaymentStarted,
+      PaymentStatusEnum.PaymentPayinCompleted,
+      PaymentStatusEnum.PaymentPayoutCompleted,
+      PaymentStatusEnum.PaymentPayoutStarted,
+      PaymentStatusEnum.PaymentBridging,
+      PaymentStatusEnum.PaymentBridgingHook,
+    ];
 
-    if (
-      status === PaymentStatusEnum.PaymentPayinCompleted ||
-      status === PaymentStatusEnum.PaymentPayoutStarted ||
-      status === PaymentStatusEnum.PaymentBridging ||
-      status === PaymentStatusEnum.PaymentBridgingHook
-    ) {
-      return "Payment in Progress";
-    }
-
-    // We force the payment to be completed if it is a MugglePay payment
-    if (
-      (status === PaymentStatusEnum.PaymentCompleted ||
-        status === PaymentStatusEnum.PaymentStarted ||
-        status === PaymentStatusEnum.PaymentPayinCompleted ||
-        status === PaymentStatusEnum.PaymentPayoutCompleted ||
-        status === PaymentStatusEnum.PaymentPayoutStarted ||
-        status === PaymentStatusEnum.PaymentBridging ||
-        status === PaymentStatusEnum.PaymentBridgingHook) &&
-      isMugglePay
-    ) {
+    if (isMugglePay && completedStatuses.includes(status)) {
       return "Payment Completed";
     }
 
     if (
-      status === PaymentStatusEnum.PaymentPayoutCompleted ||
-      status === PaymentStatusEnum.PaymentCompleted
+      [
+        PaymentStatusEnum.PaymentPayoutCompleted,
+        PaymentStatusEnum.PaymentCompleted,
+      ].includes(status)
     ) {
       return "Payment Completed";
     }
 
     return "Payment in Progress";
-  }, [payment, isMugglePay]);
+  }, [payment.status, isMugglePay]);
 
   const renderStatusIcon = useMemo(() => {
     if (paymentStatus === "Payment Expired") {

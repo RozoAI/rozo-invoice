@@ -38,6 +38,12 @@ export interface PaymentResponse {
   };
   payinTransactionHash: string;
   payoutTransactionHash: string;
+  merchant?: {
+    name?: string;
+    logoUrl?: string;
+    description?: string;
+  };
+  isMerchant?: boolean;
 }
 
 /**
@@ -324,7 +330,7 @@ function validateEnvironment(): { rozo: ApiConfig; newRozo: ApiConfig } | null {
 // Generic API fetcher
 async function fetchFromAPI(
   url: string,
-  headers: Record<string, string>
+  headers: Record<string, string>,
 ): Promise<ApiResponse> {
   try {
     const response = await fetch(url, {
@@ -359,7 +365,7 @@ async function fetchFromAPI(
 export async function getPaymentData(
   idOrHash: string,
   isHash: boolean = false,
-  isMugglePay: boolean = false
+  isMugglePay: boolean = false,
 ): Promise<PaymentResult> {
   if (!idOrHash) {
     return { success: false, error: "Payment ID or hash is required" };
@@ -396,12 +402,12 @@ export async function getPaymentData(
 
   console.log(
     "Rozo API failed, falling back to new Rozo API:",
-    rozoResponse.error
+    rozoResponse.error,
   );
   // Rozo API failed, try new Rozo   API as fallback (only for ID-based requests)
   console.warn(
     "Rozo API failed, falling back to new Rozo API:",
-    rozoResponse.error
+    rozoResponse.error,
   );
 
   // Only try new Rozo API for ID-based requests, not hash-based
@@ -440,7 +446,7 @@ export async function getPaymentData(
 // Client-side function to fetch payment data via API route
 export async function getPaymentDataClient(
   idOrHash: string,
-  isHash: boolean = false
+  isHash: boolean = false,
 ): Promise<PaymentResult> {
   try {
     const url = `/api/payment/${idOrHash}${isHash ? "?isHash=true" : ""}`;
@@ -462,7 +468,7 @@ const activePolling = new Map<string, { cancel: () => void }>();
 export async function pollPaymentUntilPayoutClient(
   id: string,
   intervalMs: number = 5000, // 5 seconds
-  maxAttempts: number = 60 // 5 minutes max (60 * 5s)
+  maxAttempts: number = 60, // 5 minutes max (60 * 5s)
 ): Promise<PaymentResult> {
   // Cancel any existing polling for this ID
   const existing = activePolling.get(id);
@@ -507,8 +513,8 @@ export async function pollPaymentUntilPayoutClient(
               activePolling.delete(id);
               reject(
                 new Error(
-                  `Polling failed after ${maxAttempts} attempts: ${result.error}`
-                )
+                  `Polling failed after ${maxAttempts} attempts: ${result.error}`,
+                ),
               );
             }
             return;
@@ -548,8 +554,8 @@ export async function pollPaymentUntilPayoutClient(
             activePolling.delete(id);
             reject(
               new Error(
-                `Polling timeout: destination hash (payoutTransactionHash or destination.txHash) not found after ${maxAttempts} attempts`
-              )
+                `Polling timeout: destination hash (payoutTransactionHash or destination.txHash) not found after ${maxAttempts} attempts`,
+              ),
             );
           }
           return;
@@ -585,7 +591,7 @@ export async function pollPaymentUntilPayoutClient(
 export async function pollPaymentUntilPayout(
   id: string,
   maxAttempts: number = 60, // 5 minutes max (60 * 5s)
-  intervalMs: number = 5000 // 5 seconds
+  intervalMs: number = 5000, // 5 seconds
 ): Promise<PaymentResult> {
   return new Promise((resolve, reject) => {
     let attempts = 0;
@@ -600,8 +606,8 @@ export async function pollPaymentUntilPayout(
           if (attempts >= maxAttempts) {
             reject(
               new Error(
-                `Polling failed after ${maxAttempts} attempts: ${result.error}`
-              )
+                `Polling failed after ${maxAttempts} attempts: ${result.error}`,
+              ),
             );
             return;
           }
@@ -620,7 +626,7 @@ export async function pollPaymentUntilPayout(
 
         if (hasPayoutHash || hasDestinationTxHash) {
           console.log(
-            `[pollPaymentUntilPayout] Success! Found destination hash after ${attempts} attempts`
+            `[pollPaymentUntilPayout] Success! Found destination hash after ${attempts} attempts`,
           );
           resolve(result);
           return;
@@ -629,12 +635,12 @@ export async function pollPaymentUntilPayout(
         // Check if we've reached max attempts
         if (attempts >= maxAttempts) {
           console.error(
-            `[pollPaymentUntilPayout] Timeout: No destination hash found after ${maxAttempts} attempts`
+            `[pollPaymentUntilPayout] Timeout: No destination hash found after ${maxAttempts} attempts`,
           );
           reject(
             new Error(
-              `Polling timeout: destination hash (payoutTransactionHash or destination.txHash) not found after ${maxAttempts} attempts`
-            )
+              `Polling timeout: destination hash (payoutTransactionHash or destination.txHash) not found after ${maxAttempts} attempts`,
+            ),
           );
           return;
         }
@@ -648,7 +654,7 @@ export async function pollPaymentUntilPayout(
         }
         // Continue polling on unexpected errors
         console.log(
-          `[pollPaymentUntilPayout] Retrying after error in ${intervalMs}ms...`
+          `[pollPaymentUntilPayout] Retrying after error in ${intervalMs}ms...`,
         );
         setTimeout(poll, intervalMs);
       }
@@ -656,7 +662,7 @@ export async function pollPaymentUntilPayout(
 
     // Start polling immediately
     console.log(
-      `[pollPaymentUntilPayout] Starting polling for payment ID: ${id}`
+      `[pollPaymentUntilPayout] Starting polling for payment ID: ${id}`,
     );
     poll();
   });
