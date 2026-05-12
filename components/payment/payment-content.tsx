@@ -238,9 +238,9 @@ export function PaymentContent({
 
     const paymentOptions: ExternalPaymentOptionsString[] = [];
 
-    if (payment.source.chainId === rozoSolana.chainId) {
+    if (Number(payment.source.chainId) === rozoSolana.chainId) {
       paymentOptions.push(ExternalPaymentOptions.Solana);
-    } else if (payment.source.chainId === rozoStellar.chainId) {
+    } else if (Number(payment.source.chainId) === rozoStellar.chainId) {
       paymentOptions.push(ExternalPaymentOptions.Stellar);
     } else {
       paymentOptions.push(ExternalPaymentOptions.Ethereum);
