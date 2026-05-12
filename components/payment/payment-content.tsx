@@ -234,13 +234,15 @@ export function PaymentContent({
     if (!payment.source?.chainId || !payment.source?.tokenAddress) {
       return;
     }
-    const sourceToken = getKnownToken(Number(payment.source.chainId), payment.source?.tokenAddress);
+    const sourceChainId = Number(payment.source.chainId)
+
+    const sourceToken = getKnownToken(sourceChainId, payment.source?.tokenAddress);
 
     const paymentOptions: ExternalPaymentOptionsString[] = [];
 
-    if (Number(payment.source.chainId) === rozoSolana.chainId) {
+    if (sourceChainId === rozoSolana.chainId) {
       paymentOptions.push(ExternalPaymentOptions.Solana);
-    } else if (Number(payment.source.chainId) === rozoStellar.chainId) {
+    } else if (sourceChainId === rozoStellar.chainId) {
       paymentOptions.push(ExternalPaymentOptions.Stellar);
     } else {
       paymentOptions.push(ExternalPaymentOptions.Ethereum);
@@ -255,9 +257,9 @@ export function PaymentContent({
       preferredTokens: [sourceToken],
     };
 
-    if ("feeType" in payment && payment.feeType) {
+    if ("type" in payment && payment.type) {
       Object.assign(params, {
-        feeType: payment.feeType as FeeType,
+        feeType: payment.type,
       });
     }
 
