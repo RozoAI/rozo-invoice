@@ -1,6 +1,7 @@
 import {
   arbitrum,
   base,
+  bsc,
   ethereum,
   polygon,
   rozoSolana,
@@ -391,6 +392,8 @@ export const ChainIcon = ({
       return <Arbitrum {...props} />;
     case polygon.chainId:
       return <Polygon {...props} />;
+    case bsc.chainId:
+      return <BNB {...props} />;
     case rozoStellar.chainId:
       return <Stellar {...props} />;
     case rozoSolana.chainId:
