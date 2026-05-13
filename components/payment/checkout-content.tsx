@@ -44,7 +44,7 @@ export default function CheckoutContent({
   return (
     <Web3Provider apiVersion={loaderData.apiVersion || "v2"}>
       <BoxedCard className="flex-1">
-        <CardContent className="flex flex-1 flex-col items-center gap-8 p-8 text-center">
+        <CardContent className="flex flex-1 flex-col items-center gap-8 p-8 pt-0 text-center">
           {/* Logo and Brand */}
           {merchant ? (
             <div className="flex justify-center items-center gap-2 w-full">

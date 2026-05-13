@@ -2,24 +2,18 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  DestinationResponse,
   FeeType,
   NewPaymentResponse,
   PaymentResponse,
-  PaymentStatus,
-  SourceResponse,
+  PaymentStatus
 } from "@/lib/payment-api";
 import {
-  ExternalPaymentOptions,
   ExternalPaymentOptionsString,
-  getKnownToken,
-  rozoSolana,
-  rozoStellar,
   Token,
   TokenSymbol,
-  type RozoPayOrderView,
+  type RozoPayOrderView
 } from "@rozoai/intent-common";
-import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
+import { RozoPayButton } from "@rozoai/intent-pay";
 import {
   AlertCircle,
   BadgeCheckIcon,
@@ -29,8 +23,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type ReactElement } from "react";
+import { useMemo, useState, type ReactElement } from "react";
 import { toast } from "sonner";
+import ChainsStacked from "../chains-stacked";
 
 export interface PaymentContentProps {
   appId: string;
@@ -63,22 +58,22 @@ export function PaymentContent({
   const [isLoading, setIsLoading] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const router = useRouter();
-  const { resetPayment } = useRozoPayUI();
+  // const { resetPayment } = useRozoPayUI();
 
-  const preferredSymbol = useMemo(() => {
-    if (
-      (payment.source &&
-        "tokenSymbol" in payment.source &&
-        payment.source.tokenSymbol === TokenSymbol.EURC) ||
-      (payment.display &&
-        "currency" in payment.display &&
-        payment.display.currency === "EUR")
-    ) {
-      return [TokenSymbol.EURC];
-    }
+  // const preferredSymbol = useMemo(() => {
+  //   if (
+  //     (payment.source &&
+  //       "tokenSymbol" in payment.source &&
+  //       payment.source.tokenSymbol === TokenSymbol.EURC) ||
+  //     (payment.display &&
+  //       "currency" in payment.display &&
+  //       payment.display.currency === "EUR")
+  //   ) {
+  //     return [TokenSymbol.EURC];
+  //   }
 
-    return [TokenSymbol.USDC, TokenSymbol.USDT];
-  }, [payment.source, payment.display]);
+  //   return [TokenSymbol.USDC, TokenSymbol.USDT];
+  // }, [payment.source, payment.display]);
 
   const formatPaymentAmount = (
     rawAmount: string,
@@ -263,76 +258,76 @@ export function PaymentContent({
     return null;
   }, [paymentStatus]);
 
-  useEffect(() => {
-    if (!payment.destination) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!payment.destination) {
+  //     return;
+  //   }
 
-    const dest = payment.destination as DestinationResponse & {
-      amountUnits?: string;
-      destinationAddress?: string;
-    };
-    const toUnits =
-      dest.amountUnits ||
-      dest.amount ||
-      ((payment.source as SourceResponse)?.amount as string);
-    const toChain = Number(dest.chainId);
-    const toAddress = dest.destinationAddress || dest.receiverAddress;
-    const toToken = dest.tokenAddress;
+  //   const dest = payment.destination as DestinationResponse & {
+  //     amountUnits?: string;
+  //     destinationAddress?: string;
+  //   };
+  //   const toUnits =
+  //     dest.amountUnits ||
+  //     dest.amount ||
+  //     ((payment.source as SourceResponse)?.amount as string);
+  //   const toChain = Number(dest.chainId);
+  //   const toAddress = dest.destinationAddress || dest.receiverAddress;
+  //   const toToken = dest.tokenAddress;
 
-    if (!payment.source?.chainId || !payment.source?.tokenAddress) {
-      return;
-    }
-    const sourceChainId = Number(payment.source.chainId);
-    const sourceToken = getKnownToken(
-      sourceChainId,
-      payment.source?.tokenAddress,
-    );
+  //   if (!payment.source?.chainId || !payment.source?.tokenAddress) {
+  //     return;
+  //   }
+  //   const sourceChainId = Number(payment.source.chainId);
+  //   const sourceToken = getKnownToken(
+  //     sourceChainId,
+  //     payment.source?.tokenAddress,
+  //   );
 
-    const paymentOptions: ExternalPaymentOptionsString[] = [];
+  //   const paymentOptions: ExternalPaymentOptionsString[] = [];
 
-    if (sourceChainId === rozoSolana.chainId) {
-      paymentOptions.push(ExternalPaymentOptions.Solana);
-    } else if (sourceChainId === rozoStellar.chainId) {
-      paymentOptions.push(ExternalPaymentOptions.Stellar);
-    } else {
-      paymentOptions.push(ExternalPaymentOptions.Ethereum);
-    }
+  //   if (sourceChainId === rozoSolana.chainId) {
+  //     paymentOptions.push(ExternalPaymentOptions.Solana);
+  //   } else if (sourceChainId === rozoStellar.chainId) {
+  //     paymentOptions.push(ExternalPaymentOptions.Stellar);
+  //   } else {
+  //     paymentOptions.push(ExternalPaymentOptions.Ethereum);
+  //   }
 
-    const params = {
-      toChain,
-      toUnits,
-      toAddress,
-      toToken,
-      preferredSymbol,
-      preferredTokens: sourceToken ?? undefined,
-    };
+  //   const params = {
+  //     toChain,
+  //     toUnits,
+  //     toAddress,
+  //     toToken,
+  //     preferredSymbol,
+  //     preferredTokens: sourceToken ?? undefined,
+  //   };
 
-    if ("type" in payment && payment.type) {
-      Object.assign(params, {
-        feeType: payment.type,
-      });
-    }
+  //   if ("type" in payment && payment.type) {
+  //     Object.assign(params, {
+  //       feeType: payment.type,
+  //     });
+  //   }
 
-    if (paymentOptions.length > 0) {
-      Object.assign(params, {
-        paymentOptions: paymentOptions,
-      });
-    }
+  //   if (paymentOptions.length > 0) {
+  //     Object.assign(params, {
+  //       paymentOptions: paymentOptions,
+  //     });
+  //   }
 
-    if ("metadata" in payment && payment.metadata) {
-      Object.assign(params, {
-        ...params,
-        metadata: {
-          ...payment.metadata,
-          customDeeplinkUrl: window.location.href,
-        },
-      });
-    }
+  //   if ("metadata" in payment && payment.metadata) {
+  //     Object.assign(params, {
+  //       ...params,
+  //       metadata: {
+  //         ...payment.metadata,
+  //         customDeeplinkUrl: window.location.href,
+  //       },
+  //     });
+  //   }
 
-    resetPayment(params as PayParams);
-    setPayParams(params as PayParams);
-  }, [payment, preferredSymbol]);
+  //   resetPayment(params as PayParams);
+  //   setPayParams(params as PayParams);
+  // }, [payment, preferredSymbol]);
 
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center gap-4 md:justify-start">
@@ -423,12 +418,13 @@ export function PaymentContent({
       )}
 
       {/* Pay Button */}
-      {payParams &&
-        payment.status === "payment_unpaid" &&
+      {payment.status === "payment_unpaid" &&
         !paymentCompleted && (
           <>
             <RozoPayButton.Custom
               defaultOpen
+              closeOnSuccess
+              resetOnSuccess
               payId={payment.id}
               onPaymentStarted={() => {
                 setIsLoading(true);
@@ -438,12 +434,13 @@ export function PaymentContent({
               }}
               onPaymentCompleted={(args: any) => {
                 setPaymentCompleted(true);
-                toast.success(`Payment completed for $${payParams.toUnits}`);
+                toast.success(`Payment completed for $${paymentAmount}`);
                 router.replace(`/receipt?id=${args.rozoPaymentId}`);
                 setIsLoading(false);
               }}
-              closeOnSuccess
-              resetOnSuccess
+              onClose={() => {
+                setIsLoading(false)
+              }}
             >
               {({ show }) => (
                 <Button
@@ -461,51 +458,7 @@ export function PaymentContent({
               )}
             </RozoPayButton.Custom>
 
-            {/* <RozoPayButton.Custom
-            defaultOpen
-            appId={appId}
-            toAddress={payParams.toAddress}
-            toChain={payParams.toChain}
-            toUnits={payParams.toUnits}
-            toToken={payParams.toToken}
-            externalId={payment.externalId ?? undefined}
-            feeType={(payment as PaymentResponse).feeType}
-            preferredSymbol={payParams.preferredSymbol}
-            preferredTokens={payParams.preferredTokens}
-            paymentOptions={payParams.paymentOptions}
-            {...(payParams.metadata && {
-              metadata: payParams.metadata as Record<string, string>,
-            })}
-            onPaymentStarted={() => {
-              setIsLoading(true);
-            }}
-            onPaymentBounced={() => {
-              setIsLoading(false);
-            }}
-            onPaymentCompleted={(args: any) => {
-              setPaymentCompleted(true);
-              toast.success(`Payment completed for $${payParams.toUnits}`);
-              router.replace(`/receipt?id=${args.rozoPaymentId}`);
-              setIsLoading(false);
-            }}
-            closeOnSuccess
-            resetOnSuccess
-          >
-            {({ show }) => (
-              <Button
-                variant="default"
-                className="w-full cursor-pointer py-6 font-semibold text-base"
-                onClick={show}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  "Pay with Crypto"
-                )}
-              </Button>
-            )}
-          </RozoPayButton.Custom> */}
+            <ChainsStacked />
           </>
         )}
     </div>
