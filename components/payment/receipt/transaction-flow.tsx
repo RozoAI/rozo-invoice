@@ -132,7 +132,8 @@ export function TransactionFlow({
   const isForMerchant = useMemo(() => {
     return (
       payment?.metadata?.forMerchant ||
-      (String(payment?.metadata?.appId) || "").includes("MP")
+      (String(payment?.metadata?.appId) || "").includes("MP") ||
+      ("isMerchant" in payment && !!payment.isMerchant)
     );
   }, [payment]);
 
@@ -186,21 +187,26 @@ export function TransactionFlow({
         onExplorerClick={openExplorer}
       />
 
-      <div className="flex size-8 items-center justify-center self-center">
-        <ArrowDown className="text-muted-foreground size-5" />
-      </div>
+      {/* Only show Recipient if it's not merchant */}
+      {!isForMerchant && (
+        <>
+          <div className="flex size-8 items-center justify-center self-center">
+            <ArrowDown className="text-muted-foreground size-5" />
+          </div>
 
-      <div className="-mt-6">
-        <TransactionParticipant
-          type="recipient"
-          name={isForMerchant ? "Merchant" : "Recipient"}
-          address={destinationAddress}
-          chainId={destinationChainId}
-          txHash={recipientExplorerData.txHash}
-          explorerAddress={recipientExplorerData.address}
-          onExplorerClick={openExplorer}
-        />
-      </div>
+          <div className="-mt-6">
+            <TransactionParticipant
+              type="recipient"
+              name={isForMerchant ? "Merchant" : "Recipient"}
+              address={destinationAddress}
+              chainId={destinationChainId}
+              txHash={recipientExplorerData.txHash}
+              explorerAddress={recipientExplorerData.address}
+              onExplorerClick={openExplorer}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
