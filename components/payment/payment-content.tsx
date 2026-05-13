@@ -5,14 +5,15 @@ import {
   FeeType,
   NewPaymentResponse,
   PaymentResponse,
-  PaymentStatus
+  PaymentStatus,
 } from "@/lib/payment-api";
+import { getPaymentAmount } from "@/lib/utils";
 import {
   ExternalPaymentOptionsString,
   PaymentCompletedEvent,
   Token,
   TokenSymbol,
-  type RozoPayOrderView
+  type RozoPayOrderView,
 } from "@rozoai/intent-common";
 import { RozoPayButton } from "@rozoai/intent-pay";
 import {
@@ -126,39 +127,7 @@ export function PaymentContent({
   }, [payment]);
 
   const paymentAmount = useMemo(() => {
-    if (
-      "display" in payment &&
-      "paymentValue" in payment.display &&
-      "currency" in payment.display
-    ) {
-      // RozoPayOrderView
-      const currencyCode = payment.display.currency === "EUR" ? "EUR" : "USD";
-      return formatPaymentAmount(payment.display.paymentValue, currencyCode);
-    } else if (
-      "destination" in payment &&
-      "amountUnits" in payment.destination
-    ) {
-      // PaymentResponse
-      const currencyCode =
-        "tokenSymbol" in payment.destination &&
-          payment.destination.tokenSymbol === TokenSymbol.EURC
-          ? "EUR"
-          : "USD";
-      return formatPaymentAmount(payment.destination.amountUnits, currencyCode);
-    } else if (
-      "source" in payment &&
-      payment.source &&
-      "amount" in payment.source
-    ) {
-      // NewPaymentResponse
-      const currencyCode =
-        "tokenSymbol" in payment.source &&
-          payment.source.tokenSymbol === TokenSymbol.EURC
-          ? "EUR"
-          : "USD";
-      return formatPaymentAmount(payment.source.amount as string, currencyCode);
-    }
-    return "Amount unavailable";
+    return getPaymentAmount(payment);
   }, [payment]);
 
   const paymentItems = useMemo(() => {
@@ -421,49 +390,51 @@ export function PaymentContent({
       )}
 
       {/* Pay Button */}
-      {payment.status === "payment_unpaid" &&
-        !paymentCompleted && (
-          <>
-            <RozoPayButton.Custom
-              defaultOpen
-              closeOnSuccess
-              resetOnSuccess
-              payId={payment.id}
-              onPaymentStarted={() => {
-                setIsLoading(true);
-              }}
-              onPaymentBounced={() => {
-                setIsLoading(false);
-              }}
-              onPaymentCompleted={(payment: PaymentCompletedEvent) => {
-                setPaymentCompleted(true);
-                toast.success(`Payment completed for $${paymentAmount}`);
-                router.replace(`/receipt?id=${payment.rozoPaymentId}&isCompletedForMerchant=true&payerAddress=${payment.payment.source?.payerAddress}`);
-                setIsLoading(false);
-              }}
-              onClose={() => {
-                setIsLoading(false)
-              }}
-            >
-              {({ show }) => (
-                <Button
-                  variant="default"
-                  className="w-full cursor-pointer py-6 font-semibold text-base"
-                  onClick={show}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    "Pay with Crypto"
-                  )}
-                </Button>
-              )}
-            </RozoPayButton.Custom>
+      {payment.status === "payment_unpaid" && !paymentCompleted && (
+        <>
+          <RozoPayButton.Custom
+            defaultOpen
+            closeOnSuccess
+            resetOnSuccess
+            payId={payment.id}
+            onPaymentStarted={() => {
+              setIsLoading(true);
+              router.prefetch(`/receipt?id=${payment.id}`);
+            }}
+            onPaymentBounced={() => {
+              setIsLoading(false);
+            }}
+            onPaymentCompleted={(payment: PaymentCompletedEvent) => {
+              setPaymentCompleted(true);
+              toast.success(`Payment completed for $${paymentAmount}`);
+              router.replace(
+                `/receipt?id=${payment.rozoPaymentId}&isCompletedForMerchant=true`,
+              );
+              setIsLoading(false);
+            }}
+            onClose={() => {
+              setIsLoading(false);
+            }}
+          >
+            {({ show }) => (
+              <Button
+                variant="default"
+                className="w-full cursor-pointer py-6 font-semibold text-base"
+                onClick={show}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  "Pay with Crypto"
+                )}
+              </Button>
+            )}
+          </RozoPayButton.Custom>
 
-            <ChainsStacked />
-          </>
-        )}
+          <ChainsStacked />
+        </>
+      )}
     </div>
   );
 }

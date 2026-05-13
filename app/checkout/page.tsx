@@ -1,3 +1,7 @@
+import type { Metadata } from "next";
+import type { ReactElement } from "react";
+import { cache } from "react";
+
 import CheckoutContent from "@/components/payment/checkout-content";
 import { redirectToError } from "@/lib/error-utils";
 import {
@@ -5,8 +9,8 @@ import {
   NewPaymentResponse,
   PaymentResponse,
 } from "@/lib/payment-api";
+import { getPaymentAmount } from "@/lib/utils";
 import type { RozoPayOrderView } from "@rozoai/intent-common";
-import type { ReactElement } from "react";
 
 type PaymentData = RozoPayOrderView | PaymentResponse | NewPaymentResponse;
 
@@ -19,13 +23,14 @@ type LoaderData = {
   apiVersion?: "v1" | "v2";
 };
 
-async function getPayment(id: string): Promise<LoaderData> {
+const getPayment = cache(async (id: string): Promise<LoaderData> => {
   if (!id) {
     return { success: false, error: "Payment ID is required" };
   }
 
   try {
     const response = await getPaymentData(id);
+
     if (!response.success) {
       return {
         success: false,
@@ -43,11 +48,36 @@ async function getPayment(id: string): Promise<LoaderData> {
         paymentData &&
         ("appId" in paymentData
           ? paymentData.appId
-          : paymentData.metadata?.appId ?? process.env.NEXT_PUBLIC_ROZO_APP_ID),
+          : (paymentData.metadata?.appId ??
+            process.env.NEXT_PUBLIC_ROZO_APP_ID)),
     };
   } catch (error) {
     return { success: false, error };
   }
+});
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ id?: string }>;
+}): Promise<Metadata> {
+  const { id } = await searchParams;
+  const title = "Rozo | One Tap to Pay";
+  if (!id) {
+    return { title: title };
+  }
+
+  const loaderData = await getPayment(id);
+
+  if (!loaderData.success || !loaderData.payment) {
+    return { title: "Payment Not Found" };
+  }
+
+  const payment = loaderData.payment;
+
+  return {
+    title: `Pay ${getPaymentAmount(payment)} - ${title}`,
+  };
 }
 
 export default async function Checkout({
@@ -56,6 +86,7 @@ export default async function Checkout({
   searchParams: Promise<{ id?: string; appId?: string }>;
 }): Promise<ReactElement> {
   const { id, appId } = await searchParams;
+
   const loaderData = await getPayment(id || "");
 
   if (!loaderData.success) {
