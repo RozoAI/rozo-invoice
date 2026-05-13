@@ -222,20 +222,26 @@ export function PaymentContent({
   }, [paymentStatus]);
 
   useEffect(() => {
+    if (!payment.destination) {
+      return;
+    }
+
+    const dest = payment.destination as DestinationResponse & {
+      amountUnits?: string;
+      destinationAddress?: string;
+    };
     const toUnits =
-      payment.destination.amountUnits ||
+      dest.amountUnits ||
+      dest.amount ||
       ((payment.source as SourceResponse)?.amount as string);
-    const toChain = Number(payment.destination.chainId);
-    const toAddress =
-      payment.destination.destinationAddress ||
-      (payment.destination as DestinationResponse).receiverAddress;
-    const toToken = payment.destination.tokenAddress;
+    const toChain = Number(dest.chainId);
+    const toAddress = dest.destinationAddress || dest.receiverAddress;
+    const toToken = dest.tokenAddress;
 
     if (!payment.source?.chainId || !payment.source?.tokenAddress) {
       return;
     }
     const sourceChainId = Number(payment.source.chainId)
-
     const sourceToken = getKnownToken(sourceChainId, payment.source?.tokenAddress);
 
     const paymentOptions: ExternalPaymentOptionsString[] = [];
@@ -278,8 +284,6 @@ export function PaymentContent({
         },
       });
     }
-
-    console.log(params);
 
     resetPayment(params as PayParams);
     setPayParams(params as PayParams);
