@@ -9,6 +9,7 @@ import {
 } from "@/lib/payment-api";
 import {
   ExternalPaymentOptionsString,
+  PaymentCompletedEvent,
   Token,
   TokenSymbol,
   type RozoPayOrderView
@@ -331,34 +332,36 @@ export function PaymentContent({
 
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center gap-4 md:justify-start">
-      {renderStatusIcon}
+      <div className="flex flex-col items-center">
+        {renderStatusIcon}
 
-      {payment.status !== "payment_unpaid" && (
-        <div className="text-center max-w-md">
-          <h3 className="font-semibold text-xl">{paymentStatus}</h3>
-          {paymentDescription && paymentStatus !== "Payment Bounced" && (
-            <p className="text-muted-foreground text-xs">
-              {paymentDescription}
-            </p>
-          )}
-          {paymentStatus === "Payment Bounced" && (
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                We&apos;ve received your payment, but the payout failed.
-                Don&apos;t worry. The payout will be processed again within 24
-                hours.
+        {payment.status !== "payment_unpaid" && (
+          <div className="text-center max-w-md">
+            <h3 className="font-semibold text-xl">{paymentStatus}</h3>
+            {paymentDescription && paymentStatus !== "Payment Bounced" && (
+              <p className="text-muted-foreground text-xs">
+                {paymentDescription}
               </p>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+            {paymentStatus === "Payment Bounced" && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  We&apos;ve received your payment, but the payout failed.
+                  Don&apos;t worry. The payout will be processed again within 24
+                  hours.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Price Display */}
       <div className="py-4">
-        {displayTitle || displayDescription ? (
+        {/* {displayTitle || displayDescription ? (
           <div className="mb-6">
             {displayTitle && (
-              <h1 className="text-lg md:text-xl text-center font-semibold text-foreground">
+              <h1 className="text-lg text-center font-semibold text-foreground">
                 {displayTitle}
               </h1>
             )}
@@ -368,7 +371,7 @@ export function PaymentContent({
               </p>
             )}
           </div>
-        ) : null}
+        ) : null} */}
 
         <div className="font-bold text-5xl text-foreground">
           {paymentAmount}
@@ -432,10 +435,10 @@ export function PaymentContent({
               onPaymentBounced={() => {
                 setIsLoading(false);
               }}
-              onPaymentCompleted={(args: any) => {
+              onPaymentCompleted={(payment: PaymentCompletedEvent) => {
                 setPaymentCompleted(true);
                 toast.success(`Payment completed for $${paymentAmount}`);
-                router.replace(`/receipt?id=${args.rozoPaymentId}`);
+                router.replace(`/receipt?id=${payment.rozoPaymentId}&isCompletedForMerchant=true&payerAddress=${payment.payment.source?.payerAddress}`);
                 setIsLoading(false);
               }}
               onClose={() => {

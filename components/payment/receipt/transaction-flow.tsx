@@ -7,14 +7,14 @@ import { TransactionParticipant } from "./transaction-participant";
 
 // Type guard to check if payment is PaymentResponse
 function isPaymentResponse(
-  payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse
+  payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse,
 ): payment is PaymentResponse {
   return "payinchainid" in payment;
 }
 
 // Type guard to check if payment has metadata with preferred_chain
 function hasPreferredChain(
-  payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse
+  payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse,
 ): boolean {
   return (
     "metadata" in payment &&
@@ -27,13 +27,17 @@ function hasPreferredChain(
 
 interface TransactionFlowProps {
   payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
+  payerAddress?: string | null;
 }
 
-export function TransactionFlow({ payment }: TransactionFlowProps) {
+export function TransactionFlow({
+  payment,
+  payerAddress = null,
+}: TransactionFlowProps) {
   const { openExplorer } = useExplorer();
 
   // Helper to safely get payer address
-  const getSourcePayerAddress = (): string => {
+  const getSourcePayerAddress = (): string | null => {
     if (payment?.source?.payerAddress) {
       return payment.source.payerAddress;
     }
@@ -50,7 +54,7 @@ export function TransactionFlow({ payment }: TransactionFlowProps) {
     if ("payerAddress" in payment && typeof payment.payerAddress === "string") {
       return payment.payerAddress;
     }
-    return "";
+    return payerAddress || null;
   };
 
   // Helper to safely get source chain ID with proper fallback logic

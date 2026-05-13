@@ -7,7 +7,7 @@ import { toast } from "sonner";
 interface TransactionParticipantProps {
   type: "sender" | "recipient";
   name: string;
-  address: string;
+  address: string | null;
   chainId: string;
   txHash?: string;
   explorerAddress?: string;
@@ -38,6 +38,7 @@ export function TransactionParticipant({
 
   const handleCopyAddress = async () => {
     try {
+      if (!address) return;
       await navigator.clipboard.writeText(address);
       toast.success("Address copied to clipboard");
     } catch (err) {
@@ -72,15 +73,17 @@ export function TransactionParticipant({
               <span className="text-muted-foreground font-normal"> (You)</span>
             )}
           </span>
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground text-sm">
-              {formatAddress(address)}
-            </span>
-            <Copy
-              className="size-3 cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
-              onClick={handleCopyAddress}
-            />
-          </div>
+          {address && (
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground text-sm">
+                {formatAddress(address)}
+              </span>
+              <Copy
+                className="size-3 cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                onClick={handleCopyAddress}
+              />
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {chainId && (

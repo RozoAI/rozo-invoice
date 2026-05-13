@@ -27,9 +27,13 @@ import { useMemo } from "react";
 
 interface PaymentStatusProps {
   payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
+  isCompletedForMerchant?: boolean;
 }
 
-export function PaymentStatus({ payment }: PaymentStatusProps) {
+export function PaymentStatus({
+  payment,
+  isCompletedForMerchant = false,
+}: PaymentStatusProps) {
   const getChainInfo = () => {
     if (payment.source) {
       return getChainName(Number(payment.source.chainId));
@@ -107,10 +111,11 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
 
   const isMugglePay = useMemo(() => {
     return (
-      payment.metadata &&
-      "appId" in payment.metadata &&
-      payment.metadata.appId.includes("MP")
-    ) || ((payment as PaymentResponse)?.isMerchant ?? false);
+      (payment.metadata &&
+        "appId" in payment.metadata &&
+        payment.metadata.appId.includes("MP")) ||
+      ((payment as PaymentResponse)?.isMerchant ?? false)
+    );
   }, [payment]);
 
   const isErrorStatus = useMemo(() => {
@@ -183,7 +188,11 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
   const paymentStatus = useMemo(() => {
     const status = payment.status as PaymentStatusEnum;
 
-    if (status === PaymentStatusEnum.PaymentUnpaid) return "Payment Unpaid";
+    if (status === PaymentStatusEnum.PaymentUnpaid) {
+      if (isCompletedForMerchant) return "Payment Completed";
+      return "Payment Unpaid";
+    }
+
     if (status === PaymentStatusEnum.PaymentExpired) return "Payment Expired";
 
     if (
@@ -354,11 +363,11 @@ export function PaymentStatus({ payment }: PaymentStatusProps) {
                     new Date(
                       isNaN(Number(paidDate))
                         ? paidDate || ""
-                        : Number(paidDate) * 1000
+                        : Number(paidDate) * 1000,
                     ),
                     {
                       addSuffix: true,
-                    }
+                    },
                   )}
                 </span>
               </TooltipTrigger>
