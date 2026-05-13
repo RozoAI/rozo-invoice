@@ -363,8 +363,42 @@ export function PaymentContent({
       {/* Pay Button */}
       {payParams &&
         payment.status === "payment_unpaid" &&
-        !paymentCompleted && (
+        !paymentCompleted && <>
           <RozoPayButton.Custom
+            defaultOpen
+            payId={payment.id}
+            onPaymentStarted={() => {
+              setIsLoading(true);
+            }}
+            onPaymentBounced={() => {
+              setIsLoading(false);
+            }}
+            onPaymentCompleted={(args: any) => {
+              setPaymentCompleted(true);
+              toast.success(`Payment completed for $${payParams.toUnits}`);
+              router.replace(`/receipt?id=${args.rozoPaymentId}`);
+              setIsLoading(false);
+            }}
+            closeOnSuccess
+            resetOnSuccess
+          >
+            {({ show }) => (
+              <Button
+                variant="default"
+                className="w-full cursor-pointer py-6 font-semibold text-base"
+                onClick={show}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  "Pay with Crypto"
+                )}
+              </Button>
+            )}
+          </RozoPayButton.Custom>
+
+          {/* <RozoPayButton.Custom
             defaultOpen
             appId={appId}
             toAddress={payParams.toAddress}
@@ -408,8 +442,8 @@ export function PaymentContent({
                 )}
               </Button>
             )}
-          </RozoPayButton.Custom>
-        )}
+          </RozoPayButton.Custom> */}
+        </>}
     </div>
   );
 }
