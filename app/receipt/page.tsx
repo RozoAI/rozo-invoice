@@ -52,7 +52,7 @@ export async function generateMetadata({
 
 export default async function Receipt({ searchParams }: ReceiptPageProps) {
   try {
-    const { id, back_url, isCompletedForMerchant, payerAddress } =
+    const { id, back_url, isCompletedForMerchant, payerAddress, payInHash } =
       await searchParams;
     const isMugglePay = id?.includes("mugglepay_order");
 
@@ -79,6 +79,7 @@ export default async function Receipt({ searchParams }: ReceiptPageProps) {
         backUrl={back_url}
         isCompletedForMerchant={isCompletedForMerchant}
         payerAddress={payerAddress}
+        payInHash={payInHash}
       />
     );
   } catch (error) {

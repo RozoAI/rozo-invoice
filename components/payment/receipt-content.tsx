@@ -21,6 +21,7 @@ export default function ReceiptContent({
   enablePusher = true,
   isCompletedForMerchant = false,
   payerAddress = null,
+  payInHash = undefined,
 }: {
   payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
   backUrl?: string;
@@ -28,6 +29,7 @@ export default function ReceiptContent({
   enablePusher?: boolean;
   isCompletedForMerchant?: boolean;
   payerAddress?: string | null;
+  payInHash?: string;
 }) {
   const { currentPayment: pusherPayment, shouldFallbackToPolling } =
     usePusherPayout(payment, enablePusher);
@@ -122,6 +124,7 @@ export default function ReceiptContent({
             <TransactionFlow
               payment={currentPayment}
               payerAddress={payerAddress}
+              payInHash={payInHash}
             />
           </>
         ) : null}

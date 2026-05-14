@@ -28,11 +28,13 @@ function hasPreferredChain(
 interface TransactionFlowProps {
   payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
   payerAddress?: string | null;
+  payInHash?: string;
 }
 
 export function TransactionFlow({
   payment,
   payerAddress = null,
+  payInHash = undefined,
 }: TransactionFlowProps) {
   const { openExplorer } = useExplorer();
 
@@ -82,9 +84,14 @@ export function TransactionFlow({
 
   // Helper to safely get source transaction hash
   const getSourceTxHash = (): string => {
+    if (payInHash) {
+      return payInHash;
+    }
+
     if (payment?.source?.txHash) {
       return payment.source.txHash;
     }
+
     if (isPaymentResponse(payment) && payment.payinTransactionHash) {
       return payment.payinTransactionHash;
     }

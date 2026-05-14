@@ -141,7 +141,7 @@ export function PaymentContent({
     return null;
   }, [payment]);
 
-  const isMugglePay = useMemo(() => {
+  const isMerchant = useMemo(() => {
     return (
       (payment.metadata &&
         "appId" in payment.metadata &&
@@ -178,7 +178,7 @@ export function PaymentContent({
       PaymentStatus.PaymentBridgingHook,
     ];
 
-    if (isMugglePay && completedStatuses.includes(status)) {
+    if (isMerchant && completedStatuses.includes(status)) {
       return "Payment Completed";
     }
 
@@ -192,7 +192,7 @@ export function PaymentContent({
     }
 
     return "Payment in Progress";
-  }, [payment.status, isMugglePay]);
+  }, [payment.status, isMerchant]);
 
   const renderStatusIcon = useMemo(() => {
     if (paymentStatus === "Payment Expired") {
@@ -405,11 +405,17 @@ export function PaymentContent({
               setIsLoading(false);
             }}
             onPaymentCompleted={(payment: PaymentCompletedEvent) => {
+              console.log({ payment });
               setPaymentCompleted(true);
               toast.success(`Payment completed for $${paymentAmount}`);
-              router.replace(
-                `/receipt?id=${payment.rozoPaymentId}&isCompletedForMerchant=true`,
-              );
+              const params = new URLSearchParams({
+                id: payment.rozoPaymentId ?? "",
+                isCompletedForMerchant: String(isMerchant),
+                payerAddress: payment.payerAddress ?? "",
+                payInHash:
+                  payment.txHash ?? payment.payment.destination.txHash ?? "",
+              });
+              router.replace(`/receipt?${params}`);
               setIsLoading(false);
             }}
             onClose={() => {
