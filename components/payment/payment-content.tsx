@@ -2,17 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  FeeType,
   NewPaymentResponse,
   PaymentResponse,
   PaymentStatus,
 } from "@/lib/payment-api";
 import { getPaymentAmount } from "@/lib/utils";
 import {
-  ExternalPaymentOptionsString,
   PaymentCompletedEvent,
-  Token,
-  TokenSymbol,
   type RozoPayOrderView,
 } from "@rozoai/intent-common";
 import { RozoPayButton } from "@rozoai/intent-pay";
@@ -34,97 +30,14 @@ export interface PaymentContentProps {
   data: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
 }
 
-interface PayParams {
-  toAddress: `0x${string}`;
-  toChain: number;
-  toUnits: string;
-  toToken: `0x${string}`;
-  toStellarAddress?: string;
-  toSolanaAddress?: string;
-  metadata?: Record<string, string>;
-  feeType?: FeeType;
-  preferredSymbol?: TokenSymbol[];
-  preferredTokens?: Token[];
-  paymentOptions?: ExternalPaymentOptionsString[];
-}
-
 /**
  * PaymentContent component to display payment information and pay button
  */
-export function PaymentContent({
-  appId,
-  data,
-}: PaymentContentProps): ReactElement {
+export function PaymentContent({ data }: PaymentContentProps): ReactElement {
   const [payment, _] = useState(data);
-  const [payParams, setPayParams] = useState<PayParams | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const router = useRouter();
-  // const { resetPayment } = useRozoPayUI();
-
-  // const preferredSymbol = useMemo(() => {
-  //   if (
-  //     (payment.source &&
-  //       "tokenSymbol" in payment.source &&
-  //       payment.source.tokenSymbol === TokenSymbol.EURC) ||
-  //     (payment.display &&
-  //       "currency" in payment.display &&
-  //       payment.display.currency === "EUR")
-  //   ) {
-  //     return [TokenSymbol.EURC];
-  //   }
-
-  //   return [TokenSymbol.USDC, TokenSymbol.USDT];
-  // }, [payment.source, payment.display]);
-
-  const formatPaymentAmount = (
-    rawAmount: string,
-    currencyCode: "USD" | "EUR" = "USD",
-  ) => {
-    const amount = parseFloat(rawAmount);
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currencyCode,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  };
-
-  const displayTitle = useMemo(() => {
-    if (!payment) return null;
-
-    const display = payment.display;
-
-    if ("intent" in display && !!display.intent) {
-      return display.intent;
-    }
-
-    if ("title" in display && !!display.title) {
-      return display.title;
-    }
-
-    if (
-      payment.metadata &&
-      "intent" in payment.metadata &&
-      !!payment.metadata.intent
-    ) {
-      return payment.metadata.intent;
-    }
-
-    return null;
-  }, [payment]);
-
-  const displayDescription = useMemo(() => {
-    if (!payment) return null;
-
-    const display = payment.display;
-
-    if ("description" in display && !!display.description) {
-      return display.description;
-    }
-
-    return null;
-  }, [payment]);
 
   const paymentAmount = useMemo(() => {
     return getPaymentAmount(payment);
@@ -228,77 +141,6 @@ export function PaymentContent({
     return null;
   }, [paymentStatus]);
 
-  // useEffect(() => {
-  //   if (!payment.destination) {
-  //     return;
-  //   }
-
-  //   const dest = payment.destination as DestinationResponse & {
-  //     amountUnits?: string;
-  //     destinationAddress?: string;
-  //   };
-  //   const toUnits =
-  //     dest.amountUnits ||
-  //     dest.amount ||
-  //     ((payment.source as SourceResponse)?.amount as string);
-  //   const toChain = Number(dest.chainId);
-  //   const toAddress = dest.destinationAddress || dest.receiverAddress;
-  //   const toToken = dest.tokenAddress;
-
-  //   if (!payment.source?.chainId || !payment.source?.tokenAddress) {
-  //     return;
-  //   }
-  //   const sourceChainId = Number(payment.source.chainId);
-  //   const sourceToken = getKnownToken(
-  //     sourceChainId,
-  //     payment.source?.tokenAddress,
-  //   );
-
-  //   const paymentOptions: ExternalPaymentOptionsString[] = [];
-
-  //   if (sourceChainId === rozoSolana.chainId) {
-  //     paymentOptions.push(ExternalPaymentOptions.Solana);
-  //   } else if (sourceChainId === rozoStellar.chainId) {
-  //     paymentOptions.push(ExternalPaymentOptions.Stellar);
-  //   } else {
-  //     paymentOptions.push(ExternalPaymentOptions.Ethereum);
-  //   }
-
-  //   const params = {
-  //     toChain,
-  //     toUnits,
-  //     toAddress,
-  //     toToken,
-  //     preferredSymbol,
-  //     preferredTokens: sourceToken ?? undefined,
-  //   };
-
-  //   if ("type" in payment && payment.type) {
-  //     Object.assign(params, {
-  //       feeType: payment.type,
-  //     });
-  //   }
-
-  //   if (paymentOptions.length > 0) {
-  //     Object.assign(params, {
-  //       paymentOptions: paymentOptions,
-  //     });
-  //   }
-
-  //   if ("metadata" in payment && payment.metadata) {
-  //     Object.assign(params, {
-  //       ...params,
-  //       metadata: {
-  //         ...payment.metadata,
-  //         customDeeplinkUrl: window.location.href,
-  //       },
-  //     });
-  //   }
-
-  //   resetPayment(params as PayParams);
-  //   setPayParams(params as PayParams);
-  // }, [payment, preferredSymbol]);
-
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center gap-4 md:justify-start">
       <div className="flex flex-col items-center">
@@ -327,21 +169,6 @@ export function PaymentContent({
 
       {/* Price Display */}
       <div className="py-4">
-        {/* {displayTitle || displayDescription ? (
-          <div className="mb-6">
-            {displayTitle && (
-              <h1 className="text-lg text-center font-semibold text-foreground">
-                {displayTitle}
-              </h1>
-            )}
-            {displayDescription && (
-              <p className="text-sm md:text-base text-center text-muted-foreground">
-                {displayDescription}
-              </p>
-            )}
-          </div>
-        ) : null} */}
-
         <div className="font-bold text-5xl text-foreground">
           {paymentAmount}
         </div>
@@ -390,7 +217,7 @@ export function PaymentContent({
       )}
 
       {/* Pay Button */}
-      {payment.status === "payment_unpaid" && !paymentCompleted && (
+      {payment.status === "payment_unpaid" && (
         <>
           <RozoPayButton.Custom
             defaultOpen
@@ -405,7 +232,6 @@ export function PaymentContent({
               setIsLoading(false);
             }}
             onPaymentCompleted={(payment: PaymentCompletedEvent) => {
-              console.log({ payment });
               setPaymentCompleted(true);
               toast.success(`Payment completed for $${paymentAmount}`);
               const params = new URLSearchParams({
@@ -427,7 +253,7 @@ export function PaymentContent({
                 variant="default"
                 className="w-full cursor-pointer py-6 font-semibold text-base"
                 onClick={show}
-                disabled={isLoading}
+                disabled={isLoading || paymentCompleted}
               >
                 {isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
