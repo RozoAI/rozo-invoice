@@ -19,11 +19,17 @@ export default function ReceiptContent({
   payment,
   enablePolling = true,
   enablePusher = true,
+  isCompletedForMerchant = false,
+  payerAddress = null,
+  payInHash = undefined,
 }: {
   payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
   backUrl?: string;
   enablePolling?: boolean;
   enablePusher?: boolean;
+  isCompletedForMerchant?: boolean;
+  payerAddress?: string | null;
+  payInHash?: string;
 }) {
   const { currentPayment: pusherPayment, shouldFallbackToPolling } =
     usePusherPayout(payment, enablePusher);
@@ -31,7 +37,7 @@ export default function ReceiptContent({
   const effectivePolling = enablePolling || shouldFallbackToPolling;
   const { currentPayment: polledPayment } = usePollPayout(
     enablePusher ? pusherPayment : payment,
-    effectivePolling
+    effectivePolling,
   );
   // Use pusher payment if enabled, otherwise use polled payment or original payment
   const currentPayment = effectivePolling
@@ -88,10 +94,10 @@ export default function ReceiptContent({
           </div>
         )}
 
-        <PaymentStatus payment={currentPayment} />
+        <PaymentStatus payment={currentPayment} isCompletedForMerchant />
 
         {(currentPayment?.source && currentPayment?.destination) ||
-          ("destination" in currentPayment && currentPayment.destination) ? (
+        ("destination" in currentPayment && currentPayment.destination) ? (
           <>
             {/* Items Section */}
             {paymentItems && paymentItems.length > 0 && (
@@ -115,7 +121,11 @@ export default function ReceiptContent({
                 </div>
               </div>
             )}
-            <TransactionFlow payment={currentPayment} />
+            <TransactionFlow
+              payment={currentPayment}
+              payerAddress={payerAddress}
+              payInHash={payInHash}
+            />
           </>
         ) : null}
 

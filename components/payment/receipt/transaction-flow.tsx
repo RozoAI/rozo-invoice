@@ -7,14 +7,14 @@ import { TransactionParticipant } from "./transaction-participant";
 
 // Type guard to check if payment is PaymentResponse
 function isPaymentResponse(
-  payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse
+  payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse,
 ): payment is PaymentResponse {
   return "payinchainid" in payment;
 }
 
 // Type guard to check if payment has metadata with preferred_chain
 function hasPreferredChain(
-  payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse
+  payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse,
 ): boolean {
   return (
     "metadata" in payment &&
@@ -27,13 +27,19 @@ function hasPreferredChain(
 
 interface TransactionFlowProps {
   payment: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
+  payerAddress?: string | null;
+  payInHash?: string;
 }
 
-export function TransactionFlow({ payment }: TransactionFlowProps) {
+export function TransactionFlow({
+  payment,
+  payerAddress = null,
+  payInHash = undefined,
+}: TransactionFlowProps) {
   const { openExplorer } = useExplorer();
 
   // Helper to safely get payer address
-  const getSourcePayerAddress = (): string => {
+  const getSourcePayerAddress = (): string | null => {
     if (payment?.source?.payerAddress) {
       return payment.source.payerAddress;
     }
@@ -50,7 +56,7 @@ export function TransactionFlow({ payment }: TransactionFlowProps) {
     if ("payerAddress" in payment && typeof payment.payerAddress === "string") {
       return payment.payerAddress;
     }
-    return "";
+    return payerAddress || null;
   };
 
   // Helper to safely get source chain ID with proper fallback logic
@@ -78,9 +84,14 @@ export function TransactionFlow({ payment }: TransactionFlowProps) {
 
   // Helper to safely get source transaction hash
   const getSourceTxHash = (): string => {
+    if (payInHash) {
+      return payInHash;
+    }
+
     if (payment?.source?.txHash) {
       return payment.source.txHash;
     }
+
     if (isPaymentResponse(payment) && payment.payinTransactionHash) {
       return payment.payinTransactionHash;
     }
@@ -128,7 +139,8 @@ export function TransactionFlow({ payment }: TransactionFlowProps) {
   const isForMerchant = useMemo(() => {
     return (
       payment?.metadata?.forMerchant ||
-      (String(payment?.metadata?.appId) || "").includes("MP")
+      (String(payment?.metadata?.appId) || "").includes("MP") ||
+      ("isMerchant" in payment && !!payment.isMerchant)
     );
   }, [payment]);
 
@@ -182,21 +194,26 @@ export function TransactionFlow({ payment }: TransactionFlowProps) {
         onExplorerClick={openExplorer}
       />
 
-      <div className="flex size-8 items-center justify-center self-center">
-        <ArrowDown className="text-muted-foreground size-5" />
-      </div>
+      {/* Only show Recipient if it's not merchant */}
+      {!isForMerchant && (
+        <>
+          <div className="flex size-8 items-center justify-center self-center">
+            <ArrowDown className="text-muted-foreground size-5" />
+          </div>
 
-      <div className="-mt-6">
-        <TransactionParticipant
-          type="recipient"
-          name={isForMerchant ? "Merchant" : "Recipient"}
-          address={destinationAddress}
-          chainId={destinationChainId}
-          txHash={recipientExplorerData.txHash}
-          explorerAddress={recipientExplorerData.address}
-          onExplorerClick={openExplorer}
-        />
-      </div>
+          <div className="-mt-6">
+            <TransactionParticipant
+              type="recipient"
+              name={isForMerchant ? "Merchant" : "Recipient"}
+              address={destinationAddress}
+              chainId={destinationChainId}
+              txHash={recipientExplorerData.txHash}
+              explorerAddress={recipientExplorerData.address}
+              onExplorerClick={openExplorer}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

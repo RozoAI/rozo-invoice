@@ -14,7 +14,13 @@ import { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 interface ReceiptPageProps {
-  searchParams: Promise<{ id?: string; payInHash?: string; back_url?: string }>;
+  searchParams: Promise<{
+    id?: string;
+    payInHash?: string;
+    back_url?: string;
+    isCompletedForMerchant?: boolean;
+    payerAddress?: string;
+  }>;
 }
 
 export async function generateMetadata({
@@ -46,7 +52,8 @@ export async function generateMetadata({
 
 export default async function Receipt({ searchParams }: ReceiptPageProps) {
   try {
-    const { id, back_url } = await searchParams;
+    const { id, back_url, isCompletedForMerchant, payerAddress, payInHash } =
+      await searchParams;
     const isMugglePay = id?.includes("mugglepay_order");
 
     if (!id) {
@@ -66,7 +73,15 @@ export default async function Receipt({ searchParams }: ReceiptPageProps) {
       });
     }
 
-    return <ReceiptContent payment={result.payment} backUrl={back_url} />;
+    return (
+      <ReceiptContent
+        payment={result.payment}
+        backUrl={back_url}
+        isCompletedForMerchant={isCompletedForMerchant}
+        payerAddress={payerAddress}
+        payInHash={payInHash}
+      />
+    );
   } catch (error) {
     // Re-throw Next.js redirect errors to avoid double redirect
     if (

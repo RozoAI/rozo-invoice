@@ -1,13 +1,13 @@
+import { ChainIcon } from "@/components/icons/chains";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatAddress } from "@/lib/utils";
-import { getChainName } from "@rozoai/intent-common";
 import { Copy, ExternalLinkIcon, StoreIcon, User } from "lucide-react";
 import { toast } from "sonner";
 
 interface TransactionParticipantProps {
   type: "sender" | "recipient";
   name: string;
-  address: string;
+  address: string | null;
   chainId: string;
   txHash?: string;
   explorerAddress?: string;
@@ -38,6 +38,7 @@ export function TransactionParticipant({
 
   const handleCopyAddress = async () => {
     try {
+      if (!address) return;
       await navigator.clipboard.writeText(address);
       toast.success("Address copied to clipboard");
     } catch (err) {
@@ -47,9 +48,9 @@ export function TransactionParticipant({
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-muted-foreground text-sm font-medium text-left">
+      {/* <span className="text-muted-foreground text-sm font-medium text-left">
         {type === "sender" ? "Sender" : "Recipient"}
-      </span>
+      </span> */}
       <div
         className={`py-2 px-4 rounded-lg flex items-center gap-4 w-full hover:opacity-80 transition-opacity ${
           isRecipient ? "border-2 bg-background" : "border bg-muted/30"
@@ -72,22 +73,27 @@ export function TransactionParticipant({
               <span className="text-muted-foreground font-normal"> (You)</span>
             )}
           </span>
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground text-sm">
-              {formatAddress(address)}
-            </span>
-            <Copy
-              className="size-3 cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
-              onClick={handleCopyAddress}
-            />
-          </div>
+          {address && (
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground text-sm">
+                {formatAddress(address)}
+              </span>
+              <Copy
+                className="size-3 cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                onClick={handleCopyAddress}
+              />
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {chainId && (
+            <ChainIcon chainId={Number(chainId)} width={20} height={20} />
+          )}
+          {/* {chainId && (
             <div className="text-xs text-muted-foreground bg-muted border rounded-full px-2 py-0.5">
               {getChainName(Number(chainId))}
             </div>
-          )}
+          )} */}
           {(txHash || explorerAddress) && (
             <ExternalLinkIcon
               className="size-4 cursor-pointer"

@@ -2,132 +2,45 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  DestinationResponse,
-  FeeType,
   NewPaymentResponse,
   PaymentResponse,
   PaymentStatus,
-  SourceResponse,
 } from "@/lib/payment-api";
+import { getPaymentAmount } from "@/lib/utils";
 import {
-  ExternalPaymentOptions,
-  ExternalPaymentOptionsString,
-  getKnownToken,
-  rozoSolana,
-  rozoStellar,
-  Token,
-  TokenSymbol,
-  type RozoPayOrderView
+  PaymentCompletedEvent,
+  type RozoPayOrderView,
 } from "@rozoai/intent-common";
-import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
+import { RozoPayButton } from "@rozoai/intent-pay";
 import {
   AlertCircle,
   BadgeCheckIcon,
   ClockFading,
   ExternalLink,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type ReactElement } from "react";
+import { useMemo, useState, type ReactElement } from "react";
 import { toast } from "sonner";
+import ChainsStacked from "../chains-stacked";
 
 export interface PaymentContentProps {
   appId: string;
   data: RozoPayOrderView | PaymentResponse | NewPaymentResponse;
 }
 
-interface PayParams {
-  toAddress: `0x${string}`;
-  toChain: number;
-  toUnits: string;
-  toToken: `0x${string}`;
-  toStellarAddress?: string;
-  toSolanaAddress?: string;
-  metadata?: Record<string, string>;
-  feeType?: FeeType;
-  preferredSymbol?: TokenSymbol[];
-  preferredTokens?: Token[];
-  paymentOptions?: ExternalPaymentOptionsString[];
-}
-
 /**
  * PaymentContent component to display payment information and pay button
  */
-export function PaymentContent({
-  appId,
-  data,
-}: PaymentContentProps): ReactElement {
+export function PaymentContent({ data }: PaymentContentProps): ReactElement {
   const [payment, _] = useState(data);
-  const [payParams, setPayParams] = useState<PayParams | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const router = useRouter();
-  const { resetPayment } = useRozoPayUI();
-
-  const preferredSymbol = useMemo(() => {
-    if (
-      (payment.source &&
-        "tokenSymbol" in payment.source &&
-        payment.source.tokenSymbol === TokenSymbol.EURC) ||
-      (payment.display &&
-        "currency" in payment.display &&
-        payment.display.currency === "EUR")
-    ) {
-      return [TokenSymbol.EURC];
-    }
-
-    return [TokenSymbol.USDC, TokenSymbol.USDT];
-  }, [payment.source, payment.display]);
-
-  const formatPaymentAmount = (
-    rawAmount: string,
-    currencyCode: "USD" | "EUR" = "USD"
-  ) => {
-    const amount = parseFloat(rawAmount);
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currencyCode,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  };
 
   const paymentAmount = useMemo(() => {
-    if (
-      "display" in payment &&
-      "paymentValue" in payment.display &&
-      "currency" in payment.display
-    ) {
-      // RozoPayOrderView
-      const currencyCode =
-        payment.display.currency === "EUR" ? "EUR" : "USD";
-      return formatPaymentAmount(payment.display.paymentValue, currencyCode);
-    } else if (
-      "destination" in payment &&
-      "amountUnits" in payment.destination
-    ) {
-      // PaymentResponse
-      const currencyCode =
-        "tokenSymbol" in payment.destination &&
-          payment.destination.tokenSymbol === TokenSymbol.EURC
-          ? "EUR"
-          : "USD";
-      return formatPaymentAmount(payment.destination.amountUnits, currencyCode);
-    } else if (
-      "source" in payment &&
-      payment.source &&
-      "amount" in payment.source
-    ) {
-      // NewPaymentResponse
-      const currencyCode =
-        "tokenSymbol" in payment.source &&
-          payment.source.tokenSymbol === TokenSymbol.EURC
-          ? "EUR"
-          : "USD";
-      return formatPaymentAmount(payment.source.amount as string, currencyCode);
-    }
-    return "Amount unavailable";
+    return getPaymentAmount(payment);
   }, [payment]);
 
   const paymentItems = useMemo(() => {
@@ -141,12 +54,13 @@ export function PaymentContent({
     return null;
   }, [payment]);
 
-  const isMugglePay = useMemo(() => {
+  const isMerchant = useMemo(() => {
     return (
-      payment.metadata &&
-      "appId" in payment.metadata &&
-      payment.metadata.appId.includes("MP")
-    ) || ((payment as PaymentResponse)?.isMerchant ?? false);
+      (payment.metadata &&
+        "appId" in payment.metadata &&
+        payment.metadata.appId.includes("MP")) ||
+      ((payment as PaymentResponse)?.isMerchant ?? false)
+    );
   }, [payment]);
 
   const paymentStatus = useMemo(() => {
@@ -177,7 +91,7 @@ export function PaymentContent({
       PaymentStatus.PaymentBridgingHook,
     ];
 
-    if (isMugglePay && completedStatuses.includes(status)) {
+    if (isMerchant && completedStatuses.includes(status)) {
       return "Payment Completed";
     }
 
@@ -191,18 +105,24 @@ export function PaymentContent({
     }
 
     return "Payment in Progress";
-  }, [payment.status, isMugglePay]);
+  }, [payment.status, isMerchant]);
 
   const renderStatusIcon = useMemo(() => {
     if (paymentStatus === "Payment Expired") {
       return <ClockFading className="size-[65px] text-neutral-400" />;
     }
 
-    if (paymentStatus === "Payment Bounced" || paymentStatus === "Payment Unavailable") {
+    if (
+      paymentStatus === "Payment Bounced" ||
+      paymentStatus === "Payment Unavailable"
+    ) {
       return <AlertCircle className="size-[90px] text-neutral-400" />;
     }
 
-    if (paymentStatus === "Payment Unpaid" || paymentStatus === "Payment in Progress") {
+    if (
+      paymentStatus === "Payment Unpaid" ||
+      paymentStatus === "Payment in Progress"
+    ) {
       return null;
     }
 
@@ -221,95 +141,31 @@ export function PaymentContent({
     return null;
   }, [paymentStatus]);
 
-  useEffect(() => {
-    if (!payment.destination) {
-      return;
-    }
-
-    const dest = payment.destination as DestinationResponse & {
-      amountUnits?: string;
-      destinationAddress?: string;
-    };
-    const toUnits =
-      dest.amountUnits ||
-      dest.amount ||
-      ((payment.source as SourceResponse)?.amount as string);
-    const toChain = Number(dest.chainId);
-    const toAddress = dest.destinationAddress || dest.receiverAddress;
-    const toToken = dest.tokenAddress;
-
-    if (!payment.source?.chainId || !payment.source?.tokenAddress) {
-      return;
-    }
-    const sourceChainId = Number(payment.source.chainId)
-    const sourceToken = getKnownToken(sourceChainId, payment.source?.tokenAddress);
-
-    const paymentOptions: ExternalPaymentOptionsString[] = [];
-
-    if (sourceChainId === rozoSolana.chainId) {
-      paymentOptions.push(ExternalPaymentOptions.Solana);
-    } else if (sourceChainId === rozoStellar.chainId) {
-      paymentOptions.push(ExternalPaymentOptions.Stellar);
-    } else {
-      paymentOptions.push(ExternalPaymentOptions.Ethereum);
-    }
-
-    const params = {
-      toChain,
-      toUnits,
-      toAddress,
-      toToken,
-      preferredSymbol,
-      preferredTokens: [sourceToken],
-    };
-
-    if ("type" in payment && payment.type) {
-      Object.assign(params, {
-        feeType: payment.type,
-      });
-    }
-
-    if (paymentOptions.length > 0) {
-      Object.assign(params, {
-        paymentOptions: paymentOptions,
-      });
-    }
-
-    if ("metadata" in payment && payment.metadata) {
-      Object.assign(params, {
-        ...params,
-        metadata: {
-          ...payment.metadata,
-          customDeeplinkUrl: window.location.href,
-        },
-      });
-    }
-
-    resetPayment(params as PayParams);
-    setPayParams(params as PayParams);
-  }, [payment, preferredSymbol]);
-
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center gap-4 md:justify-start">
-      {renderStatusIcon}
+      <div className="flex flex-col items-center">
+        {renderStatusIcon}
 
-      {(payment.status !== "payment_unpaid") && (
-        <div className="text-center max-w-md">
-          <h3 className="font-semibold text-xl">{paymentStatus}</h3>
-          {paymentDescription && paymentStatus !== "Payment Bounced" && (
-            <p className="text-muted-foreground text-xs">{paymentDescription}</p>
-          )}
-          {paymentStatus === "Payment Bounced" && (
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                We&apos;ve received your payment, but the payout failed.
-                Don&apos;t worry. The payout will be processed again within 24
-                hours.
+        {payment.status !== "payment_unpaid" && (
+          <div className="text-center max-w-md">
+            <h3 className="font-semibold text-xl">{paymentStatus}</h3>
+            {paymentDescription && paymentStatus !== "Payment Bounced" && (
+              <p className="text-muted-foreground text-xs">
+                {paymentDescription}
               </p>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+            {paymentStatus === "Payment Bounced" && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  We&apos;ve received your payment, but the payout failed.
+                  Don&apos;t worry. The payout will be processed again within 24
+                  hours.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Price Display */}
       <div className="py-4">
@@ -361,45 +217,43 @@ export function PaymentContent({
       )}
 
       {/* Pay Button */}
-      {payParams &&
-        payment.status === "payment_unpaid" &&
-        !paymentCompleted && (
+      {payment.status === "payment_unpaid" && (
+        <>
           <RozoPayButton.Custom
             defaultOpen
-            appId={appId}
-            toAddress={payParams.toAddress}
-            toChain={payParams.toChain}
-            toUnits={payParams.toUnits}
-            toToken={payParams.toToken}
-            externalId={payment.externalId ?? undefined}
-            feeType={(payment as PaymentResponse).feeType}
-            preferredSymbol={payParams.preferredSymbol}
-            preferredTokens={payParams.preferredTokens}
-            paymentOptions={payParams.paymentOptions}
-            {...(payParams.metadata && {
-              metadata: payParams.metadata as Record<string, string>,
-            })}
+            closeOnSuccess
+            resetOnSuccess
+            payId={payment.id}
             onPaymentStarted={() => {
               setIsLoading(true);
+              router.prefetch(`/receipt?id=${payment.id}`);
             }}
             onPaymentBounced={() => {
               setIsLoading(false);
             }}
-            onPaymentCompleted={(args: any) => {
+            onPaymentCompleted={(payment: PaymentCompletedEvent) => {
               setPaymentCompleted(true);
-              toast.success(`Payment completed for $${payParams.toUnits}`);
-              router.replace(`/receipt?id=${args.rozoPaymentId}`);
+              toast.success(`Payment completed for $${paymentAmount}`);
+              const params = new URLSearchParams({
+                id: payment.rozoPaymentId ?? "",
+                isCompletedForMerchant: String(isMerchant),
+                payerAddress: payment.payerAddress ?? "",
+                payInHash:
+                  payment.txHash ?? payment.payment.destination.txHash ?? "",
+              });
+              router.replace(`/receipt?${params}`);
               setIsLoading(false);
             }}
-            closeOnSuccess
-            resetOnSuccess
+            onClose={() => {
+              setIsLoading(false);
+            }}
           >
             {({ show }) => (
               <Button
                 variant="default"
                 className="w-full cursor-pointer py-6 font-semibold text-base"
                 onClick={show}
-                disabled={isLoading}
+                disabled={isLoading || paymentCompleted}
               >
                 {isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -409,7 +263,10 @@ export function PaymentContent({
               </Button>
             )}
           </RozoPayButton.Custom>
-        )}
+
+          <ChainsStacked />
+        </>
+      )}
     </div>
   );
 }
